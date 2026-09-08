@@ -234,10 +234,10 @@ function renderOccasionCard(container, occ, ctx, index) {
   container.appendChild(card);
 }
 
-function renderCountdownStrip(container, ctx) {
-  const upcoming = ctx.events
+function renderCountdownStrip(container, today, events, onSelect) {
+  const upcoming = events
     .filter(e => e.category === "holiday" || e.category === "roshchodesh")
-    .filter(e => daysBetween(ctx.today, e.date) >= 0 && daysBetween(ctx.today, e.date) <= 30)
+    .filter(e => daysBetween(today, e.date) >= 0 && daysBetween(today, e.date) <= 30)
     .filter(e => !/^Erev /.test(e.title) && !/^Mevarchim/.test(e.title));
   const seen = new Set();
   const strip = el("div", "countdown-strip");
@@ -245,12 +245,15 @@ function renderCountdownStrip(container, ctx) {
   for (const e of upcoming) {
     if (seen.has(e.title.replace(/ I{1,2}$/, ""))) continue;
     seen.add(e.title.replace(/ I{1,2}$/, ""));
-    const d = daysBetween(ctx.today, e.date);
-    const chip = el("div", "countdown-chip");
+    const d = daysBetween(today, e.date);
+    const chip = el("button", "countdown-chip");
+    chip.type = "button";
     chip.style.animationDelay = `${i * 60}ms`;
     if (d === 0) chip.classList.add("countdown-chip--today");
     chip.appendChild(el("span", "countdown-days", d === 0 ? "Today" : `${d}d`));
     chip.appendChild(el("span", "countdown-title", e.title));
+    chip.title = `See the details for ${e.title}`;
+    chip.addEventListener("click", () => onSelect(e.date));
     strip.appendChild(chip);
     i++;
     if (strip.children.length >= 6) break;
@@ -444,6 +447,38 @@ function renderPrayerCard(container, prayerInfo) {
   container.appendChild(card);
 }
 
+function renderPrepCard(container, upcoming) {
+  if (!upcoming) return;
+  const { guide, daysUntil, offlineDays } = upcoming;
+  const card = el("article", "occasion-card prep-card");
+
+  const headRow = el("div", "card-head");
+  headRow.appendChild(iconBadge(guide.icon, "icon-badge--gold"));
+  const titleWrap = el("div");
+  titleWrap.appendChild(el("h3", null, `Getting Ready for ${guide.name}`));
+  const dayWord = daysUntil === 0 ? "today" : daysUntil === 1 ? "tomorrow" : `in ${daysUntil} days`;
+  titleWrap.appendChild(el("p", "torah-meta", `Starts ${dayWord} · about ${offlineDays} day${offlineDays === 1 ? "" : "s"} offline once it begins`));
+  headRow.appendChild(titleWrap);
+  card.appendChild(headRow);
+
+  card.appendChild(el("p", "intro", `Since you won't be checking this page once ${guide.name} begins, here's what's worth handling now.`));
+
+  card.appendChild(el("h4", "section-label", "Shopping List"));
+  const shopUl = el("ul", "halacha-list");
+  guide.shopping.forEach(s => shopUl.appendChild(el("li", null, s)));
+  card.appendChild(shopUl);
+
+  card.appendChild(el("h4", "section-label", "Before It Begins"));
+  const prepUl = el("ul", "halacha-list");
+  guide.prep.forEach(p => prepUl.appendChild(el("li", null, p)));
+  card.appendChild(prepUl);
+
+  card.appendChild(el("h4", "section-label", "What to Expect"));
+  card.appendChild(el("p", "intro", guide.expectNote));
+
+  container.appendChild(card);
+}
+
 function ordinal(n) {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
@@ -463,23 +498,78 @@ function renderProfilePill(profile) {
   pill.innerHTML = `${getIcon("book-star")}<span>${label}</span>`;
   pill.addEventListener("click", () => {
     openOnboarding((newProfile) => {
+      currentProfile = newProfile;
       renderProfilePill(newProfile);
-      renderAll(newProfile);
+      setViewingDate(viewingDate);
     });
   });
-  document.querySelector(".date-banner").insertAdjacentElement("afterend", pill);
+  document.querySelector(".date-nav").insertAdjacentElement("afterend", pill);
 }
 
-let cachedEvents = null;
-let cachedHebrewDateInfo = null;
-let cachedToday = null;
+// --- Browsing state -------------------------------------------------
+// `realToday` never changes once the page loads; it's what the countdown
+// strip and the "getting ready" prep card are always based on, since those
+// are meant to help someone plan *before* they go offline for a chag.
+// `viewingDate` is whatever date the visitor has navigated to.
+let realToday = null;
+let realTodayEvents = null;
+let viewingDate = null;
+let browseEvents = null;
+let browseWindowStart = null;
+let browseWindowEnd = null;
+let currentProfile = null;
+const hebrewDateCache = new Map();
 
-async function renderAll(profile) {
-  const today = cachedToday;
-  const events = cachedEvents;
-  const hebrewDateInfo = cachedHebrewDateInfo;
+async function ensureEventsCover(date) {
+  if (browseEvents && date >= browseWindowStart && date <= browseWindowEnd) {
+    return browseEvents;
+  }
+  const events = await loadCalendarWindow(date);
+  browseEvents = events;
+  browseWindowStart = addDays(date, -25);
+  browseWindowEnd = addDays(date, 40);
+  return events;
+}
 
-  const ctx = buildContext(today, events, hebrewDateInfo, profile);
+async function getHebrewDateCached(date) {
+  const key = toISO(date);
+  if (hebrewDateCache.has(key)) return hebrewDateCache.get(key);
+  const info = await loadHebrewDate(date).catch(() => null);
+  hebrewDateCache.set(key, info);
+  return info;
+}
+
+function renderViewingBanner(date) {
+  const existing = document.getElementById("viewing-banner");
+  if (existing) existing.remove();
+  if (daysBetween(realToday, date) === 0) return;
+
+  const banner = el("div", "viewing-banner");
+  banner.id = "viewing-banner";
+  const label = daysBetween(realToday, date) > 0 ? "Looking ahead to" : "Looking back at";
+  banner.appendChild(el("span", null, `${label} ${fmtDate(date)}`));
+  const backBtn = el("button", "viewing-banner-back", "Back to Today");
+  backBtn.type = "button";
+  backBtn.addEventListener("click", () => setViewingDate(realToday));
+  banner.appendChild(backBtn);
+  document.querySelector(".date-banner").insertAdjacentElement("afterend", banner);
+}
+
+async function setViewingDate(date) {
+  date = startOfDay(date);
+  viewingDate = date;
+  document.getElementById("date-input").value = toISO(date);
+
+  const [events, hebrewInfo] = await Promise.all([
+    ensureEventsCover(date),
+    getHebrewDateCached(date)
+  ]);
+
+  document.getElementById("hebrew-date").textContent = hebrewInfo ? hebrewInfo.hebrew || "" : "";
+  document.getElementById("gregorian-date").textContent = fmtDate(date);
+  renderViewingBanner(date);
+
+  const ctx = buildContext(date, events, hebrewInfo, currentProfile);
   const occasions = pickOccasions(ctx);
 
   const occContainer = document.getElementById("occasion-container");
@@ -492,48 +582,90 @@ async function renderAll(profile) {
     occContainer.prepend(notice);
   }
 
-  const countdownContainer = document.getElementById("countdown-container");
-  countdownContainer.innerHTML = "";
-  renderCountdownStrip(countdownContainer, ctx);
+  const torahContainer = document.getElementById("torah-container");
+  torahContainer.innerHTML = "";
+  const portion = await loadTorahPortion(events, date).catch(e => { console.error(e); return null; });
+  renderTorahPortion(torahContainer, portion);
+
+  const prayerContainer = document.getElementById("prayer-container");
+  prayerContainer.innerHTML = "";
+  if (daysBetween(realToday, date) === 0) {
+    const prayerInfo = await loadPrayerCard(date).catch(e => { console.error(e); return null; });
+    renderPrayerCard(prayerContainer, prayerInfo);
+  }
+}
+
+function renderDateNav(container) {
+  container.innerHTML = "";
+  const nav = el("div", "date-nav");
+
+  const prevBtn = el("button", "date-nav-arrow", "←");
+  prevBtn.type = "button";
+  prevBtn.setAttribute("aria-label", "Previous day");
+  prevBtn.addEventListener("click", () => setViewingDate(addDays(viewingDate, -1)));
+
+  const input = el("input", "date-input");
+  input.type = "date";
+  input.id = "date-input";
+  input.value = toISO(viewingDate);
+  input.addEventListener("change", () => {
+    if (input.value) setViewingDate(parseLocalDate(input.value));
+  });
+
+  const nextBtn = el("button", "date-nav-arrow", "→");
+  nextBtn.type = "button";
+  nextBtn.setAttribute("aria-label", "Next day");
+  nextBtn.addEventListener("click", () => setViewingDate(addDays(viewingDate, 1)));
+
+  const todayBtn = el("button", "date-nav-today", "Today");
+  todayBtn.type = "button";
+  todayBtn.addEventListener("click", () => setViewingDate(realToday));
+
+  nav.appendChild(prevBtn);
+  nav.appendChild(input);
+  nav.appendChild(nextBtn);
+  nav.appendChild(todayBtn);
+  container.appendChild(nav);
 }
 
 async function init() {
-  const today = startOfDay(new Date());
-  cachedToday = today;
-  document.getElementById("gregorian-date").textContent = fmtDate(today);
+  realToday = startOfDay(new Date());
+  viewingDate = realToday;
+  document.getElementById("gregorian-date").textContent = fmtDate(realToday);
+
+  renderDateNav(document.getElementById("date-nav-container"));
 
   try {
     const [events, hebrewDateInfo] = await Promise.all([
-      loadCalendarWindow(today),
-      loadHebrewDate(today).catch(() => null)
+      loadCalendarWindow(realToday),
+      loadHebrewDate(realToday).catch(() => null)
     ]);
-    cachedEvents = events;
-    cachedHebrewDateInfo = hebrewDateInfo;
+    realTodayEvents = events;
+    browseEvents = events;
+    browseWindowStart = addDays(realToday, -25);
+    browseWindowEnd = addDays(realToday, 40);
+    hebrewDateCache.set(toISO(realToday), hebrewDateInfo);
 
-    if (hebrewDateInfo) {
-      document.getElementById("hebrew-date").textContent = hebrewDateInfo.hebrew || "";
-    }
+    currentProfile = getProfile();
+    renderProfilePill(currentProfile);
+    await setViewingDate(realToday);
 
-    let profile = getProfile();
-    renderProfilePill(profile);
-    await renderAll(profile);
-
-    if (!profile) {
+    if (!currentProfile) {
       openOnboarding((newProfile) => {
+        currentProfile = newProfile;
         renderProfilePill(newProfile);
-        renderAll(newProfile);
+        setViewingDate(viewingDate);
       });
     }
 
-    const prayerContainer = document.getElementById("prayer-container");
-    prayerContainer.innerHTML = "";
-    const prayerInfo = await loadPrayerCard(today).catch(e => { console.error(e); return null; });
-    renderPrayerCard(prayerContainer, prayerInfo);
+    const countdownContainer = document.getElementById("countdown-container");
+    countdownContainer.innerHTML = "";
+    renderCountdownStrip(countdownContainer, realToday, realTodayEvents, (date) => setViewingDate(date));
 
-    const torahContainer = document.getElementById("torah-container");
-    torahContainer.innerHTML = "";
-    const portion = await loadTorahPortion(events, today).catch(e => { console.error(e); return null; });
-    renderTorahPortion(torahContainer, portion);
+    const prepContainer = document.getElementById("prep-container");
+    prepContainer.innerHTML = "";
+    const upcomingPrep = findUpcomingPrepGuide(realTodayEvents, realToday);
+    renderPrepCard(prepContainer, upcomingPrep);
 
   } catch (err) {
     console.error(err);
