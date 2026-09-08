@@ -234,6 +234,14 @@ const ICONS = {
       fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
   `),
 
+  trophy: svg(`
+    <path d="M22 14 H42 V26 C42 33 37 38 32 38 C27 38 22 33 22 26 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M22 17 H14 Q12 17 12 20 Q12 27 20 28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="accent-gold"/>
+    <path d="M42 17 H50 Q52 17 52 20 Q52 27 44 28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="accent-gold"/>
+    <path d="M32 38 V46" stroke="currentColor" stroke-width="2.4"/>
+    <path d="M24 52 H40 Q38 46 32 46 Q26 46 24 52 Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+  `),
+
   // --- Torah-book icons (for the weekly-portion card) ---
   "book-genesis": svg(`
     <path d="M20 34 C18 26 22 20 30 20 C29 24 30 28 33 30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>

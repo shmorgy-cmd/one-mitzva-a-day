@@ -599,6 +599,125 @@ h1, h2, h3, h4 {
 }
 
 /* ---------------------------------------------------------------- */
+/* Quiz card                                                          */
+/* ---------------------------------------------------------------- */
+
+.quiz-card {
+  border: 1px solid var(--gold-light);
+  background: linear-gradient(180deg, #fef9ee 0%, var(--paper) 45%);
+}
+
+.quiz-card .card-head { align-items: flex-start; }
+
+.quiz-list {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.quiz-question {
+  padding-top: 4px;
+}
+
+.quiz-topic {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.quiz-question-text {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  color: var(--flag-blue-deep);
+  font-size: 1.08rem;
+  margin: 0 0 12px;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.quiz-option {
+  font-family: "Source Sans 3", sans-serif;
+  font-size: 0.94rem;
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quiz-option:hover:not(:disabled) {
+  border-color: var(--flag-blue-bright);
+  background: #eef2fc;
+  transform: translateY(-1px);
+}
+
+.quiz-option:disabled {
+  cursor: default;
+}
+
+.quiz-option--correct {
+  border-color: #3a9a5c;
+  background: #e7f6ec;
+  color: #1f6b39;
+  font-weight: 600;
+}
+
+.quiz-option--wrong {
+  border-color: #c9564f;
+  background: #fbe9e8;
+  color: #9c332d;
+}
+
+.quiz-result {
+  margin-top: 22px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, var(--flag-blue-bright), var(--flag-blue));
+  color: var(--cream);
+  text-align: center;
+  animation: fadeUp 0.4s ease both;
+}
+
+.quiz-score {
+  display: block;
+  font-family: "Fraunces", serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--gold-light);
+  margin-bottom: 4px;
+}
+
+.quiz-retry {
+  display: inline-block;
+  margin-top: 14px;
+  font-family: "Source Sans 3", sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 9px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.12);
+  color: var(--cream);
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.quiz-retry:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* ---------------------------------------------------------------- */
 /* About / footer                                                     */
 /* ---------------------------------------------------------------- */
 

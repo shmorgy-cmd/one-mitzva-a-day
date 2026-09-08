@@ -648,6 +648,108 @@ function renderMorningMitzvotCard(container) {
   container.appendChild(card);
 }
 
+function shuffled(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+/** Re-shuffles a question's answer order and recomputes correctIndex to match,
+ *  so the correct answer isn't always in the same slot. */
+function shuffleQuestionOptions(q) {
+  const correctText = q.options[q.correctIndex];
+  const options = shuffled(q.options);
+  return { ...q, options, correctIndex: options.indexOf(correctText) };
+}
+
+function buildTodaysQuiz(occasions, portion, mitzvah) {
+  const pool = [];
+  occasions.forEach(o => {
+    if (QUIZ_BANK[o.id]) pool.push({ ...QUIZ_BANK[o.id], topic: o.title });
+  });
+  const torahQ = buildTorahQuizQuestion(portion);
+  if (torahQ) pool.push({ ...torahQ, topic: "This Week's Torah Portion" });
+  const mitzvahQ = buildMitzvahQuizQuestion(mitzvah, anytimeMitzvot());
+  if (mitzvahQ) pool.push({ ...mitzvahQ, topic: "Today's Mitzvah" });
+
+  return shuffled(pool).slice(0, 4).map(shuffleQuestionOptions);
+}
+
+function renderQuizCard(container, occasions, portion, mitzvah) {
+  container.innerHTML = "";
+  const questions = buildTodaysQuiz(occasions, portion, mitzvah);
+  if (!questions.length) return;
+
+  const card = el("article", "occasion-card quiz-card");
+
+  const headRow = el("div", "card-head");
+  headRow.appendChild(iconBadge("trophy", "icon-badge--gold"));
+  const titleWrap = el("div");
+  titleWrap.appendChild(el("h3", null, "Test Yourself"));
+  titleWrap.appendChild(el("p", "torah-meta", `${questions.length} quick question${questions.length === 1 ? "" : "s"} on what's above`));
+  headRow.appendChild(titleWrap);
+  card.appendChild(headRow);
+
+  card.appendChild(el("p", "intro", "See what stuck — no pressure, just for fun."));
+
+  let answered = 0;
+  let score = 0;
+
+  const resultBanner = el("div", "quiz-result");
+  resultBanner.hidden = true;
+
+  function showResult() {
+    const pct = score / questions.length;
+    let message;
+    if (pct === 1) message = "Perfect score! You clearly know your stuff today.";
+    else if (pct >= 0.75) message = "Great job — you've nearly got today locked in.";
+    else if (pct >= 0.5) message = "Solid! A couple worth a second look.";
+    else message = "A good first pass — scroll back up and try again anytime.";
+
+    resultBanner.innerHTML = "";
+    resultBanner.appendChild(el("span", "quiz-score", `${score} / ${questions.length}`));
+    resultBanner.appendChild(el("span", null, message));
+    const retryBtn = el("button", "quiz-retry", "Shuffle & Try Again");
+    retryBtn.type = "button";
+    retryBtn.addEventListener("click", () => renderQuizCard(container, occasions, portion, mitzvah));
+    resultBanner.appendChild(retryBtn);
+    resultBanner.hidden = false;
+  }
+
+  const listEl = el("div", "quiz-list");
+  questions.forEach((q, qi) => {
+    const qBlock = el("div", "quiz-question");
+    if (q.topic) qBlock.appendChild(el("span", "quiz-topic", q.topic));
+    qBlock.appendChild(el("p", "quiz-question-text", q.question));
+
+    const optionsEl = el("div", "quiz-options");
+    q.options.forEach((opt, oi) => {
+      const btn = el("button", "quiz-option", opt);
+      btn.type = "button";
+      btn.addEventListener("click", () => {
+        if (qBlock.classList.contains("answered")) return;
+        qBlock.classList.add("answered");
+        answered++;
+        const correct = oi === q.correctIndex;
+        if (correct) score++;
+        btn.classList.add(correct ? "quiz-option--correct" : "quiz-option--wrong");
+        if (!correct) {
+          optionsEl.children[q.correctIndex].classList.add("quiz-option--correct");
+        }
+        Array.from(optionsEl.children).forEach(b => b.disabled = true);
+        if (answered === questions.length) showResult();
+      });
+      optionsEl.appendChild(btn);
+    });
+
+    qBlock.appendChild(optionsEl);
+    listEl.appendChild(qBlock);
+  });
+  card.appendChild(listEl);
+  card.appendChild(resultBanner);
+
+  makeCollapsible(card, 2, false);
+  container.appendChild(card);
+}
+
 function ordinal(n) {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
@@ -761,7 +863,10 @@ async function setViewingDate(date) {
   const portion = await loadTorahPortion(events, date).catch(e => { console.error(e); return null; });
   renderTorahPortion(torahContainer, portion);
 
-  renderDailyMitzvahCard(document.getElementById("daily-mitzvah-container"), getMitzvahForDate(date));
+  const todaysMitzvah = getMitzvahForDate(date);
+  renderDailyMitzvahCard(document.getElementById("daily-mitzvah-container"), todaysMitzvah);
+
+  renderQuizCard(document.getElementById("quiz-container"), occasions, portion, todaysMitzvah);
 
   const prayerContainer = document.getElementById("prayer-container");
   const morningContainer = document.getElementById("morning-mitzvot-container");
