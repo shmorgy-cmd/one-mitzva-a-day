@@ -110,6 +110,39 @@ h1, h2, h3, h4 {
   z-index: 1;
 }
 
+.site-nav {
+  display: flex;
+  gap: 4px;
+  margin-top: 18px;
+  padding-bottom: 2px;
+  overflow-x: auto;
+  position: relative;
+  z-index: 1;
+  scrollbar-width: none;
+}
+
+.site-nav::-webkit-scrollbar { display: none; }
+
+.site-nav a {
+  flex: 0 0 auto;
+  color: #e3e9f7;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.25);
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.site-nav a:hover, .site-nav a:focus-visible {
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.5);
+  color: #fff;
+  outline: none;
+}
+
 .tallit-bar {
   height: 14px;
   background:
@@ -478,18 +511,87 @@ h1, h2, h3, h4 {
   margin: 0;
 }
 
-.mitzvot-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 18px;
-  margin-bottom: 22px;
+.daily-mitzvah-card {
+  border: 1px solid var(--gold-light);
+  background: linear-gradient(180deg, #fdf6e9 0%, var(--paper) 55%);
 }
 
-.mitzvah-card {
-  margin-bottom: 0;
+.daily-mitzvah-card .card-head { align-items: flex-start; }
+
+.mitzvot-card .card-head { align-items: flex-start; }
+
+.mitzvot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.mitzvah-card .card-head { align-items: flex-start; }
+.mitzvah-row {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.mitzvah-row-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--paper);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.18s ease;
+}
+
+.mitzvah-row-head:hover, .mitzvah-row-head:focus-visible {
+  background: #f4f6fc;
+  outline: none;
+}
+
+.icon-badge--sm {
+  width: 36px;
+  height: 36px;
+  padding: 7px;
+  flex: 0 0 auto;
+}
+
+.mitzvah-row-title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mitzvah-row-name {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  color: var(--flag-blue-deep);
+  font-size: 1rem;
+}
+
+.mitzvah-row-subtitle {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.mitzvah-row .card-chevron {
+  font-size: 1rem;
+}
+
+.mitzvah-row.is-open .card-chevron {
+  transform: rotate(180deg);
+}
+
+.mitzvah-row .card-body-inner {
+  padding: 4px 16px 16px 62px;
+}
+
+.mitzvah-row .card-body-inner .intro {
+  font-size: 0.96rem;
+}
 
 /* ---------------------------------------------------------------- */
 /* About / footer                                                     */

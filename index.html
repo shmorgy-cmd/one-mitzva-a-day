@@ -24,13 +24,20 @@
         <span class="brand-name">One Mitzva a Day</span>
       </div>
       <p class="tagline">A daily companion for learning, living, and loving Jewish tradition — one day at a time.</p>
+      <nav class="site-nav" aria-label="Section navigation">
+        <a href="#top">Today</a>
+        <a href="#prep-container">Get Ready</a>
+        <a href="#torah-container">Torah</a>
+        <a href="#mitzvot-section">Mitzvot</a>
+        <a href="#about">About</a>
+      </nav>
     </div>
     <div class="tallit-bar" aria-hidden="true"></div>
   </header>
 
   <main class="wrap">
 
-    <section class="date-banner">
+    <section class="date-banner" id="top">
       <div id="hebrew-date" class="hebrew-date">—</div>
       <div id="gregorian-date" class="gregorian-date">—</div>
     </section>
@@ -47,13 +54,16 @@
 
     <section id="torah-container" aria-label="This week's Torah portion"></section>
 
-    <section class="section-heading">
-      <h2>Everyday Mitzvot</h2>
-      <p>Not tied to any date — the small, daily practices worth knowing and doing.</p>
+    <section id="mitzvot-section" aria-label="Mitzvot">
+      <section class="section-heading">
+        <h2>Mitzvot</h2>
+        <p>The daily and everyday practices — one spotlighted, the rest for you to browse.</p>
+      </section>
+      <section id="daily-mitzvah-container" aria-label="Today's featured mitzvah"></section>
+      <section id="mitzvot-container" aria-label="Everyday mitzvot and blessings"></section>
     </section>
-    <section id="mitzvot-container" aria-label="Everyday mitzvot and blessings"></section>
 
-    <section class="about-card">
+    <section class="about-card" id="about">
       <div class="card-head">
         <div class="icon-badge icon-badge--gold">
           <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">

@@ -521,35 +521,94 @@ function renderPrepCard(container, upcoming, isBrowsingAhead) {
   container.appendChild(card);
 }
 
+function dayOfYear(date) {
+  const start = new Date(date.getFullYear(), 0, 0);
+  return Math.floor((date - start) / 86400000);
+}
+
+/** Deterministic "today's mitzvah" — advances daily, wraps around the list,
+ *  and moves with whatever date is being browsed (true to the site's name). */
+function getMitzvahForDate(date) {
+  return MITZVOT[dayOfYear(date) % MITZVOT.length];
+}
+
+function appendMitzvahDetail(container, m) {
+  container.appendChild(el("p", "intro", m.intro));
+  container.appendChild(el("h4", "section-label", "How It's Done"));
+  const ul = el("ul", "halacha-list");
+  m.steps.forEach(s => ul.appendChild(el("li", null, s)));
+  container.appendChild(ul);
+  container.appendChild(el("h4", "section-label", "For Reflection"));
+  container.appendChild(el("p", "inspiration", m.inspiration));
+}
+
+function renderDailyMitzvahCard(container, mitzvah) {
+  container.innerHTML = "";
+  const card = el("article", "occasion-card daily-mitzvah-card");
+
+  const headRow = el("div", "card-head");
+  headRow.appendChild(iconBadge(mitzvah.icon, "icon-badge--gold"));
+  const titleWrap = el("div");
+  titleWrap.appendChild(el("h3", null, mitzvah.title));
+  titleWrap.appendChild(el("p", "torah-meta", `Today's Mitzvah · ${mitzvah.subtitle}`));
+  headRow.appendChild(titleWrap);
+  card.appendChild(headRow);
+
+  appendMitzvahDetail(card, mitzvah);
+
+  makeCollapsible(card, 1, true);
+  container.appendChild(card);
+}
+
+/** A single row inside the "Everyday Mitzvot" list — its own small, independent
+ *  expand/collapse, lighter-weight than a full card. */
+function renderMitzvahRow(m) {
+  const row = el("div", "mitzvah-row");
+  const head = el("button", "mitzvah-row-head");
+  head.type = "button";
+  head.setAttribute("aria-expanded", "false");
+  head.appendChild(iconBadge(m.icon, "icon-badge--sm"));
+  const titleWrap = el("span", "mitzvah-row-title");
+  titleWrap.appendChild(el("span", "mitzvah-row-name", m.title));
+  titleWrap.appendChild(el("span", "mitzvah-row-subtitle", m.subtitle));
+  head.appendChild(titleWrap);
+  head.appendChild(el("span", "card-chevron", "▾"));
+  row.appendChild(head);
+
+  const body = el("div", "card-body");
+  const inner = el("div", "card-body-inner");
+  appendMitzvahDetail(inner, m);
+  body.appendChild(inner);
+  row.appendChild(body);
+
+  head.addEventListener("click", () => {
+    const open = row.classList.toggle("is-open");
+    head.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+
+  return row;
+}
+
 function renderMitzvotSection(container) {
   container.innerHTML = "";
-  const grid = el("div", "mitzvot-grid");
-  MITZVOT.forEach((m, i) => {
-    const card = el("article", "occasion-card mitzvah-card");
-    card.style.animationDelay = `${i * 50}ms`;
+  const card = el("article", "occasion-card mitzvot-card");
 
-    const headRow = el("div", "card-head");
-    headRow.appendChild(iconBadge(m.icon));
-    const titleWrap = el("div");
-    titleWrap.appendChild(el("h3", null, m.title));
-    titleWrap.appendChild(el("p", "torah-meta", m.subtitle));
-    headRow.appendChild(titleWrap);
-    card.appendChild(headRow);
+  const headRow = el("div", "card-head");
+  headRow.appendChild(iconBadge("coin"));
+  const titleWrap = el("div");
+  titleWrap.appendChild(el("h3", null, "Everyday Mitzvot"));
+  titleWrap.appendChild(el("p", "torah-meta", "A quick reference — not tied to any date"));
+  headRow.appendChild(titleWrap);
+  card.appendChild(headRow);
 
-    card.appendChild(el("p", "intro", m.intro));
+  card.appendChild(el("p", "intro", "The small, daily practices worth knowing: blessings, customs, and habits that come up every day rather than once a year. Tap any one to open it."));
 
-    card.appendChild(el("h4", "section-label", "How It's Done"));
-    const ul = el("ul", "halacha-list");
-    m.steps.forEach(s => ul.appendChild(el("li", null, s)));
-    card.appendChild(ul);
+  const list = el("div", "mitzvot-list");
+  MITZVOT.forEach(m => list.appendChild(renderMitzvahRow(m)));
+  card.appendChild(list);
 
-    card.appendChild(el("h4", "section-label", "For Reflection"));
-    card.appendChild(el("p", "inspiration", m.inspiration));
-
-    makeCollapsible(card, 2, false);
-    grid.appendChild(card);
-  });
-  container.appendChild(grid);
+  makeCollapsible(card, 2, false);
+  container.appendChild(card);
 }
 
 function ordinal(n) {
@@ -664,6 +723,8 @@ async function setViewingDate(date) {
   torahContainer.innerHTML = "";
   const portion = await loadTorahPortion(events, date).catch(e => { console.error(e); return null; });
   renderTorahPortion(torahContainer, portion);
+
+  renderDailyMitzvahCard(document.getElementById("daily-mitzvah-container"), getMitzvahForDate(date));
 
   const prayerContainer = document.getElementById("prayer-container");
   prayerContainer.innerHTML = "";
