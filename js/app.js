@@ -526,10 +526,20 @@ function dayOfYear(date) {
   return Math.floor((date - start) / 86400000);
 }
 
+/** Mitzvot with no `timeGate` apply any time of day — those are the ones eligible
+ *  to be "today's mitzvah" or to appear in the always-visible reference list.
+ *  Time-gated ones (Modeh Ani, morning hand-washing, shoe order) only surface
+ *  during their actual window, so they don't get shown as generically "for today"
+ *  at 8pm. */
+function anytimeMitzvot() {
+  return MITZVOT.filter(m => !m.timeGate);
+}
+
 /** Deterministic "today's mitzvah" — advances daily, wraps around the list,
  *  and moves with whatever date is being browsed (true to the site's name). */
 function getMitzvahForDate(date) {
-  return MITZVOT[dayOfYear(date) % MITZVOT.length];
+  const pool = anytimeMitzvot();
+  return pool[dayOfYear(date) % pool.length];
 }
 
 function appendMitzvahDetail(container, m) {
@@ -604,10 +614,37 @@ function renderMitzvotSection(container) {
   card.appendChild(el("p", "intro", "The small, daily practices worth knowing: blessings, customs, and habits that come up every day rather than once a year. Tap any one to open it."));
 
   const list = el("div", "mitzvot-list");
-  MITZVOT.forEach(m => list.appendChild(renderMitzvahRow(m)));
+  anytimeMitzvot().forEach(m => list.appendChild(renderMitzvahRow(m)));
   card.appendChild(list);
 
   makeCollapsible(card, 2, false);
+  container.appendChild(card);
+}
+
+/** Morning-only practices (Modeh Ani, morning hand-washing, shoe order) — shown
+ *  only while it's actually Shacharit time, right alongside the prayer card. */
+function renderMorningMitzvotCard(container) {
+  container.innerHTML = "";
+  const morningMitzvot = MITZVOT.filter(m => m.timeGate === "morning");
+  if (!morningMitzvot.length) return;
+
+  const card = el("article", "occasion-card mitzvot-card morning-mitzvot-card");
+
+  const headRow = el("div", "card-head");
+  headRow.appendChild(iconBadge("sunrise", "icon-badge--gold"));
+  const titleWrap = el("div");
+  titleWrap.appendChild(el("h3", null, "Morning Practices"));
+  titleWrap.appendChild(el("p", "torah-meta", "Since it's morning right now"));
+  headRow.appendChild(titleWrap);
+  card.appendChild(headRow);
+
+  card.appendChild(el("p", "intro", "A few things meant specifically for the start of the day."));
+
+  const list = el("div", "mitzvot-list");
+  morningMitzvot.forEach(m => list.appendChild(renderMitzvahRow(m)));
+  card.appendChild(list);
+
+  makeCollapsible(card, 2, true);
   container.appendChild(card);
 }
 
@@ -727,10 +764,15 @@ async function setViewingDate(date) {
   renderDailyMitzvahCard(document.getElementById("daily-mitzvah-container"), getMitzvahForDate(date));
 
   const prayerContainer = document.getElementById("prayer-container");
+  const morningContainer = document.getElementById("morning-mitzvot-container");
   prayerContainer.innerHTML = "";
+  morningContainer.innerHTML = "";
   if (daysBetween(realToday, date) === 0) {
     const prayerInfo = await loadPrayerCard(date).catch(e => { console.error(e); return null; });
     renderPrayerCard(prayerContainer, prayerInfo);
+    if (prayerInfo && prayerInfo.key === "shacharit") {
+      renderMorningMitzvotCard(morningContainer);
+    }
   }
 }
 

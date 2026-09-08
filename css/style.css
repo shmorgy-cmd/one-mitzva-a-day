@@ -520,6 +520,11 @@ h1, h2, h3, h4 {
 
 .mitzvot-card .card-head { align-items: flex-start; }
 
+.morning-mitzvot-card {
+  border: 1px solid var(--gold-light);
+  background: linear-gradient(180deg, #fffaf0 0%, var(--paper) 55%);
+}
+
 .mitzvot-list {
   display: flex;
   flex-direction: column;

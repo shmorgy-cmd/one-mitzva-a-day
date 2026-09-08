@@ -9,6 +9,7 @@ const MITZVOT = [
   {
     id: "modeh-ani",
     icon: "sunrise",
+    timeGate: "morning",
     title: "Modeh Ani",
     subtitle: "The first words of the day, said the moment you open your eyes",
     intro: "Before your feet hit the floor, before you've washed up or even fully woken — Modeh Ani is meant to be the very first thing out of your mouth. It doesn't contain God's name, which is exactly why it can be said immediately, even with unwashed hands, before anything else.",
@@ -22,6 +23,7 @@ const MITZVOT = [
   {
     id: "netilat-yadayim",
     icon: "wash-cup",
+    timeGate: "morning",
     title: "Netilat Yadayim (Morning Hand-Washing)",
     subtitle: "Washing away sleep before touching the day",
     intro: "Shortly after waking, hands are ritually washed with a cup — not for hygiene (though it doesn't hurt), but as a formal transition: leaving the unconscious, undefined state of sleep and stepping into a day of intention.",
@@ -35,6 +37,7 @@ const MITZVOT = [
   {
     id: "shoes",
     icon: "shoe",
+    timeGate: "morning",
     title: "Getting Dressed: Right Shoe First, Left Tied First",
     subtitle: "A small, specific order most people never think to ask about",
     intro: "Jewish law actually specifies an order for putting on shoes — a small, easy-to-learn custom that surprises a lot of people the first time they hear it.",
