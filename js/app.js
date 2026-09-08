@@ -521,6 +521,37 @@ function renderPrepCard(container, upcoming, isBrowsingAhead) {
   container.appendChild(card);
 }
 
+function renderMitzvotSection(container) {
+  container.innerHTML = "";
+  const grid = el("div", "mitzvot-grid");
+  MITZVOT.forEach((m, i) => {
+    const card = el("article", "occasion-card mitzvah-card");
+    card.style.animationDelay = `${i * 50}ms`;
+
+    const headRow = el("div", "card-head");
+    headRow.appendChild(iconBadge(m.icon));
+    const titleWrap = el("div");
+    titleWrap.appendChild(el("h3", null, m.title));
+    titleWrap.appendChild(el("p", "torah-meta", m.subtitle));
+    headRow.appendChild(titleWrap);
+    card.appendChild(headRow);
+
+    card.appendChild(el("p", "intro", m.intro));
+
+    card.appendChild(el("h4", "section-label", "How It's Done"));
+    const ul = el("ul", "halacha-list");
+    m.steps.forEach(s => ul.appendChild(el("li", null, s)));
+    card.appendChild(ul);
+
+    card.appendChild(el("h4", "section-label", "For Reflection"));
+    card.appendChild(el("p", "inspiration", m.inspiration));
+
+    makeCollapsible(card, 2, false);
+    grid.appendChild(card);
+  });
+  container.appendChild(grid);
+}
+
 function ordinal(n) {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
@@ -684,6 +715,8 @@ async function init() {
 
   const aboutCard = document.querySelector(".about-card");
   if (aboutCard) makeCollapsible(aboutCard, 1, false);
+
+  renderMitzvotSection(document.getElementById("mitzvot-container"));
 
   try {
     const [events, hebrewDateInfo] = await Promise.all([

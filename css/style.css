@@ -457,6 +457,41 @@ h1, h2, h3, h4 {
 }
 
 /* ---------------------------------------------------------------- */
+/* Section heading / Everyday Mitzvot grid                            */
+/* ---------------------------------------------------------------- */
+
+.section-heading {
+  margin: 40px 0 18px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+
+.section-heading h2 {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+
+.section-heading p {
+  color: var(--ink-soft);
+  font-size: 0.94rem;
+  margin: 0;
+}
+
+.mitzvot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.mitzvah-card {
+  margin-bottom: 0;
+}
+
+.mitzvah-card .card-head { align-items: flex-start; }
+
+/* ---------------------------------------------------------------- */
 /* About / footer                                                     */
 /* ---------------------------------------------------------------- */
 

@@ -178,6 +178,62 @@ const ICONS = {
     </g>
   `),
 
+  "wash-cup": svg(`
+    <path d="M20 20 L44 20 L40 38 Q32 42 24 38 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M24 20 L20 14 M40 20 L44 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M28 44 C28 48 28 50 26 52 M36 44 C36 48 36 50 38 52" class="accent-gold" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  `),
+
+  shoe: svg(`
+    <path d="M10 46 H50 Q54 46 54 42 Q54 38 48 36 L40 30 Q34 24 26 24 L20 24 Q16 24 16 30 V40 L10 42 Q8 43 8 44 Q8 46 10 46 Z"
+      fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M22 28 L26 33 M28 26 L32 32" class="accent-gold" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  `),
+
+  bread: svg(`
+    <path d="M12 34 C12 22 22 16 32 16 C42 16 52 22 52 34 C52 42 44 46 32 46 C20 46 12 42 12 34 Z"
+      fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M22 22 L26 30 M32 20 L34 30 M42 22 L38 30" class="accent-gold" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  `),
+
+  droplet: svg(`
+    <path d="M32 12 C40 24 46 32 46 40 C46 48.8 39.7 54 32 54 C24.3 54 18 48.8 18 40 C18 32 24 24 32 12 Z"
+      fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+    <circle class="accent-gold" cx="26" cy="42" r="2" fill="currentColor"/>
+  `),
+
+  goblet: svg(`
+    <path d="M20 14 H44 L40 30 Q32 34 24 30 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M32 34 V46 M22 50 H42" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M26 50 L32 46 L38 50" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" class="accent-gold"/>
+  `),
+
+  mezuzah: svg(`
+    <line x1="12" y1="8" x2="12" y2="56" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M18 22 L40 18 Q46 17 46 23 Q46 29 40 30 L18 34 Q14 34 14 28 Q14 23 18 22 Z"
+      fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle class="accent-gold" cx="22" cy="27" r="1.4" fill="currentColor"/>
+  `),
+
+  tzitzit: svg(`
+    <path d="M18 30 H46" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M20 10 V30 M28 10 V30 M36 10 V30 M44 10 V30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M20 34 V54 M24 34 V50 M28 34 V54 M32 34 V48 M36 34 V54 M40 34 V50 M44 34 V54"
+      class="accent-gold" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  `),
+
+  coin: svg(`
+    <circle cx="32" cy="32" r="18" fill="none" stroke="currentColor" stroke-width="2.6"/>
+    <path d="M32 22 V42 M26 26 Q26 22 32 22 Q38 22 38 26 Q38 30 32 30 Q26 30 26 34 Q26 38 32 38 Q38 38 38 34"
+      class="accent-gold" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+  `),
+
+  hand: svg(`
+    <path d="M32 54 C20 54 16 46 16 38 V20 Q16 16 20 16 Q24 16 24 20 V30 M24 20 V14 Q24 10 28 10 Q32 10 32 14 V30
+      M32 14 V12 Q32 8 36 8 Q40 8 40 12 V30 M40 20 Q40 16 44 16 Q48 16 48 20 V38 C48 46 44 54 32 54 Z"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  `),
+
   // --- Torah-book icons (for the weekly-portion card) ---
   "book-genesis": svg(`
     <path d="M20 34 C18 26 22 20 30 20 C29 24 30 28 33 30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
