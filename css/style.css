@@ -1,0 +1,255 @@
+:root {
+  --navy: #1b2a4a;
+  --navy-deep: #101a30;
+  --gold: #b98a2f;
+  --gold-light: #d9b25c;
+  --cream: #faf6ee;
+  --paper: #fffdf8;
+  --ink: #24262b;
+  --ink-soft: #55575e;
+  --line: #e7dfcd;
+  --shadow: 0 6px 24px rgba(27, 42, 74, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: "Source Sans 3", -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Fraunces", Georgia, serif;
+  color: var(--navy);
+  margin: 0 0 0.5em;
+}
+
+.wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header */
+.site-header {
+  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%);
+  color: var(--cream);
+  padding: 40px 0 34px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  font-size: 1.6rem;
+  color: var(--gold-light);
+}
+
+.brand-name {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: 0.01em;
+}
+
+.tagline {
+  margin: 10px 0 0;
+  color: #cfd6e6;
+  font-size: 1.02rem;
+  max-width: 46ch;
+}
+
+/* Date banner */
+.date-banner {
+  margin: 28px 0 20px;
+  padding: 22px 26px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--gold);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.hebrew-date {
+  font-family: "Frank Ruhl Libre", "Fraunces", serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.gregorian-date {
+  color: var(--ink-soft);
+  margin-top: 2px;
+  font-size: 0.98rem;
+}
+
+/* Countdown strip */
+.countdown-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 4px 2px 18px;
+  margin-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.countdown-chip {
+  flex: 0 0 auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 14px;
+  min-width: 108px;
+  text-align: center;
+}
+
+.countdown-days {
+  display: block;
+  font-family: "Fraunces", serif;
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 1.05rem;
+}
+
+.countdown-title {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* Occasion / Torah cards */
+.occasion-card, .torah-card, .about-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 28px 30px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow);
+}
+
+.occasion-card h3, .torah-card h3 {
+  font-size: 1.5rem;
+  border-bottom: 2px solid var(--gold-light);
+  padding-bottom: 10px;
+}
+
+.section-label {
+  font-family: "Source Sans 3", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  color: var(--gold);
+  font-weight: 600;
+  margin: 22px 0 8px;
+}
+
+.intro {
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.halacha-list, .customs-list {
+  margin: 0;
+  padding-left: 1.3em;
+}
+
+.halacha-list li, .customs-list li {
+  margin-bottom: 8px;
+}
+
+.inspiration {
+  font-family: "Frank Ruhl Libre", serif;
+  font-style: italic;
+  font-size: 1.08rem;
+  color: var(--navy);
+  background: #f4efe1;
+  border-left: 3px solid var(--gold);
+  padding: 14px 18px;
+  border-radius: 4px;
+}
+
+.tavshilin-banner {
+  background: #fff3e0;
+  border: 1px solid #e6c88a;
+  color: #7a5209;
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+/* Torah card specifics */
+.torah-meta {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  margin-top: -6px;
+  margin-bottom: 16px;
+}
+
+.torah-text {
+  font-size: 1.02rem;
+  background: #f9f6ee;
+  padding: 16px 18px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+
+.torah-link {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--navy);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid var(--gold);
+}
+
+.torah-link:hover {
+  color: var(--gold);
+}
+
+/* About */
+.about-card p {
+  color: var(--ink-soft);
+  font-size: 0.96rem;
+}
+
+.about-card h3 {
+  font-size: 1.2rem;
+}
+
+.error {
+  color: #a33;
+  font-weight: 500;
+}
+
+/* Footer */
+.site-footer {
+  margin-top: 30px;
+  padding: 26px 0 50px;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.site-footer a {
+  color: var(--navy);
+}
+
+@media (max-width: 600px) {
+  .occasion-card, .torah-card, .about-card {
+    padding: 22px 18px;
+  }
+  .brand-name { font-size: 1.4rem; }
+  .hebrew-date { font-size: 1.25rem; }
+}
