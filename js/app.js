@@ -166,10 +166,20 @@ function el(tag, cls, text) {
   return e;
 }
 
-function renderOccasionCard(container, occ, ctx) {
+function iconBadge(iconName, extraClass) {
+  const badge = el("div", "icon-badge" + (extraClass ? " " + extraClass : ""));
+  badge.innerHTML = getIcon(iconName);
+  return badge;
+}
+
+function renderOccasionCard(container, occ, ctx, index) {
   const card = el("article", "occasion-card");
-  const h = el("h3", null, occ.title);
-  card.appendChild(h);
+  card.style.animationDelay = `${index * 90}ms`;
+
+  const headRow = el("div", "card-head");
+  headRow.appendChild(iconBadge(occ.icon));
+  headRow.appendChild(el("h3", null, occ.title));
+  card.appendChild(headRow);
 
   const intro = occ.content.intro.replace("{{OMER_DAY}}", ctx.omerDay > 0 ? ctx.omerDay : "");
   card.appendChild(el("p", "intro", intro));
@@ -203,14 +213,18 @@ function renderCountdownStrip(container, ctx) {
     .filter(e => !/^Erev /.test(e.title) && !/^Mevarchim/.test(e.title));
   const seen = new Set();
   const strip = el("div", "countdown-strip");
+  let i = 0;
   for (const e of upcoming) {
     if (seen.has(e.title.replace(/ I{1,2}$/, ""))) continue;
     seen.add(e.title.replace(/ I{1,2}$/, ""));
     const d = daysBetween(ctx.today, e.date);
     const chip = el("div", "countdown-chip");
+    chip.style.animationDelay = `${i * 60}ms`;
+    if (d === 0) chip.classList.add("countdown-chip--today");
     chip.appendChild(el("span", "countdown-days", d === 0 ? "Today" : `${d}d`));
     chip.appendChild(el("span", "countdown-title", e.title));
     strip.appendChild(chip);
+    i++;
     if (strip.children.length >= 6) break;
   }
   container.appendChild(strip);
@@ -224,6 +238,20 @@ function leyningToSefariaPath(str) {
   const [, book, c1, v1, c2, v2] = m;
   const endChapter = c2 || c1;
   return `${book.replace(/ /g, "_")}.${c1}.${v1}-${endChapter}.${v2}`;
+}
+
+const BOOK_ICONS = {
+  Genesis: "book-genesis",
+  Exodus: "book-exodus",
+  Leviticus: "book-leviticus",
+  Numbers: "book-numbers",
+  Deuteronomy: "book-deuteronomy"
+};
+
+function bookIconFromRef(ref) {
+  if (!ref) return "book-star";
+  const book = ref.split(/\s\d/)[0];
+  return BOOK_ICONS[book] || "book-star";
 }
 
 async function loadTorahPortion(events, today) {
@@ -298,8 +326,14 @@ function renderTorahPortion(container, portion) {
     return;
   }
 
+  const book = portion.aliyaRef ? portion.aliyaRef.split(/\s\d/)[0] : null;
+  if (book) card.classList.add("book-" + book);
+
   const dayLabel = DOW_NAMES[new Date().getDay()];
-  card.appendChild(el("h3", null, `Parshat ${portion.parashaName}`));
+  const headRow = el("div", "card-head");
+  headRow.appendChild(iconBadge(bookIconFromRef(portion.aliyaRef), "icon-badge--gold"));
+  headRow.appendChild(el("h3", null, `Parshat ${portion.parashaName}`));
+  card.appendChild(headRow);
   card.appendChild(el("p", "torah-meta", `${portion.hebrewName || ""} · ${portion.carriedOver ? "Most recently read on Shabbat, " : "Read this Shabbat, "}${fmtDate(portion.shabbatDate)}`));
 
   const chitasNote = el("p", "intro");
@@ -310,13 +344,40 @@ function renderTorahPortion(container, portion) {
   }
   card.appendChild(chitasNote);
 
-  if (portion.text) {
-    const eng = flattenSefaria(portion.text.english).map(stripHtml);
-    if (eng.length) {
-      card.appendChild(el("h4", "section-label", "Today's Portion (English)"));
-      const p = el("p", "torah-text");
-      p.textContent = eng.join(" ");
-      card.appendChild(p);
+  const eng = portion.text ? flattenSefaria(portion.text.english).map(stripHtml) : [];
+  const heb = portion.text ? flattenSefaria(portion.text.hebrew).map(stripHtml) : [];
+
+  if (eng.length || heb.length) {
+    const toggleRow = el("div", "lang-toggle");
+    const engBtn = el("button", "lang-btn lang-btn--active", "English");
+    const hebBtn = el("button", "lang-btn", "עברית");
+    engBtn.type = "button";
+    hebBtn.type = "button";
+    toggleRow.appendChild(engBtn);
+    toggleRow.appendChild(hebBtn);
+    card.appendChild(toggleRow);
+
+    const textBox = el("p", "torah-text");
+    textBox.textContent = eng.length ? eng.join(" ") : heb.join(" ");
+    if (!eng.length) textBox.classList.add("torah-text--hebrew");
+    card.appendChild(textBox);
+
+    if (eng.length && heb.length) {
+      engBtn.addEventListener("click", () => {
+        textBox.textContent = eng.join(" ");
+        textBox.classList.remove("torah-text--hebrew");
+        engBtn.classList.add("lang-btn--active");
+        hebBtn.classList.remove("lang-btn--active");
+      });
+      hebBtn.addEventListener("click", () => {
+        textBox.textContent = heb.join(" ");
+        textBox.classList.add("torah-text--hebrew");
+        hebBtn.classList.add("lang-btn--active");
+        engBtn.classList.remove("lang-btn--active");
+      });
+    } else {
+      hebBtn.disabled = !heb.length;
+      engBtn.disabled = !eng.length;
     }
   }
 
@@ -354,7 +415,7 @@ async function init() {
 
     const occContainer = document.getElementById("occasion-container");
     occContainer.innerHTML = "";
-    occasions.forEach(o => renderOccasionCard(occContainer, o, ctx));
+    occasions.forEach((o, i) => renderOccasionCard(occContainer, o, ctx, i));
 
     if (ctx.erevTavshilin && ctx.isToday(ctx.erevTavshilin)) {
       const notice = el("div", "tavshilin-banner");

@@ -28,6 +28,7 @@ const OCCASIONS = [
   // ---------------------------------------------------------------
   {
     id: "elul-general",
+    icon: "shofar",
     title: "Elul — The King Is in the Field",
     priority: 10,
     match: (ctx) => ctx.hebrewMonth === "Elul" && !ctx.isToday(ctx.selichotStart) && ctx.daysUntilRoshHashana > 0,
@@ -47,6 +48,7 @@ const OCCASIONS = [
   },
   {
     id: "selichot-start",
+    icon: "shofar",
     title: "Selichot Begins Tonight",
     priority: 60,
     match: (ctx) => ctx.isToday(ctx.selichotStart),
@@ -65,6 +67,7 @@ const OCCASIONS = [
   },
   {
     id: "erev-rosh-hashana",
+    icon: "apple-honey",
     title: "Erev Rosh Hashanah",
     priority: 80,
     match: (ctx) => ctx.findEvent(e => /^Erev Rosh Hashana/.test(e.title) && ctx.isToday(e.date)),
@@ -86,6 +89,7 @@ const OCCASIONS = [
   },
   {
     id: "rosh-hashana",
+    icon: "apple-honey",
     title: "Rosh Hashanah",
     priority: 100,
     match: (ctx) => ctx.findEvent(e => /^Rosh Hashana( \d{3,4}| II)$/.test(e.title) && ctx.isToday(e.date)),
@@ -108,6 +112,7 @@ const OCCASIONS = [
   },
   {
     id: "tzom-gedaliah",
+    icon: "candle-memorial",
     title: "Tzom Gedaliah (Fast of Gedaliah)",
     priority: 55,
     match: (ctx) => ctx.findEvent(e => /Tzom Gedaliah/.test(e.title) && ctx.isToday(e.date)),
@@ -124,6 +129,7 @@ const OCCASIONS = [
   },
   {
     id: "aseret-yemei-teshuva",
+    icon: "heart",
     title: "The Ten Days of Repentance",
     priority: 20,
     match: (ctx) => ctx.daysUntilYomKippur > 0 && ctx.daysUntilYomKippur <= 9 && ctx.daysSinceRoshHashana >= 0,
@@ -140,6 +146,7 @@ const OCCASIONS = [
   },
   {
     id: "erev-yom-kippur",
+    icon: "gates",
     title: "Erev Yom Kippur",
     priority: 85,
     match: (ctx) => ctx.findEvent(e => /^Erev Yom Kippur$/.test(e.title) && ctx.isToday(e.date)),
@@ -159,6 +166,7 @@ const OCCASIONS = [
   },
   {
     id: "yom-kippur",
+    icon: "gates",
     title: "Yom Kippur",
     priority: 100,
     match: (ctx) => ctx.findEvent(e => /^Yom Kippur$/.test(e.title) && ctx.isToday(e.date)),
@@ -181,6 +189,7 @@ const OCCASIONS = [
   // ---------------------------------------------------------------
   {
     id: "erev-sukkot",
+    icon: "sukkah",
     title: "Erev Sukkot",
     priority: 80,
     match: (ctx) => ctx.findEvent(e => /^Erev Sukkot$/.test(e.title) && ctx.isToday(e.date)),
@@ -197,6 +206,7 @@ const OCCASIONS = [
   },
   {
     id: "sukkot",
+    icon: "sukkah",
     title: "Sukkot",
     priority: 90,
     match: (ctx) => ctx.findEvent(e => /^Sukkot/.test(e.title) && !/Shmini|Simchat/.test(e.title) && ctx.isToday(e.date)),
@@ -214,6 +224,7 @@ const OCCASIONS = [
   },
   {
     id: "hoshana-rabbah",
+    icon: "sukkah",
     title: "Hoshana Rabbah",
     priority: 92,
     match: (ctx) => ctx.findEvent(e => /Hoshana Raba/.test(e.title) && ctx.isToday(e.date)),
@@ -229,6 +240,7 @@ const OCCASIONS = [
   },
   {
     id: "shmini-atzeret",
+    icon: "torah-dance",
     title: "Shmini Atzeret",
     priority: 90,
     match: (ctx) => ctx.findEvent(e => /^Shmini Atzeret/.test(e.title) && ctx.isToday(e.date)),
@@ -245,6 +257,7 @@ const OCCASIONS = [
   },
   {
     id: "simchat-torah",
+    icon: "torah-dance",
     title: "Simchat Torah",
     priority: 95,
     match: (ctx) => ctx.findEvent(e => /Simchat Torah/.test(e.title) && ctx.isToday(e.date)),
@@ -264,6 +277,7 @@ const OCCASIONS = [
   // ---------------------------------------------------------------
   {
     id: "chanukah",
+    icon: "menorah",
     title: "Chanukah",
     priority: 85,
     match: (ctx) => ctx.findEvent(e => /^Chanukah/.test(e.title) && ctx.isToday(e.date)),
@@ -284,6 +298,7 @@ const OCCASIONS = [
   // ---------------------------------------------------------------
   {
     id: "tu-bishvat",
+    icon: "tree",
     title: "Tu BiShvat — The New Year for Trees",
     priority: 60,
     match: (ctx) => ctx.findEvent(e => /Tu BiShvat/.test(e.title) && ctx.isToday(e.date)),
@@ -303,6 +318,7 @@ const OCCASIONS = [
   // ---------------------------------------------------------------
   {
     id: "taanit-esther",
+    icon: "mask",
     title: "Ta'anit Esther (Fast of Esther)",
     priority: 55,
     match: (ctx) => ctx.findEvent(e => /Ta.?anit Esther/.test(e.title) && ctx.isToday(e.date)),
@@ -315,6 +331,7 @@ const OCCASIONS = [
   },
   {
     id: "purim",
+    icon: "mask",
     title: "Purim",
     priority: 95,
     match: (ctx) => ctx.findEvent(e => /^Purim$/.test(e.title) && ctx.isToday(e.date)),
@@ -336,6 +353,7 @@ const OCCASIONS = [
   // ---------------------------------------------------------------
   {
     id: "erev-pesach",
+    icon: "matzah",
     title: "Erev Pesach",
     priority: 80,
     match: (ctx) => ctx.findEvent(e => /^Erev Pesach$/.test(e.title) && ctx.isToday(e.date)),
@@ -353,6 +371,7 @@ const OCCASIONS = [
   },
   {
     id: "pesach-seder-nights",
+    icon: "matzah",
     title: "Pesach — Seder Night",
     priority: 100,
     match: (ctx) => ctx.findEvent(e => /^Pesach I$/.test(e.title) && ctx.isToday(e.date)) || ctx.findEvent(e => /^Pesach II$/.test(e.title) && ctx.isToday(e.date)),
@@ -369,6 +388,7 @@ const OCCASIONS = [
   },
   {
     id: "pesach-chol-hamoed",
+    icon: "matzah",
     title: "Pesach — Chol HaMoed",
     priority: 60,
     match: (ctx) => ctx.findEvent(e => /^Pesach (III|IV|V|VI)(\s|$)/.test(e.title) && ctx.isToday(e.date)),
@@ -385,6 +405,7 @@ const OCCASIONS = [
   },
   {
     id: "pesach-last-days",
+    icon: "matzah",
     title: "Pesach — Final Days",
     priority: 90,
     match: (ctx) => ctx.findEvent(e => /^Pesach (VII|VIII)/.test(e.title) && ctx.isToday(e.date)),
@@ -401,6 +422,7 @@ const OCCASIONS = [
   // ---------------------------------------------------------------
   {
     id: "sefirat-haomer",
+    icon: "wheat",
     title: "Counting the Omer",
     priority: 15,
     match: (ctx) => ctx.omerDay > 0 && ctx.omerDay < 49 && ctx.omerDay !== 33,
@@ -417,6 +439,7 @@ const OCCASIONS = [
   },
   {
     id: "lag-baomer",
+    icon: "wheat",
     title: "Lag BaOmer",
     priority: 65,
     match: (ctx) => ctx.omerDay === 33,
@@ -429,6 +452,7 @@ const OCCASIONS = [
   },
   {
     id: "erev-shavuot",
+    icon: "tablets",
     title: "Erev Shavuot",
     priority: 75,
     match: (ctx) => ctx.findEvent(e => /^Erev Shavuot$/.test(e.title) && ctx.isToday(e.date)),
@@ -441,6 +465,7 @@ const OCCASIONS = [
   },
   {
     id: "shavuot",
+    icon: "tablets",
     title: "Shavuot",
     priority: 95,
     match: (ctx) => ctx.findEvent(e => /^Shavuot/.test(e.title) && ctx.isToday(e.date)),
@@ -461,6 +486,7 @@ const OCCASIONS = [
   // ---------------------------------------------------------------
   {
     id: "shiva-asar-btammuz",
+    icon: "broken-tablets",
     title: "Shivah Asar B'Tammuz (17th of Tammuz)",
     priority: 55,
     match: (ctx) => ctx.findEvent(e => /^Tzom Tammuz$/.test(e.title) && ctx.isToday(e.date)),
@@ -473,6 +499,7 @@ const OCCASIONS = [
   },
   {
     id: "three-weeks",
+    icon: "broken-tablets",
     title: "The Three Weeks",
     priority: 15,
     match: (ctx) => ctx.daysUntilTishaBav > 0 && ctx.daysUntilTishaBav <= 21 && ctx.daysSince17Tammuz >= 0,
@@ -485,6 +512,7 @@ const OCCASIONS = [
   },
   {
     id: "tisha-bav",
+    icon: "broken-tablets",
     title: "Tisha B'Av",
     priority: 90,
     match: (ctx) => ctx.findEvent(e => /^Tish.a B.Av/.test(e.title) && ctx.isToday(e.date)),
@@ -506,6 +534,7 @@ const OCCASIONS = [
   // ---------------------------------------------------------------
   {
     id: "asara-btevet",
+    icon: "candle-memorial",
     title: "Asara B'Tevet (Fast of the 10th of Tevet)",
     priority: 55,
     match: (ctx) => ctx.findEvent(e => /^Asara B.Tevet$/.test(e.title) && ctx.isToday(e.date)),
@@ -518,6 +547,7 @@ const OCCASIONS = [
   },
   {
     id: "pesach-sheni",
+    icon: "matzah",
     title: "Pesach Sheni — The Second Chance",
     priority: 60,
     match: (ctx) => ctx.findEvent(e => /^Pesach Sheni$/.test(e.title) && ctx.isToday(e.date)),
@@ -530,6 +560,7 @@ const OCCASIONS = [
   },
   {
     id: "yom-hashoah",
+    icon: "candle-memorial",
     title: "Yom HaShoah — Holocaust Remembrance Day",
     priority: 75,
     match: (ctx) => ctx.findEvent(e => /^Yom HaShoah/.test(e.title) && ctx.isToday(e.date)),
@@ -542,6 +573,7 @@ const OCCASIONS = [
   },
   {
     id: "yom-hazikaron",
+    icon: "candle-memorial",
     title: "Yom HaZikaron — Israel's Memorial Day",
     priority: 75,
     match: (ctx) => ctx.findEvent(e => /^Yom HaZikaron/.test(e.title) && ctx.isToday(e.date)),
@@ -554,6 +586,7 @@ const OCCASIONS = [
   },
   {
     id: "yom-haatzmaut",
+    icon: "flag-star",
     title: "Yom HaAtzma'ut — Israel's Independence Day",
     priority: 80,
     match: (ctx) => ctx.findEvent(e => /^Yom HaAtzma.ut/.test(e.title) && ctx.isToday(e.date)),
@@ -566,6 +599,7 @@ const OCCASIONS = [
   },
   {
     id: "yom-yerushalayim",
+    icon: "flag-star",
     title: "Yom Yerushalayim — Jerusalem Day",
     priority: 70,
     match: (ctx) => ctx.findEvent(e => /^Yom Yerushalayim$/.test(e.title) && ctx.isToday(e.date)),
@@ -578,6 +612,7 @@ const OCCASIONS = [
   },
   {
     id: "tu-bav",
+    icon: "heart",
     title: "Tu B'Av — The Day of Love",
     priority: 60,
     match: (ctx) => ctx.findEvent(e => /^Tu B.Av$/.test(e.title) && ctx.isToday(e.date)),
@@ -594,6 +629,7 @@ const OCCASIONS = [
   // ---------------------------------------------------------------
   {
     id: "erev-shabbat",
+    icon: "candles-shabbat",
     title: "Erev Shabbat",
     priority: 40,
     match: (ctx) => ctx.dow === 5,
@@ -610,6 +646,7 @@ const OCCASIONS = [
   },
   {
     id: "shabbat",
+    icon: "candles-shabbat",
     title: "Shabbat",
     priority: 45,
     match: (ctx) => ctx.dow === 6,
@@ -626,6 +663,7 @@ const OCCASIONS = [
   },
   {
     id: "rosh-chodesh",
+    icon: "moon",
     title: "Rosh Chodesh — New Month",
     priority: 50,
     match: (ctx) => ctx.findEvent(e => /^Rosh Chodesh/.test(e.title) && ctx.isToday(e.date)),
@@ -638,6 +676,7 @@ const OCCASIONS = [
   },
   {
     id: "generic-weekday",
+    icon: "book-star",
     title: "Today in the Jewish Calendar",
     priority: 1,
     match: () => true,
