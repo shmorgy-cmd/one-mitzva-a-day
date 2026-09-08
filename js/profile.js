@@ -73,7 +73,7 @@ function openOnboarding(onDone) {
 
   function renderStep1() {
     modal.innerHTML = "";
-    modal.appendChild(pel("div", "onboarding-badge", `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><polygon points="32,8 39,24 56,24 42,34 47,52 32,42 17,52 22,34 8,24 25,24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/></svg>`));
+    modal.appendChild(pel("div", "onboarding-badge", getIcon("star")));
     modal.appendChild(pel("h3", "onboarding-title", "Welcome — what brings you here?"));
     modal.appendChild(pel("p", "onboarding-sub", "This just tailors a few notes on the page for you. It stays on this device — nothing is sent anywhere, and you can change it anytime."));
 

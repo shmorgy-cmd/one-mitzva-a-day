@@ -58,9 +58,9 @@ h1, h2, h3, h4 {
 .header-stars {
   position: absolute;
   inset: 0;
-  opacity: 0.14;
+  opacity: 0.13;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'%3E%3Cpolygon points='45,14 51,32 70,32 55,43 61,61 45,50 29,61 35,43 20,32 39,32' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'%3E%3Cpolygon points='45,27 60.59,54 29.41,54' fill='none' stroke='white' stroke-width='1.8'/%3E%3Cpolygon points='45,63 29.41,36 60.59,36' fill='none' stroke='white' stroke-width='1.8'/%3E%3C/svg%3E");
   background-size: 90px 90px;
   animation: driftStars 60s linear infinite;
 }
@@ -111,14 +111,13 @@ h1, h2, h3, h4 {
 }
 
 .tallit-bar {
-  height: 10px;
-  background: repeating-linear-gradient(
-    to right,
-    var(--flag-blue-deep) 0 18px,
-    var(--cream) 18px 26px,
-    var(--flag-blue-deep) 26px 44px,
-    var(--cream) 44px 52px
-  );
+  height: 14px;
+  background:
+    linear-gradient(to bottom, var(--flag-blue-deep) 0 4px, transparent 4px) top,
+    linear-gradient(to bottom, var(--flag-blue-deep) 0 4px, transparent 4px) bottom;
+  background-color: var(--cream);
+  background-size: 100% 4px;
+  background-repeat: no-repeat;
 }
 
 /* ---------------------------------------------------------------- */

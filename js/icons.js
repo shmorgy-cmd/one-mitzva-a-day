@@ -13,16 +13,16 @@ function svg(inner, extra = "") {
 
 const ICONS = {
   star: svg(`
-    <polygon points="32,8 39,24 56,24 42,34 47,52 32,42 17,52 22,34 8,24 25,24"
-      fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    <polygon points="32,10 51.05,43 12.95,43" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    <polygon points="32,54 12.95,21 51.05,21" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
   `),
 
   "flag-star": svg(`
     <rect x="8" y="14" width="48" height="36" rx="2" fill="none" stroke="currentColor" stroke-width="3"/>
     <rect x="8" y="19" width="48" height="5" fill="currentColor"/>
     <rect x="8" y="40" width="48" height="5" fill="currentColor"/>
-    <polygon points="32,27 35,33 42,33 36,37 38,44 32,40 26,44 28,37 22,33 29,33"
-      fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+    <polygon points="32,25 38.93,37 25.07,37" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="32,41 25.07,29 38.93,29" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
   `),
 
   shofar: svg(`
