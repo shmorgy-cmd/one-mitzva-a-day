@@ -183,6 +183,43 @@ function iconBadge(iconName, extraClass) {
   return badge;
 }
 
+/** Turns a fully-built card into a click-to-expand accordion: the first
+ *  `visibleCount` top-level children (typically the header plus a short
+ *  intro) stay visible, everything after is collapsed into `.card-body`
+ *  until the header is clicked (or Enter/Space, for keyboard users). */
+function makeCollapsible(card, visibleCount, startOpen) {
+  const children = Array.from(card.children);
+  const toWrap = children.slice(visibleCount);
+  const headRow = card.querySelector(".card-head");
+  if (!toWrap.length || !headRow) {
+    if (startOpen) card.classList.add("is-open");
+    return;
+  }
+
+  const body = el("div", "card-body");
+  const inner = el("div", "card-body-inner");
+  toWrap.forEach(node => inner.appendChild(node));
+  body.appendChild(inner);
+  card.appendChild(body);
+
+  headRow.classList.add("card-head--toggle");
+  headRow.setAttribute("tabindex", "0");
+  headRow.setAttribute("role", "button");
+  headRow.setAttribute("aria-expanded", startOpen ? "true" : "false");
+  headRow.appendChild(el("span", "card-chevron", "▾"));
+
+  function toggle() {
+    const open = card.classList.toggle("is-open");
+    headRow.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  headRow.addEventListener("click", toggle);
+  headRow.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+  });
+
+  if (startOpen) card.classList.add("is-open");
+}
+
 /** Content fields may be a plain value or a function(ctx) => value, so a handful of
  *  entries (Selichot timing, Elul framing) can adapt to the visitor's profile. */
 function resolve(field, ctx) {
@@ -231,6 +268,7 @@ function renderOccasionCard(container, occ, ctx, index) {
     card.appendChild(el("p", "inspiration", inspiration));
   }
 
+  makeCollapsible(card, 2, index === 0);
   container.appendChild(card);
 }
 
@@ -418,6 +456,7 @@ function renderTorahPortion(container, portion) {
   link.rel = "noopener";
   card.appendChild(link);
 
+  makeCollapsible(card, 3, false);
   container.appendChild(card);
 }
 
@@ -444,6 +483,7 @@ function renderPrayerCard(container, prayerInfo) {
   card.appendChild(el("h4", "section-label", "For Reflection"));
   card.appendChild(el("p", "inspiration", prayer.content.inspiration));
 
+  makeCollapsible(card, 2, false);
   container.appendChild(card);
 }
 
@@ -477,6 +517,7 @@ function renderPrepCard(container, upcoming, isBrowsingAhead) {
   card.appendChild(el("h4", "section-label", "What to Expect"));
   card.appendChild(el("p", "intro", guide.expectNote));
 
+  makeCollapsible(card, 2, false);
   container.appendChild(card);
 }
 
@@ -640,6 +681,9 @@ async function init() {
   document.getElementById("gregorian-date").textContent = fmtDate(realToday);
 
   renderDateNav(document.getElementById("date-nav-container"));
+
+  const aboutCard = document.querySelector(".about-card");
+  if (aboutCard) makeCollapsible(aboutCard, 1, false);
 
   try {
     const [events, hebrewDateInfo] = await Promise.all([

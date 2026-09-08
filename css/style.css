@@ -248,6 +248,55 @@ h1, h2, h3, h4 {
   font-size: 1.5rem;
 }
 
+.card-head > *:not(.icon-badge):not(.card-chevron) {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-head--toggle {
+  cursor: pointer;
+  border-radius: 10px;
+  margin: -8px -10px 14px;
+  padding: 8px 10px 22px;
+  transition: background 0.18s ease;
+}
+
+.card-head--toggle:hover, .card-head--toggle:focus-visible {
+  background: rgba(23, 71, 166, 0.05);
+  outline: none;
+}
+
+.card-chevron {
+  flex: 0 0 auto;
+  color: var(--gold);
+  font-size: 1.2rem;
+  line-height: 1;
+  align-self: center;
+  transition: transform 0.3s ease;
+}
+
+.is-open .card-chevron {
+  transform: rotate(180deg);
+}
+
+.card-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  grid-template-columns: 1fr;
+  opacity: 0;
+  transition: grid-template-rows 0.35s ease, opacity 0.25s ease;
+}
+
+.card-body-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.is-open .card-body {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
 .icon-badge {
   flex: 0 0 auto;
   width: 52px;
