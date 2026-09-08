@@ -33,16 +33,20 @@ const OCCASIONS = [
     priority: 10,
     match: (ctx) => ctx.hebrewMonth === "Elul" && !ctx.isToday(ctx.selichotStart) && ctx.daysUntilRoshHashana > 0,
     content: {
-      intro: "We are in the month of Elul, the run-up to Rosh Hashanah. Tradition compares this month to a king who leaves his palace and walks out among his people in the field — approachable, near, wanting to be found even by those who would never dare visit the throne room.",
-      halacha: [
+      intro: (ctx) => ctx.isSephardi
+        ? "We are in the month of Elul, the run-up to Rosh Hashanah. Tradition compares this month to a king who leaves his palace and walks out among his people in the field — approachable, near, wanting to be found even by those who would never dare visit the throne room. Following Sephardi custom, you've likely already begun Selichot nightly since Rosh Chodesh Elul."
+        : "We are in the month of Elul, the run-up to Rosh Hashanah. Tradition compares this month to a king who leaves his palace and walks out among his people in the field — approachable, near, wanting to be found even by those who would never dare visit the throne room.",
+      halacha: (ctx) => [
         "It is customary to blow the shofar every weekday morning after prayers throughout Elul, as a wake-up call (this stops a day or two before Rosh Hashanah).",
         "Many add Psalm 27 (\"L'David, Hashem Ori\") to the daily prayers, morning and evening, from the start of Elul through Hoshana Rabbah.",
-        "It's customary to review one's deeds, set aside extra time for charity, and — if there is anything unresolved between you and another person — to begin making it right before the Days of Awe arrive."
+        "It's customary to review one's deeds, set aside extra time for charity, and — if there is anything unresolved between you and another person — to begin making it right before the Days of Awe arrive.",
+        ...(ctx.isSephardi ? ["Sephardi custom recites Selichot every night (Sunday–Friday) from Rosh Chodesh Elul through Yom Kippur — a full month-plus of nightly return, rather than the shorter Ashkenazi window."] : [])
       ],
       customs: [
         "Some have the custom of visiting a mikveh (ritual bath) more frequently during Elul as a physical expression of spiritual renewal.",
         "Elul is spelled in Hebrew א-ל-ו-ל, read by tradition as an acronym for \"Ani L'Dodi V'Dodi Li\" — \"I am my Beloved's and my Beloved is mine,\" from Song of Songs. It sets the tone: this season isn't about dread, it's about a relationship being renewed."
       ],
+      beginnerNote: "A 'custom' (minhag) is a practice a community has taken on over time — not always a strict legal requirement (halacha), but still carries real weight in Jewish life. Different communities (Ashkenazi, Sephardi, Chabad, and others) often have their own minhagim side by side, and that's completely normal — there's rarely only one 'correct' way.",
       inspiration: "The work of Elul isn't self-flagellation, it's homecoming. Nothing you've done places you outside the field the King is walking through. Pick one thing — really one — that you'd like to be different by Rosh Hashanah, and start today."
     }
   },
@@ -51,9 +55,9 @@ const OCCASIONS = [
     icon: "shofar",
     title: "Selichot Begins Tonight",
     priority: 60,
-    match: (ctx) => ctx.isToday(ctx.selichotStart),
+    match: (ctx) => ctx.isToday(ctx.selichotStart) && !ctx.isSephardi,
     content: {
-      intro: "Tonight begins Selichot — the special penitential prayers recited in the lead-up to Rosh Hashanah. Ashkenazi custom starts Selichot on the Saturday night (Motzei Shabbat) before Rosh Hashanah, timed so there are at least four days of Selichot before the new year begins; Sephardim begin reciting them from the very start of Elul.",
+      intro: "Tonight begins Selichot — the special penitential prayers recited in the lead-up to Rosh Hashanah. Ashkenazi and Chabad custom starts Selichot on the Saturday night (Motzei Shabbat) before Rosh Hashanah, timed so there are at least four days of Selichot before the new year begins.",
       halacha: [
         "The first night's Selichot service is typically held late at night (often around or after midnight), with a distinct, more elaborate liturgy than the shorter Selichot said on the following mornings before dawn.",
         "Selichot are usually said before the morning prayers each remaining weekday of Elul (and continue through the Ten Days of Repentance, aside from Shabbat).",
@@ -63,6 +67,25 @@ const OCCASIONS = [
         "It's customary to dress a little more formally for the first night of Selichot, and in many communities it doubles as a communal gathering point before the intensity of the coming weeks."
       ],
       inspiration: "Selichot literally means 'forgivenesses.' Notice the plural — it isn't asking for one clean slate, it's opening a conversation that repeats, night after night, because teshuva (return) is a process, not an event. You're allowed to come back more than once."
+    }
+  },
+  {
+    id: "selichot-start-sephardi",
+    icon: "shofar",
+    title: "Selichot Begins Tonight",
+    priority: 60,
+    match: (ctx) => ctx.isToday(ctx.selichotStart) && ctx.isSephardi,
+    content: {
+      intro: "Tonight begins Selichot by Sephardi custom — recited every night from Rosh Chodesh Elul all the way through Yom Kippur (except Shabbat), a full month-plus of nightly return rather than the shorter Ashkenazi window closer to Rosh Hashanah.",
+      halacha: [
+        "Selichot are typically said very early in the morning, before dawn, though some communities hold them at night instead.",
+        "The liturgy includes the Thirteen Attributes of Mercy, confessional prayers, and piyyutim (liturgical poems) that shift as the month progresses toward Rosh Hashanah and then Yom Kippur.",
+        "If you can't make it to a minyan, the private recitation loses some communal elements, but the spirit of the practice — an honest accounting before God — is available to anyone, anywhere."
+      ],
+      customs: [
+        "Because the season is so much longer than the Ashkenazi custom, many treat it as a gentler, more sustainable on-ramp into the Days of Awe rather than a last-minute sprint."
+      ],
+      inspiration: "A full month of nightly Selichot, rather than a compressed week, is its own kind of teaching: real change doesn't usually happen in one dramatic moment — it happens in showing up again and again, even when the novelty has worn off. That consistency is the whole point."
     }
   },
   {
@@ -107,6 +130,7 @@ const OCCASIONS = [
         "Round challah, sometimes with raisins, is eaten instead of the usual braided loaf.",
         "It's customary to greet people with 'Shanah Tovah' (a good year) or the fuller 'Ketivah VaChatimah Tovah' (may you be inscribed and sealed for good)."
       ],
+      beginnerNote: "If you're new to this: you don't need to know the prayers, follow the Hebrew, or do everything listed here to take part. Showing up, listening to the shofar, and sharing a meal is a completely legitimate way to experience the day — the rest can come with time.",
       inspiration: "Rosh Hashanah is judgment, yes — but the Chassidic teaching is that we don't come before the King as a defendant fearing a verdict so much as a citizen renewing an oath of loyalty. The blast of the shofar is wordless because some truths — I want to come back, I want to matter, I want this year to count — are too close to the bone for sentences. Let the sound do the talking today."
     }
   },
@@ -180,6 +204,7 @@ const OCCASIONS = [
         "The fast ends with the blowing of a single, long shofar blast (tekiah gedolah) at the close of Ne'ilah."
       ],
       customs: ["Many spend the entire day in the synagogue if they are able, and it's customary to stand for extended portions of the prayers."],
+      beginnerNote: "Fasting for 25 hours is a serious undertaking, especially the first time. If you're not sure fasting is right for you this year — for health reasons or otherwise — that's a real halachic question, not just a personal preference; ask a rabbi rather than guessing either way.",
       inspiration: "Yom Kippur isn't a court date to dread, it's the one day of the year the Torah describes God as being closest — near enough that tradition says teshuva offered today is accepted before it's even fully spoken. Whatever the year held, you are not disqualified from today. Show up as you are."
     }
   },
@@ -219,6 +244,7 @@ const OCCASIONS = [
         "On the first day(s) — the Yom Tov days — the regular restrictions of a festival apply (similar to Shabbat, with cooking permitted for the day's needs); the intermediate days (Chol HaMoed) have a more relaxed status."
       ],
       customs: ["Ushpizin — a custom of symbolically inviting one of the seven biblical 'guests' (Avraham, Yitzchak, Yaakov, Moshe, Aharon, Yosef, David) into the sukkah each night, and reflecting on the quality each represents."],
+      beginnerNote: "Don't have a sukkah of your own? Most synagogues build a communal one that's open to visitors — eating even one meal in someone else's sukkah, or a community sukkah, counts, and you're welcome there even as a guest.",
       inspiration: "The sukkah's roof has to let the stars in — that's not a design flaw, it's the entire point. Security doesn't come from thicker walls; it comes from knowing Who is actually holding the roof up. Sit in one if you can, even for a few minutes, and notice what it's like to feel sheltered without feeling closed in."
     }
   },
@@ -289,6 +315,7 @@ const OCCASIONS = [
         "Hallel (full) is recited each morning, and a paragraph (Al HaNissim) is added to the daily prayers and Grace After Meals."
       ],
       customs: ["Fried foods (latkes, sufganiyot/donuts) commemorate the oil; dreidel is played, often for gelt (chocolate coins or real small change)."],
+      beginnerNote: "You don't need a special menorah from a Judaica store to start — any safe way of lighting eight distinguishable flames (or an electric menorah where an open flame isn't possible) is a fine way to begin the custom.",
       inspiration: "The military victory made the history books, but the holiday is named for the light, not the war. Judaism, offered a choice of what to memorialize, chose the miracle that was almost too small to notice — one day's oil, stretched to eight. You don't need a dramatic victory to add light to your own life; a small, honest flame, lit consistently, is the whole idea."
     }
   },
@@ -344,6 +371,7 @@ const OCCASIONS = [
         "There is a well-known custom, sourced in the Talmud, of drinking on Purim — though many later authorities significantly limit this to a token amount, and it should never come at the cost of safety, health, or genuinely losing control; ask a rabbi about what's appropriate for you."
       ],
       customs: ["Costumes and dressing up — the hiddenness of the disguise mirrors the hiddenness of God's hand throughout the Purim story."],
+      beginnerNote: "Megillah readings are usually announced well in advance at local synagogues and are typically open to anyone who wants to attend — you don't need to be a member, and it's a genuinely fun, low-pressure way to see a Jewish service for the first time.",
       inspiration: "Purim's whole message is that coincidence, examined closely enough, turns out to be providence wearing a costume. Nothing in the Purim story looks miraculous while it's happening — a beauty pageant, a sleepless king, a forgotten favor. Look for the hidden hand in your own ordinary week; it's there more often than it looks."
     }
   },
@@ -383,6 +411,7 @@ const OCCASIONS = [
         "Chametz is fully avoided for all eight days (seven in Israel); only kosher-for-Pesach food and matzah are eaten."
       ],
       customs: ["Leaning to the left while drinking the four cups and eating matzah, as free people once reclined at meals; a cup for Elijah the Prophet, and in many homes today, a cup for Miriam as well."],
+      beginnerNote: "If you've never been to a Seder before, ask a friend or a local synagogue about attending one — many communities specifically welcome guests and newcomers to their Seder table, and it's one of the easiest, warmest entry points into Jewish practice.",
       inspiration: "The Haggadah insists that in every generation, a person is obligated to see themselves as if they personally left Egypt — not to have merely heard about it. Whatever your personal 'Egypt' is — a narrow place, a habit, a fear, an old story about who you are — tonight's not just history. It's an invitation to leave it."
     }
   },
@@ -477,6 +506,7 @@ const OCCASIONS = [
         "Full Yom Tov restrictions apply, similar to Shabbat."
       ],
       customs: ["Dairy foods are widely eaten on Shavuot (cheesecake is the famous example) — among the reasons offered: before receiving the Torah's laws of kosher slaughter, the Israelites had only dairy available to eat that first day."],
+      beginnerNote: "The Book of Ruth read today is literally the Torah's own story of someone joining the Jewish people by choice, not birth — it's worth reading in full if you're on that path yourself; it's short, and it was placed in the Torah on this exact day for a reason.",
       inspiration: "The Torah wasn't given to Moses alone, or to the scholars alone — the Midrash insists every soul that would ever be Jewish, including converts yet to come, stood at that mountain. If you are exploring Judaism now, in whatever way, tradition holds that Sinai was, in some sense, already for you too. Ruth's story exists in the Torah specifically to say so."
     }
   },
@@ -658,6 +688,7 @@ const OCCASIONS = [
         "Kiddush (sanctifying the day over wine) is recited before the Friday night and Shabbat day meals; Havdalah marks the close of Shabbat Saturday night."
       ],
       customs: ["Many spend extra time in synagogue, in study, in unhurried meals with family and guests, or simply resting — the details vary widely, but the throughline is presence without production."],
+      beginnerNote: "You don't have to observe Shabbat fully, or all at once, to start experiencing it. Many people begin with one piece — a Friday night meal, lighting candles, or simply putting the phone away for a couple of hours — and build from there.",
       inspiration: "For one day a week, you're not asked to build, fix, produce, or optimize anything — including yourself. That's not a loophole in a demanding religion, it's the point of the whole thing. Whatever this week held, Shabbat says it's enough, right now, simply to be."
     }
   },
@@ -687,6 +718,7 @@ const OCCASIONS = [
         "A traditional day includes set times for Torah study, however brief — even a few minutes counts."
       ],
       customs: [],
+      beginnerNote: "There's no prerequisite for starting. A blessing said before a meal, a few minutes reading about the weekly Torah portion, or one act of kindness today is a genuine, complete Jewish practice on its own — you don't need to 'know enough' first.",
       inspiration: "Judaism isn't only built for its dramatic days — Sinai, the Exodus, Yom Kippur. It's built, day to day, on small, repeated, unglamorous acts: a blessing before eating, a few honest minutes of study, a kindness that costs you nothing to give. Today's a perfectly good day for one of those."
     }
   }

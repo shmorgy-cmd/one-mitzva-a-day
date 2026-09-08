@@ -163,6 +163,21 @@ const ICONS = {
       fill="currentColor"/>
   `),
 
+  sunrise: svg(`
+    <circle cx="32" cy="38" r="10" fill="none" stroke="currentColor" stroke-width="2.6"/>
+    <path d="M8 38 H56" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M32 16 V22 M16 24 L20 28 M48 24 L44 28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="accent-gold"/>
+    <path d="M14 46 H50 M18 52 H46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+  `),
+
+  "sun-high": svg(`
+    <circle cx="32" cy="30" r="11" fill="none" stroke="currentColor" stroke-width="2.6"/>
+    <g stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="accent-gold">
+      <path d="M32 10 V15 M32 45 V50 M12 30 H17 M47 30 H52"/>
+      <path d="M17.5 15.5 L21 19 M46.5 15.5 L43 19 M17.5 44.5 L21 41 M46.5 44.5 L43 41"/>
+    </g>
+  `),
+
   // --- Torah-book icons (for the weekly-portion card) ---
   "book-genesis": svg(`
     <path d="M20 34 C18 26 22 20 30 20 C29 24 30 28 33 30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>

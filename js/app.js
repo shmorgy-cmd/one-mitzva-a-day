@@ -73,7 +73,7 @@ async function loadHebrewDate(today) {
   return fetchJSON(url);
 }
 
-function buildContext(today, events, hebrewDateInfo) {
+function buildContext(today, events, hebrewDateInfo, profile) {
   const findEvent = (fn) => events.find(fn);
 
   // Rosh Hashana day 1 is titled "Rosh Hashana <year>" (e.g. "Rosh Hashana 5787"),
@@ -84,8 +84,17 @@ function buildContext(today, events, hebrewDateInfo) {
   const tishaBavEvent = findEvent(e => /^Tish.a B.Av/.test(e.title));
   const t17Event = findEvent(e => /^Tzom Tammuz$/.test(e.title));
 
-  const leilSelichotEvent = findEvent(e => e.title === "Leil Selichot");
-  const selichotStart = leilSelichotEvent ? leilSelichotEvent.date : (rhFirst ? computeSelichotStart(rhFirst.date) : null);
+  // Sephardi custom recites Selichot nightly from Rosh Chodesh Elul; Ashkenazi/Chabad/
+  // Litvish custom starts the Motzei Shabbat closest to Rosh Hashana (at least 4 nights before).
+  const isSephardi = profile && profile.community === "sephardi";
+  let selichotStart = null;
+  if (isSephardi) {
+    const roshChodeshElul = findEvent(e => e.title === "Rosh Chodesh Elul");
+    selichotStart = roshChodeshElul ? roshChodeshElul.date : null;
+  } else {
+    const leilSelichotEvent = findEvent(e => e.title === "Leil Selichot");
+    selichotStart = leilSelichotEvent ? leilSelichotEvent.date : (rhFirst ? computeSelichotStart(rhFirst.date) : null);
+  }
 
   // Erev Tavshilin: check upcoming multi-day Yom Tov starts (RH, Sukkot I, Pesach I, Shavuot I)
   let erevTavshilin = null;
@@ -132,6 +141,8 @@ function buildContext(today, events, hebrewDateInfo) {
     dow: today.getDay(),
     hebrewMonth,
     hebrewToday,
+    profile: profile || { reason: null, community: null },
+    isSephardi,
     selichotStart,
     erevTavshilin,
     daysUntilRoshHashana: rhFirst ? daysBetween(today, rhFirst.date) : 999,
@@ -172,6 +183,12 @@ function iconBadge(iconName, extraClass) {
   return badge;
 }
 
+/** Content fields may be a plain value or a function(ctx) => value, so a handful of
+ *  entries (Selichot timing, Elul framing) can adapt to the visitor's profile. */
+function resolve(field, ctx) {
+  return typeof field === "function" ? field(ctx) : field;
+}
+
 function renderOccasionCard(container, occ, ctx, index) {
   const card = el("article", "occasion-card");
   card.style.animationDelay = `${index * 90}ms`;
@@ -181,26 +198,37 @@ function renderOccasionCard(container, occ, ctx, index) {
   headRow.appendChild(el("h3", null, occ.title));
   card.appendChild(headRow);
 
-  const intro = occ.content.intro.replace("{{OMER_DAY}}", ctx.omerDay > 0 ? ctx.omerDay : "");
+  const intro = resolve(occ.content.intro, ctx).replace("{{OMER_DAY}}", ctx.omerDay > 0 ? ctx.omerDay : "");
   card.appendChild(el("p", "intro", intro));
 
-  if (occ.content.halacha && occ.content.halacha.length) {
+  const halacha = resolve(occ.content.halacha, ctx);
+  if (halacha && halacha.length) {
     card.appendChild(el("h4", "section-label", "Halacha & Practice"));
     const ul = el("ul", "halacha-list");
-    occ.content.halacha.forEach(h => ul.appendChild(el("li", null, h)));
+    halacha.forEach(h => ul.appendChild(el("li", null, h)));
     card.appendChild(ul);
   }
 
-  if (occ.content.customs && occ.content.customs.length) {
+  const customs = resolve(occ.content.customs, ctx);
+  if (customs && customs.length) {
     card.appendChild(el("h4", "section-label", "Customs"));
     const ul = el("ul", "customs-list");
-    occ.content.customs.forEach(c => ul.appendChild(el("li", null, c)));
+    customs.forEach(c => ul.appendChild(el("li", null, c)));
     card.appendChild(ul);
   }
 
-  if (occ.content.inspiration) {
+  const beginnerNote = resolve(occ.content.beginnerNote, ctx);
+  if (beginnerNote && (ctx.profile.reason === "curious" || ctx.profile.reason === "converting")) {
+    const box = el("div", "beginner-note");
+    box.appendChild(el("span", "beginner-note-label", "New to this? "));
+    box.appendChild(el("span", null, beginnerNote));
+    card.appendChild(box);
+  }
+
+  const inspiration = resolve(occ.content.inspiration, ctx);
+  if (inspiration) {
     card.appendChild(el("h4", "section-label", "For Reflection"));
-    card.appendChild(el("p", "inspiration", occ.content.inspiration));
+    card.appendChild(el("p", "inspiration", inspiration));
   }
 
   container.appendChild(card);
@@ -390,14 +418,88 @@ function renderTorahPortion(container, portion) {
   container.appendChild(card);
 }
 
+function renderPrayerCard(container, prayerInfo) {
+  if (!prayerInfo || !prayerInfo.prayer) return;
+  const { prayer, precise } = prayerInfo;
+  const card = el("article", "occasion-card prayer-card");
+
+  const headRow = el("div", "card-head");
+  headRow.appendChild(iconBadge(prayer.icon, "icon-badge--gold"));
+  const titleWrap = el("div");
+  titleWrap.appendChild(el("h3", null, prayer.title));
+  titleWrap.appendChild(el("p", "torah-meta", `Right now (${prayer.window}${precise ? ", based on your location" : ", approximate — set your location for exact times"})`));
+  headRow.appendChild(titleWrap);
+  card.appendChild(headRow);
+
+  card.appendChild(el("p", "intro", prayer.content.intro));
+
+  card.appendChild(el("h4", "section-label", "Halacha & Practice"));
+  const ul = el("ul", "halacha-list");
+  prayer.content.halacha.forEach(h => ul.appendChild(el("li", null, h)));
+  card.appendChild(ul);
+
+  card.appendChild(el("h4", "section-label", "For Reflection"));
+  card.appendChild(el("p", "inspiration", prayer.content.inspiration));
+
+  container.appendChild(card);
+}
+
 function ordinal(n) {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
+function renderProfilePill(profile) {
+  const existing = document.getElementById("profile-pill");
+  if (existing) existing.remove();
+
+  const pill = el("button", "profile-pill");
+  pill.id = "profile-pill";
+  pill.type = "button";
+  const label = profile && profile.reason
+    ? `${reasonLabel(profile.reason)}${profile.community ? " · " + communityLabel(profile.community) : ""}`
+    : "Personalize this page";
+  pill.innerHTML = `${getIcon("book-star")}<span>${label}</span>`;
+  pill.addEventListener("click", () => {
+    openOnboarding((newProfile) => {
+      renderProfilePill(newProfile);
+      renderAll(newProfile);
+    });
+  });
+  document.querySelector(".date-banner").insertAdjacentElement("afterend", pill);
+}
+
+let cachedEvents = null;
+let cachedHebrewDateInfo = null;
+let cachedToday = null;
+
+async function renderAll(profile) {
+  const today = cachedToday;
+  const events = cachedEvents;
+  const hebrewDateInfo = cachedHebrewDateInfo;
+
+  const ctx = buildContext(today, events, hebrewDateInfo, profile);
+  const occasions = pickOccasions(ctx);
+
+  const occContainer = document.getElementById("occasion-container");
+  occContainer.innerHTML = "";
+  occasions.forEach((o, i) => renderOccasionCard(occContainer, o, ctx, i));
+
+  if (ctx.erevTavshilin && ctx.isToday(ctx.erevTavshilin)) {
+    const notice = el("div", "tavshilin-banner");
+    notice.textContent = "Reminder: prepare Eruv Tavshilin before the holiday begins tonight, since this Yom Tov runs directly into Shabbat.";
+    occContainer.prepend(notice);
+  }
+
+  const countdownContainer = document.getElementById("countdown-container");
+  countdownContainer.innerHTML = "";
+  renderCountdownStrip(countdownContainer, ctx);
+}
+
 async function init() {
   const today = startOfDay(new Date());
+  cachedToday = today;
   document.getElementById("gregorian-date").textContent = fmtDate(today);
 
   try {
@@ -405,27 +507,28 @@ async function init() {
       loadCalendarWindow(today),
       loadHebrewDate(today).catch(() => null)
     ]);
+    cachedEvents = events;
+    cachedHebrewDateInfo = hebrewDateInfo;
 
     if (hebrewDateInfo) {
       document.getElementById("hebrew-date").textContent = hebrewDateInfo.hebrew || "";
     }
 
-    const ctx = buildContext(today, events, hebrewDateInfo);
-    const occasions = pickOccasions(ctx);
+    let profile = getProfile();
+    renderProfilePill(profile);
+    await renderAll(profile);
 
-    const occContainer = document.getElementById("occasion-container");
-    occContainer.innerHTML = "";
-    occasions.forEach((o, i) => renderOccasionCard(occContainer, o, ctx, i));
-
-    if (ctx.erevTavshilin && ctx.isToday(ctx.erevTavshilin)) {
-      const notice = el("div", "tavshilin-banner");
-      notice.textContent = "Reminder: prepare Eruv Tavshilin before the holiday begins tonight, since this Yom Tov runs directly into Shabbat.";
-      occContainer.prepend(notice);
+    if (!profile) {
+      openOnboarding((newProfile) => {
+        renderProfilePill(newProfile);
+        renderAll(newProfile);
+      });
     }
 
-    const countdownContainer = document.getElementById("countdown-container");
-    countdownContainer.innerHTML = "";
-    renderCountdownStrip(countdownContainer, ctx);
+    const prayerContainer = document.getElementById("prayer-container");
+    prayerContainer.innerHTML = "";
+    const prayerInfo = await loadPrayerCard(today).catch(e => { console.error(e); return null; });
+    renderPrayerCard(prayerContainer, prayerInfo);
 
     const torahContainer = document.getElementById("torah-container");
     torahContainer.innerHTML = "";
