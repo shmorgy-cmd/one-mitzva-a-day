@@ -447,7 +447,7 @@ function renderPrayerCard(container, prayerInfo) {
   container.appendChild(card);
 }
 
-function renderPrepCard(container, upcoming) {
+function renderPrepCard(container, upcoming, isBrowsingAhead) {
   if (!upcoming) return;
   const { guide, daysUntil, offlineDays } = upcoming;
   const card = el("article", "occasion-card prep-card");
@@ -457,7 +457,8 @@ function renderPrepCard(container, upcoming) {
   const titleWrap = el("div");
   titleWrap.appendChild(el("h3", null, `Getting Ready for ${guide.name}`));
   const dayWord = daysUntil === 0 ? "today" : daysUntil === 1 ? "tomorrow" : `in ${daysUntil} days`;
-  titleWrap.appendChild(el("p", "torah-meta", `Starts ${dayWord} · about ${offlineDays} day${offlineDays === 1 ? "" : "s"} offline once it begins`));
+  const asOf = isBrowsingAhead ? " (as of the day you're viewing)" : "";
+  titleWrap.appendChild(el("p", "torah-meta", `Starts ${dayWord}${asOf} · about ${offlineDays} day${offlineDays === 1 ? "" : "s"} offline once it begins`));
   headRow.appendChild(titleWrap);
   card.appendChild(headRow);
 
@@ -582,6 +583,11 @@ async function setViewingDate(date) {
     occContainer.prepend(notice);
   }
 
+  const prepContainer = document.getElementById("prep-container");
+  prepContainer.innerHTML = "";
+  const upcomingPrep = findUpcomingPrepGuide(events, date);
+  renderPrepCard(prepContainer, upcomingPrep, daysBetween(realToday, date) !== 0);
+
   const torahContainer = document.getElementById("torah-container");
   torahContainer.innerHTML = "";
   const portion = await loadTorahPortion(events, date).catch(e => { console.error(e); return null; });
@@ -661,11 +667,6 @@ async function init() {
     const countdownContainer = document.getElementById("countdown-container");
     countdownContainer.innerHTML = "";
     renderCountdownStrip(countdownContainer, realToday, realTodayEvents, (date) => setViewingDate(date));
-
-    const prepContainer = document.getElementById("prep-container");
-    prepContainer.innerHTML = "";
-    const upcomingPrep = findUpcomingPrepGuide(realTodayEvents, realToday);
-    renderPrepCard(prepContainer, upcomingPrep);
 
   } catch (err) {
     console.error(err);
