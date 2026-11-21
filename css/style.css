@@ -265,6 +265,159 @@ button.ts-row:focus-visible {
 #mitzvot-section,
 #quiz-container { scroll-margin-top: 12px; }
 
+.ts-print-wrap {
+  border-top: 1px solid var(--line);
+  padding: 10px 0 6px;
+}
+
+.ts-print {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--flag-blue-bright);
+  background: var(--paper);
+  color: var(--flag-blue-deep);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ts-print svg { width: 18px; height: 18px; flex: 0 0 auto; }
+
+.ts-print:hover,
+.ts-print:focus-visible {
+  background: #eef2fc;
+  outline: none;
+}
+
+/* ---------------------------------------------------------------- */
+/* Printable Shabbat / Yom Tov sheet                                  */
+/* ---------------------------------------------------------------- */
+
+.print-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: #5b6476;
+  overflow-y: auto;
+  padding: 0 0 32px;
+}
+
+.print-toolbar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--flag-blue-deep);
+  color: #fff;
+}
+
+.print-toolbar-title {
+  flex: 1 1 auto;
+  font-weight: 600;
+  font-size: 0.92rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.print-btn,
+.print-close {
+  padding: 7px 16px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.print-btn { background: #fff; color: var(--flag-blue-deep); border: none; }
+.print-btn:disabled { opacity: 0.5; cursor: default; }
+.print-close { background: none; color: #fff; border: 1px solid rgba(255,255,255,0.6); }
+
+.print-page {
+  max-width: 210mm;
+  margin: 20px auto 0;
+  padding: 14mm;
+  background: #fff;
+  color: #000;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 10.5pt;
+  line-height: 1.38;
+}
+
+.print-page p { margin: 0 0 4px; }
+.print-loading { color: #444; }
+
+.ps-header { border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 8px; }
+.ps-title { font-family: Georgia, serif; color: #000; font-size: 17pt; margin: 0; }
+.ps-sub { font-size: 9.5pt; color: #222; margin: 2px 0 0 !important; }
+
+.ps-section { margin: 0 0 8px; break-inside: avoid; }
+.ps-h {
+  font-family: Georgia, serif;
+  color: #000;
+  font-size: 11.5pt;
+  margin: 8px 0 3px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #999;
+}
+
+.ps-times { border-collapse: collapse; width: 100%; }
+.ps-times td { padding: 1px 6px 1px 0; vertical-align: top; }
+.ps-time { text-align: right; font-weight: 700; white-space: nowrap; }
+
+.ps-strong, .ps-day { font-weight: 700; }
+.ps-day { margin-top: 4px !important; }
+.ps-list { margin: 0 0 2px; padding-left: 18px; }
+.ps-list li { margin: 0; }
+.ps-note { font-size: 9pt; font-style: italic; color: #333; }
+.ps-reflect { font-style: italic; }
+
+.ps-quiz { margin: 0; padding-left: 18px; }
+.ps-quiz li { margin-bottom: 4px; break-inside: avoid; }
+.ps-q { font-weight: 700; }
+.ps-opts { font-size: 9.5pt; }
+
+.ps-key {
+  margin-top: 10px;
+  padding-top: 4px;
+  border-top: 1px dashed #000;
+  font-size: 9pt;
+}
+
+.ps-foot { margin-top: 8px !important; font-size: 8.5pt; color: #333; text-align: center; }
+
+@media (max-width: 600px) {
+  .print-page { margin: 12px 8px 0; padding: 16px; font-size: 10pt; }
+}
+
+@page { margin: 12mm; }
+
+@media print {
+  body.print-mode > *:not(#print-sheet) { display: none !important; }
+  body.print-mode { background: #fff; padding: 0 !important; overflow: visible !important; }
+  body.print-mode .print-sheet {
+    position: static;
+    overflow: visible;
+    background: #fff;
+    padding: 0;
+  }
+  body.print-mode .print-toolbar { display: none; }
+  body.print-mode .print-page {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+}
+
 /* ---------------------------------------------------------------- */
 /* Bottom tab bar (phones)                                            */
 /* ---------------------------------------------------------------- */

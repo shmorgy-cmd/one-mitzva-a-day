@@ -1211,7 +1211,24 @@ function renderTodaySummary({ date, events, occasions, changes, mitzvah }) {
       onClick: () => goToSection("prep-section"), actionLabel: "Open the prep section"
     }));
   }
+
+  // 6. Printable sheet for the next Shabbat / Yom Tov
+  const block = findRestBlock(events, date);
+  if (block) {
+    const holidays = blockHolidayNames(events, block);
+    const name = holidays.length ? holidays.join(" & ") : "Shabbat";
+    const li = el("li", "ts-print-wrap");
+    const btn = el("button", "ts-print");
+    btn.type = "button";
+    btn.innerHTML = PRINTER_SVG;
+    btn.appendChild(el("span", null, `Print for ${name} · ${shortDate(block.days[0])}`));
+    btn.addEventListener("click", () => openPrintPreview(date));
+    li.appendChild(btn);
+    list.appendChild(li);
+  }
 }
+
+const PRINTER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M7 9V3h10v6M7 17H4v-7a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v7h-3M7 14h10v7H7z"/></svg>';
 
 // --- Browsing state -------------------------------------------------
 // `realToday` never changes once the page loads; it's what the countdown
@@ -1401,6 +1418,9 @@ async function init() {
     const countdownContainer = document.getElementById("countdown-container");
     countdownContainer.innerHTML = "";
     renderCountdownStrip(countdownContainer, realToday, realTodayEvents, (date) => setViewingDate(date));
+
+    // A link ending in #print opens the printable Shabbat / Yom Tov sheet directly.
+    if (location.hash === "#print") openPrintPreview(realToday);
 
   } catch (err) {
     console.error(err);
