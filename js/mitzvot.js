@@ -605,5 +605,159 @@ const MITZVOT = [
     ],
     sources: ["Mishnah Peah 1:1", "Pirkei Avot 1:12", "Avot de-Rabbi Natan 12", "Talmud, Yevamot 65b"],
     inspiration: "Hillel said: \"Be like the students of Aaron — love peace and pursue it.\" Pursue is an active word: peace usually doesn't arrive by waiting. Is there a small bridge you could help build today?"
+  },
+
+  // ---------------------------------------------------------------
+  // Batch 4 (Phase 8)
+  // ---------------------------------------------------------------
+  {
+    id: "washing-for-bread",
+    icon: "wash-cup",
+    title: "Washing Before Bread",
+    subtitle: "A ritual hand-washing that turns a meal into something special",
+    intro: "Before eating bread, hands are washed with a cup and a blessing — not for hygiene (hands should already be clean), but as a reminder of the priests who washed before eating holy food in the Temple. It turns an ordinary meal into a small ceremony.",
+    steps: [
+      "Fill a cup, remove rings, and pour water over the right hand, then the left — commonly twice or three times each, depending on custom.",
+      "Say the blessing \"…al netilat yadayim\" and dry your hands.",
+      "Many try not to talk between washing and saying HaMotzi over the bread.",
+      "It's only for a meal with bread; other foods don't need it."
+    ],
+    sources: ["Talmud, Chullin 105a–106a", "Talmud, Berakhot 52b", "Shulchan Aruch, Orach Chaim 158–165"],
+    inspiration: "The Sages said that, since the Temple was destroyed, the family table takes the place of the altar. Washing before bread is a way of treating your own kitchen table as something holy. Even one meal a week like this changes how it feels."
+  },
+  {
+    id: "separating-challah",
+    icon: "bread",
+    title: "Separating Challah",
+    subtitle: "Setting aside a piece of dough when baking bread",
+    intro: "When baking bread from a large enough batch of flour, a small piece of the dough is separated and set aside, recalling the portion once given to the priests. It's traditionally a mitzvah associated with women, and many use the moment for personal prayer — though anyone who bakes can do it.",
+    steps: [
+      "It applies to dough made from wheat, barley, spelt, rye or oats in a large enough quantity — roughly 1.2 kg (about 2.5 lb) of flour or more for the blessing. Rabbis differ on exact amounts.",
+      "Pull off a small piece (about the size of an olive) and say \"…l'hafrish challah.\"",
+      "The piece isn't eaten: it's wrapped and discarded, or burned, according to custom.",
+      "Many gather for \"challah bakes\" before Shabbat — a warm, welcoming way to try it with others."
+    ],
+    sources: ["Numbers 15:17–21", "Mishnah Challah", "Shulchan Aruch, Yoreh De'ah 322–330"],
+    inspiration: "Separating challah says: not everything I make is only for me. Before enjoying the bread, a piece goes back to God. Many women see it as an especially powerful moment to pray for the people they love."
+  },
+  {
+    id: "after-blessings",
+    icon: "goblet",
+    title: "Blessings After Snacks",
+    subtitle: "Al HaMichya and Borei Nefashot — a short thank-you after eating",
+    intro: "Birkat Hamazon is said after a meal with bread. For other foods, there are two short after-blessings: Al HaMichya, after cake, wine or certain fruits of the Land of Israel, and Borei Nefashot, after almost everything else.",
+    steps: [
+      "Al HaMichya: after grain foods (like cake or pasta), wine or grape juice, and grapes, figs, pomegranates, olives or dates.",
+      "Borei Nefashot: after other foods and drinks — vegetables, most fruits, meat, fish, water and more. It's just a few lines.",
+      "They're said after eating at least a small, set amount (about the size of an olive) — and, for drinks, a cheekful. Customs differ on details.",
+      "Many keep a small card with both texts at home or in a bag."
+    ],
+    sources: ["Talmud, Berakhot 37a, 44a–44b", "Shulchan Aruch, Orach Chaim 207–210"],
+    inspiration: "The blessing before food is easy to remember — you're hungry. The blessing after is harder, because you're full and moving on. That's exactly why it matters: gratitude after the need is gone is the more honest kind."
+  },
+  {
+    id: "love-of-the-land",
+    icon: "flag-star",
+    title: "Loving the Land of Israel",
+    subtitle: "A connection that runs through prayer, food and the calendar",
+    intro: "The Land of Israel is woven through Jewish life: prayers face Jerusalem, the holidays follow its harvests, and several mitzvot can only be done there. Whatever someone's politics, a deep connection to the Land is a long-standing part of Jewish identity.",
+    steps: [
+      "Face toward Jerusalem when you pray the Amidah — and toward the Temple Mount if you're in Jerusalem.",
+      "Learn about the Land: its places, its history, and the mitzvot tied to it, like the Shmita (sabbatical) year.",
+      "If you can, visit — many programs welcome people who are learning or converting.",
+      "Many try to buy produce from Israel, especially fruits of the Seven Species around Tu BiShvat."
+    ],
+    sources: ["Genesis 12:1–7", "Deuteronomy 11:10–12", "Talmud, Ketubot 110b–111a", "Ramban on Numbers 33:53"],
+    inspiration: "For two thousand years, Jews ended the Seder and Yom Kippur with \"Next year in Jerusalem\" — long before most could ever go. Love for the Land was kept alive in words first. What's one thing you could learn about it this week?"
+  },
+  {
+    id: "benefit-of-the-doubt",
+    icon: "heart",
+    title: "Giving the Benefit of the Doubt",
+    subtitle: "Dan l'chaf zechut — judging others favorably",
+    intro: "\"Judge every person favorably,\" teaches Pirkei Avot. When someone's actions could be read as either good or bad, Jewish tradition asks us to lean toward the generous reading — especially with people we know to be decent.",
+    steps: [
+      "When someone is late, short with you or doesn't reply, imagine an innocent reason before assuming the worst.",
+      "Check the facts before acting on a bad impression — and ask directly when it matters.",
+      "Judging favorably doesn't mean ignoring real harm or putting yourself at risk; it's about not jumping to conclusions.",
+      "A Talmudic story tells of a worker whose employer seemed to treat him unfairly — he assumed good reasons each time, and was right."
+    ],
+    sources: ["Leviticus 19:15", "Pirkei Avot 1:6", "Talmud, Shabbat 127b"],
+    inspiration: "The Talmud says that whoever judges others favorably will be judged favorably in return. It's a generous way to live — and it usually turns out to be more accurate, too. Who could you give the benefit of the doubt to today?"
+  },
+  {
+    id: "no-grudges",
+    icon: "hand",
+    title: "Not Holding a Grudge",
+    subtitle: "No revenge, no keeping score — \"love your neighbor as yourself\"",
+    intro: "Right before the famous line \"love your neighbor as yourself,\" the Torah forbids taking revenge or bearing a grudge. The Talmud gives a simple example: if someone refused to lend you something, you shouldn't refuse them in return — or even say \"I'll lend it to you, unlike you.\"",
+    steps: [
+      "Don't pay back unkindness with unkindness, even in small ways.",
+      "Notice the subtle version too: helping someone while reminding them of what they did.",
+      "If something is really bothering you, the Torah prefers that you speak to the person directly and respectfully, rather than holding it inside.",
+      "Letting go doesn't mean pretending harm didn't happen — it means not letting it rule your actions."
+    ],
+    sources: ["Leviticus 19:17–18", "Talmud, Yoma 23a", "Rambam, Hilchot De'ot 7:7–8"],
+    inspiration: "Grudges are heavy to carry, and usually heaviest for the person carrying them. The Torah puts this mitzvah right next to loving your neighbor — perhaps because you can't really do one without the other."
+  },
+  {
+    id: "praying-with-a-minyan",
+    icon: "book-star",
+    title: "Praying with a Community",
+    subtitle: "The minyan — prayer is stronger together",
+    intro: "Jewish prayer can be said alone, but tradition gives special weight to praying with a minyan — a group of ten. Certain prayers, like Kaddish, Barchu and the public Torah reading, are only said with a minyan, and the Talmud says communal prayer is especially heard.",
+    steps: [
+      "Find a local synagogue's prayer times — many have weekday morning and evening services, and all have Shabbat services.",
+      "Try to arrive on time, especially for the main parts of the service.",
+      "Who counts toward a minyan differs between communities and movements; ask locally.",
+      "As a newcomer, it's fine to follow along quietly, answer \"amen,\" and ask someone to show you where they are in the siddur."
+    ],
+    sources: ["Talmud, Berakhot 6a, 8a", "Talmud, Megillah 23b", "Shulchan Aruch, Orach Chaim 90"],
+    inspiration: "There's a reason the most powerful prayers need a group. Some things aren't meant to be said alone. Even one visit to a weekday minyan can feel different from praying by yourself."
+  },
+  {
+    id: "jewish-home-first-things",
+    icon: "candles-shabbat",
+    title: "A Jewish Home's First Things",
+    subtitle: "The few items that help a home become a Jewish home",
+    intro: "Many people building a Jewish home start with a small set of items: a siddur, a Chumash, Shabbat candlesticks, a Kiddush cup, a tzedakah box and a mezuzah. They aren't decoration — each one is used for a mitzvah, and having them close at hand makes the mitzvot easier to keep.",
+    steps: [
+      "A siddur (prayer book) and a Chumash with an English translation are the most useful places to start.",
+      "Shabbat candlesticks and a Kiddush cup make Friday night feel like Friday night.",
+      "Tradition says owning and using Jewish books is a modern way of fulfilling the mitzvah of writing a Torah scroll.",
+      "No need to buy everything at once — many people receive these as gifts at meaningful moments."
+    ],
+    sources: ["Deuteronomy 31:19", "Shulchan Aruch, Yoreh De'ah 270:2", "Shulchan Aruch, Orach Chaim 263, 271"],
+    inspiration: "A home becomes Jewish less by how it looks and more by what happens in it. These few objects are invitations to do something. Which one would make the biggest difference in your home this month?"
+  },
+  {
+    id: "blessing-children",
+    icon: "hand",
+    title: "Blessing Your Children",
+    subtitle: "A Friday-night blessing with hands on their heads",
+    intro: "On Friday night, many parents place their hands on their children's heads and bless them, often whispering a personal word too. Boys are blessed to be like Ephraim and Menashe, girls to be like Sarah, Rebecca, Rachel and Leah — followed by the ancient Priestly Blessing.",
+    steps: [
+      "For a son: \"Yesimcha Elohim k'Efraim v'chi-Menashe\" — \"May God make you like Ephraim and Menashe.\"",
+      "For a daughter: \"Yesimech Elohim k'Sarah, Rivka, Rachel v'Leah\" — \"May God make you like Sarah, Rebecca, Rachel and Leah.\"",
+      "Then: \"May God bless you and guard you; may God's face shine on you and be gracious to you; may God turn toward you and give you peace.\"",
+      "Grandparents, teachers and others bless children too — and adults can bless one another."
+    ],
+    sources: ["Genesis 48:20", "Numbers 6:24–26", "Siddur, Friday night table customs"],
+    inspiration: "Once a week, a child hears that someone is praying for them, with hands on their head. Whatever else happened that week, this moment says: you're loved and you're blessed. It's never too late to start."
+  },
+  {
+    id: "gratitude",
+    icon: "sunrise",
+    title: "Gratitude",
+    subtitle: "Hakarat hatov — recognizing the good you've received",
+    intro: "Hakarat hatov means \"recognizing the good.\" The very word for Jew — Yehudi — comes from Judah, whose name means \"I will thank.\" Gratitude runs through Jewish prayer, from Modeh Ani in the morning to Modim in the Amidah, and it extends to people, not only to God.",
+    steps: [
+      "Thank people specifically — not just \"thanks,\" but what they did and why it mattered.",
+      "Remember those who helped you long ago: teachers, mentors, people who were kind at a hard time.",
+      "Rashi notes that Moses didn't strike the Nile himself in the plagues, because the river had once protected him — gratitude even to water.",
+      "Try ending each day by naming three good things that happened."
+    ],
+    sources: ["Genesis 29:35", "Rashi on Exodus 7:19", "Talmud, Berakhot 58a", "Pirkei Avot 4:1"],
+    inspiration: "\"Who is rich?\" asks Pirkei Avot. \"The one who is happy with what they have.\" Gratitude doesn't change what you have — it changes how you see it. What's one thing you've been taking for granted that deserves a thank-you?"
   }
 ];
