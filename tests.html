@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Prayer Changes Tests</title>
+  <style>
+    :root { --ok: #1f7a3a; --bad: #b3261e; --ink: #1c2230; --soft: #545b6b; --line: #dfe3f0; }
+    body { font-family: system-ui, sans-serif; color: var(--ink); background: #f6f7fb; margin: 0; padding: 24px 16px; }
+    main { max-width: 980px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; margin: 0 0 4px; }
+    p.note { color: var(--soft); margin: 0 0 16px; }
+    #summary { font-weight: 700; margin: 12px 0; }
+    table { width: 100%; border-collapse: collapse; background: #fff; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    td.pass { color: var(--ok); font-weight: 700; }
+    td.fail { color: var(--bad); font-weight: 700; }
+    code { font-size: 0.82rem; color: var(--soft); }
+    .wrap { overflow-x: auto; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Prayer changes engine — tests</h1>
+  <p class="note">Runs <code>js/prayer-changes.js</code> against live Hebcal data for known dates. The engine's halachic content still needs review by a rabbi; these tests only check that the rules fire on the right days.</p>
+  <div id="summary">Running…</div>
+  <div class="wrap">
+    <table>
+      <thead><tr><th>Result</th><th>Date</th><th>Case</th><th>Details</th></tr></thead>
+      <tbody id="results"></tbody>
+    </table>
+  </div>
+</main>
+
+<script src="js/prayer-changes.js"></script>
+<script>
+// Each case: date, calendar (israel), optional community, and the item ids that
+// must / must not appear in today / tonight / season.
+const CASES = [
+  { date: "2026-11-24", name: "Ordinary weekday — nothing changes", todayEmpty: true, season: ["vten-beracha", "mashiv-haruach"] },
+  { date: "2026-12-04", name: "Erev Chanukah + first night of V'ten tal umatar (outside Israel, Dec 4)", tonight: ["al-hanissim-tonight", "tal-umatar-start"], season: ["vten-beracha"] },
+  { date: "2026-12-05", name: "First full day of V'ten tal umatar (outside Israel)", season: ["tal-umatar"], notSeason: ["vten-beracha"] },
+  { date: "2026-12-06", name: "Chanukah day", today: ["al-hanissim", "hallel-full", "no-tachanun"] },
+  { date: "2026-12-10", name: "Rosh Chodesh Tevet during Chanukah", today: ["yaaleh-vyavo", "musaf", "hallel-full", "al-hanissim", "no-tachanun"], notToday: ["hallel-half"] },
+  { date: "2026-12-20", name: "Asara B'Tevet (fast day)", today: ["aneinu", "fast-torah", "fast-selichot"] },
+  { date: "2027-02-06", name: "Shabbat before Rosh Chodesh", today: ["shabbat"], tonight: ["yaaleh-tonight", "atah-chonantanu"] },
+  { date: "2027-03-23", name: "Purim", today: ["al-hanissim", "megillah", "no-tachanun", "no-hallel"] },
+  { date: "2027-04-21", name: "Erev Pesach — last day of V'ten tal umatar", today: ["tal-umatar-end", "no-tachanun"], season: ["tal-umatar"] },
+  { date: "2027-04-22", name: "Pesach I — stop Mashiv haruach, full Hallel", today: ["tal", "hallel-full", "yom-tov"], season: ["vten-beracha"] },
+  { date: "2027-04-25", name: "Pesach Chol HaMoed + Omer", today: ["hallel-half", "yaaleh-vyavo", "musaf", "omer-today"], tonight: ["omer-tonight"], season: ["morid-hatal"] },
+  { date: "2027-05-07", name: "Rosh Chodesh Iyyar (Friday) + Omer", today: ["yaaleh-vyavo", "musaf", "hallel-half", "no-tachanun", "omer-today"] },
+  { date: "2027-05-25", name: "Lag BaOmer", today: ["no-tachanun", "omer-today"] },
+  { date: "2027-08-11", name: "Erev Tisha B'Av", tonight: ["eichah"] },
+  { date: "2027-08-12", name: "Tisha B'Av", today: ["aneinu", "fast-torah", "tisha-bav", "no-tachanun"], notToday: ["fast-selichot"] },
+  { date: "2027-09-20", name: "Mid-Elul, Sephardi: Selichot already started", community: "sephardi", today: ["selichot"], season: ["ldavid"] },
+  { date: "2027-09-20", name: "Mid-Elul, Ashkenazi: Selichot not yet", community: "ashkenazi", notToday: ["selichot"], season: ["ldavid"] },
+  { date: "2027-10-03", name: "Rosh Hashanah day 2 (Sunday)", today: ["rosh-hashana", "avinu-malkeinu", "no-hallel"] },
+  { date: "2027-10-06", name: "Ten Days of Repentance weekday", today: ["aseret-changes", "avinu-malkeinu", "selichot"] },
+  { date: "2027-10-23", name: "Shmini Atzeret — start Mashiv haruach", today: ["geshem", "hallel-full", "yom-tov"] },
+  { date: "2026-10-17", name: "Israel: 6 Cheshvan — V'ten tal umatar starts tonight", israel: true, tonight: ["tal-umatar-start"] },
+  { date: "2026-10-18", name: "Israel: 7 Cheshvan — tal umatar in season", israel: true, season: ["tal-umatar"] },
+  { date: "2026-10-18", name: "Outside Israel: 7 Cheshvan — still V'ten beracha", season: ["vten-beracha"] },
+  { date: "2027-12-04", name: "Outside Israel, Dec 4 2027 — no start (Feb 2028 has 29 days)", notTonight: ["tal-umatar-start"], season: ["vten-beracha"] },
+  { date: "2027-12-05", name: "Outside Israel, Dec 5 2027 — starts tonight", tonight: ["tal-umatar-start"] }
+];
+
+function parseLocalDate(str) {
+  const [y, m, d] = str.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+function iso(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+const cache = new Map();
+async function getJSON(url) {
+  if (!cache.has(url)) cache.set(url, fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }));
+  return cache.get(url);
+}
+
+async function loadEvents(date, israel) {
+  const start = iso(pcAddDays(date, -12));
+  const end = iso(pcAddDays(date, 14));
+  const data = await getJSON(`https://www.hebcal.com/hebcal?v=1&cfg=json&start=${start}&end=${end}&maj=on&min=on&mod=on&nx=on&mf=on&ss=on&s=on&o=on&i=${israel ? "on" : "off"}`);
+  return data.items.map(e => ({ ...e, date: parseLocalDate(e.date.slice(0, 10)) }));
+}
+
+async function loadHeb(date) {
+  return getJSON(`https://www.hebcal.com/converter?cfg=json&date=${iso(date)}&g2h=1`);
+}
+
+function check(ids, list, mustHave, label, problems) {
+  (list || []).forEach(id => { if (mustHave !== ids.includes(id)) problems.push(`${label}: ${mustHave ? "missing" : "unexpected"} "${id}"`); });
+}
+
+async function run() {
+  const tbody = document.getElementById("results");
+  let pass = 0, fail = 0;
+  for (const c of CASES) {
+    const tr = document.createElement("tr");
+    const date = parseLocalDate(c.date);
+    const problems = [];
+    let got = "";
+    try {
+      const [events, heb, hebTomorrow] = await Promise.all([loadEvents(date, !!c.israel), loadHeb(date), loadHeb(pcAddDays(date, 1))]);
+      const r = getPrayerChanges({ date, heb, hebTomorrow, israel: !!c.israel, events, community: c.community || null });
+      const t = r.today.map(i => i.id), n = r.tonight.map(i => i.id), s = r.season.map(i => i.id);
+      check(t, c.today, true, "today", problems);
+      check(t, c.notToday, false, "today", problems);
+      check(n, c.tonight, true, "tonight", problems);
+      check(n, c.notTonight, false, "tonight", problems);
+      check(s, c.season, true, "season", problems);
+      check(s, c.notSeason, false, "season", problems);
+      if (c.todayEmpty && t.length) problems.push(`today: expected nothing, got ${t.join(", ")}`);
+      got = `${heb.hd} ${heb.hm} · today [${t.join(", ")}] · tonight [${n.join(", ")}] · season [${s.join(", ")}]`;
+    } catch (e) {
+      problems.push("error: " + e.message);
+    }
+    const ok = !problems.length;
+    ok ? pass++ : fail++;
+    tr.innerHTML = `<td class="${ok ? "pass" : "fail"}">${ok ? "PASS" : "FAIL"}</td><td>${c.date}${c.israel ? " (Israel)" : ""}${c.community ? " · " + c.community : ""}</td><td></td><td><code></code></td>`;
+    tr.children[2].textContent = c.name;
+    tr.children[3].firstChild.textContent = ok ? got : problems.join("; ") + " — got: " + got;
+    tbody.appendChild(tr);
+  }
+  document.getElementById("summary").textContent = `${pass} passed, ${fail} failed (of ${CASES.length})`;
+  document.title = `${fail ? "FAIL" : "PASS"} — Prayer Changes Tests`;
+}
+run();
+</script>
+</body>
+</html>

@@ -986,6 +986,71 @@ async function refreshAll() {
   await setViewingDate(viewingDate);
 }
 
+// --- Prayer changes card ---------------------------------------------
+
+function renderPrayerChangeItem(item, used) {
+  const li = el("li", "pc-item");
+  li.appendChild(el("p", "pc-title", item.title));
+  li.appendChild(richEl("p", "pc-detail", item.detail, currentProfile, used));
+  if (item.where && item.where !== "—") li.appendChild(el("p", "pc-where", `Where: ${item.where}`));
+  prayerCustomsFor(item, currentProfile && currentProfile.community).forEach(c => {
+    const p = el("p", "pc-custom");
+    p.appendChild(el("strong", null, `${c.label}: `));
+    p.appendChild(document.createTextNode(c.text));
+    li.appendChild(p);
+  });
+  return li;
+}
+
+function renderPrayerChangesCard(container, date, heb, hebTomorrow, events) {
+  container.innerHTML = "";
+  if (!heb || !heb.hm) return;
+  const israel = isInIsrael(currentSettings);
+  const changes = getPrayerChanges({
+    date, heb, hebTomorrow, israel, events,
+    community: currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null
+  });
+  const used = new Set();
+
+  const card = el("article", "occasion-card prayer-changes-card");
+  const headRow = el("div", "card-head");
+  headRow.appendChild(iconBadge("book-star", "icon-badge--gold"));
+  const titleWrap = el("div");
+  const isToday = daysBetween(realToday, date) === 0;
+  titleWrap.appendChild(el("h3", null, isToday ? "Prayer changes today" : "Prayer changes this day"));
+  titleWrap.appendChild(el("p", "torah-meta", `${heb.hd} ${heb.hm} ${heb.hy} · ${israel ? "Israel" : "outside Israel"} calendar`));
+  headRow.appendChild(titleWrap);
+  card.appendChild(headRow);
+
+  card.appendChild(el("h4", "section-label", "Shacharit & Mincha"));
+  if (changes.today.length) {
+    const ul = el("ul", "pc-list");
+    changes.today.forEach(i => ul.appendChild(renderPrayerChangeItem(i, used)));
+    card.appendChild(ul);
+  } else {
+    card.appendChild(el("p", "pc-nothing", "Nothing changes today — it's the regular weekday service."));
+  }
+
+  if (changes.tonight.length) {
+    card.appendChild(el("h4", "section-label", "Tonight at Maariv"));
+    const ul = el("ul", "pc-list");
+    changes.tonight.forEach(i => ul.appendChild(renderPrayerChangeItem(i, used)));
+    card.appendChild(ul);
+  }
+
+  if (changes.season.length) {
+    const details = el("details", "pc-season");
+    details.appendChild(el("summary", null, "This season (said every day for now)"));
+    const ul = el("ul", "pc-list");
+    changes.season.forEach(i => ul.appendChild(renderPrayerChangeItem(i, used)));
+    details.appendChild(ul);
+    card.appendChild(details);
+  }
+
+  card.appendChild(el("p", "pc-review", "A learning aid that still needs review by a rabbi. Customs differ between communities — check with your rabbi before relying on it."));
+  container.appendChild(card);
+}
+
 // --- Times card ------------------------------------------------------
 
 function fmtClock(hhmm) {
@@ -1108,6 +1173,8 @@ async function setViewingDate(date) {
   document.getElementById("gregorian-date").textContent = fmtDate(date);
   renderViewingBanner(date);
   renderTimesCard(document.getElementById("times-container"), events, date);
+  const hebTomorrow = await getHebrewDateCached(addDays(date, 1));
+  renderPrayerChangesCard(document.getElementById("prayer-changes-container"), date, hebrewInfo, hebTomorrow, events);
 
   const ctx = buildContext(date, events, hebrewInfo, currentProfile);
   const occasions = pickOccasions(ctx);

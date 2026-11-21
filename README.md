@@ -35,6 +35,10 @@ Add new occasions to the `OCCASIONS` array in [`js/content.js`](js/content.js). 
 
 The Settings panel ([`js/settings.js`](js/settings.js)) stores the visitor's city, Israel/outside-Israel calendar choice and profile in `localStorage` only. The city is passed to every Hebcal call (calendar + Torah readings with `i=on`/`c=on`, and zmanim) for candle-lighting, Havdalah, fast and prayer times. City search uses [Open-Meteo's free geocoder](https://open-meteo.com/en/docs/geocoding-api) because Hebcal's own autocomplete doesn't allow cross-site requests; it returns the same GeoNames ids Hebcal uses.
 
+## Prayer changes engine
+
+[`js/prayer-changes.js`](js/prayer-changes.js) works out what changes in the prayers for a given day (Ya'aleh v'Yavo, Hallel, Tachanun, Al HaNissim, fast-day additions, the Omer, Avinu Malkeinu, Selichot, the Ten Days changes, and the seasonal rain/dew wording) from the Hebrew date, the Israel setting and Hebcal's events. It's a pure function with no page code. Open [`tests.html`](tests.html) on the local server to check it against about 25 known dates (it fetches live Hebcal data). **The halachic content still needs rabbinic review.**
+
 ## Personalization
 
 The welcome box (`js/profile.js`) changes the page through [`js/personalize.js`](js/personalize.js):
