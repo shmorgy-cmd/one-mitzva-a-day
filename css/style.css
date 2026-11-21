@@ -468,6 +468,34 @@ h1, h2, h3, h4 {
   transition: opacity 0.15s ease;
 }
 
+.torah-note-ref {
+  font-size: 0.68em;
+  color: var(--flag-blue-bright);
+  font-weight: 600;
+  margin-left: 1px;
+}
+
+.torah-text--hebrew .torah-note-ref { display: none; }
+
+.torah-notes {
+  margin-top: 10px;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.torah-notes summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--flag-blue-deep);
+}
+
+.torah-notes ol {
+  margin: 8px 0 0;
+  padding-left: 22px;
+}
+
+.torah-notes li { margin-bottom: 4px; }
+
 .torah-text--hebrew {
   font-family: "Frank Ruhl Libre", serif;
   direction: rtl;

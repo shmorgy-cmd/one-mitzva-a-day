@@ -63,7 +63,7 @@ function needsErevTavshilin(yomTovFirstDay) {
 async function loadCalendarWindow(today) {
   const start = toISO(addDays(today, -25));
   const end = toISO(addDays(today, 40));
-  const url = `${HEBCAL_BASE}?v=1&cfg=json&start=${start}&end=${end}&maj=on&min=on&mod=on&nx=on&mf=on&ss=on&s=on&leyning=on`;
+  const url = `${HEBCAL_BASE}?v=1&cfg=json&start=${start}&end=${end}&maj=on&min=on&mod=on&nx=on&mf=on&ss=on&s=on&o=on&leyning=on`;
   const data = await fetchJSON(url);
   return (data.items || []).map(e => ({ ...e, date: startOfDay(parseLocalDate(e.date)) }));
 }
@@ -120,10 +120,10 @@ function buildContext(today, events, hebrewDateInfo, profile) {
     if (diff >= 1 && diff <= 49) omerDay = diff;
   }
   if (omerDay === -1) {
-    // Fallback: derive from a prior-year Pesach if window doesn't include it (rare, near year boundary)
-    const anyOmerEvt = events.find(e => /Omer/.test(e.title || ""));
-    if (anyOmerEvt) {
-      const m = /(\d+)/.exec(anyOmerEvt.title);
+    // Fallback when Pesach is outside the fetched window: use Hebcal's own Omer event for today.
+    const todaysOmer = events.find(e => e.category === "omer" && daysBetween(e.date, today) === 0);
+    if (todaysOmer) {
+      const m = /(\d+)/.exec(todaysOmer.title);
       if (m) omerDay = parseInt(m[1], 10);
     }
   }
@@ -295,30 +295,88 @@ function renderOccasionCard(container, occ, ctx, index) {
   container.appendChild(card);
 }
 
+/** Multi-day observances that Hebcal lists as one event per day. Each pattern maps
+ *  that holiday's daily events onto one group, so the countdown strip shows a
+ *  single card ("Chanukah · in 13 days") instead of one card per candle/day. */
+const MULTI_DAY_GROUPS = [
+  { key: "chanukah", name: "Chanukah", test: e => /^Chanukah\b/.test(e.title) },
+  { key: "pesach", name: "Pesach", test: e => /^Pesach [IVX]+\b/.test(e.title) },
+  { key: "sukkot", name: "Sukkot", test: e => /^Sukkot [IVX]+\b/.test(e.title) },
+  { key: "rosh-hashana", name: "Rosh Hashanah", test: e => /^Rosh Hashana( \d{3,4}| II)$/.test(e.title) },
+  { key: "shavuot", name: "Shavuot", test: e => /^Shavuot( I{1,2})?$/.test(e.title) },
+  { key: "omer", name: "Counting the Omer", test: e => e.category === "omer" }
+];
+
+/** Collapse Hebcal events into one entry per holiday: { name, start, end, days, events }.
+ *  Two-day Rosh Chodesh (same title on consecutive days) collapses the same way. */
+function groupCountdownEvents(events) {
+  const relevant = events
+    .filter(e => e.category === "holiday" || e.category === "roshchodesh" || e.category === "omer")
+    .filter(e => !/^Erev /.test(e.title) && !/^Mevarchim/.test(e.title))
+    .sort((a, b) => a.date - b.date);
+
+  const groups = [];
+  const open = new Map(); // group key -> group still accepting consecutive days
+  for (const e of relevant) {
+    const def = MULTI_DAY_GROUPS.find(g => g.test(e));
+    const key = def ? def.key : e.title;
+    const name = def ? def.name : e.title;
+    const g = open.get(key);
+    // Days of one holiday are consecutive; a gap of more than a day starts a new group
+    // (e.g. next year's Rosh Chodesh with the same name never merges).
+    if (g && daysBetween(g.end, e.date) <= 1) {
+      if (daysBetween(g.end, e.date) === 1) g.days++;
+      g.end = e.date;
+      g.events.push(e);
+    } else {
+      const ng = { key, name, start: e.date, end: e.date, days: 1, events: [e] };
+      groups.push(ng);
+      open.set(key, ng);
+    }
+  }
+  return groups;
+}
+
+function countdownLabel(group, today) {
+  const untilStart = daysBetween(today, group.start);
+  if (untilStart > 1) return `in ${untilStart} days`;
+  if (untilStart === 1) return "tomorrow";
+  const todays = group.events.find(e => daysBetween(e.date, today) === 0);
+  if (group.key === "omer") {
+    const m = todays && /(\d+)/.exec(todays.title);
+    return m ? `day ${m[1]} of 49` : "today";
+  }
+  if (group.key === "chanukah") {
+    // Hebcal titles each day by the candles lit that evening ("Chanukah: 4 Candles"),
+    // plus a final "Chanukah: 8th Day" with no lighting.
+    const m = todays && /(\d+) Candles?/.exec(todays.title);
+    if (m) return m[1] === "1" ? "1st candle tonight" : `${ordinal(Number(m[1]))} candle tonight`;
+    return "last day";
+  }
+  if (group.days === 1) return "today";
+  return `day ${daysBetween(group.start, today) + 1} of ${group.days}`;
+}
+
 function renderCountdownStrip(container, today, events, onSelect) {
-  const upcoming = events
-    .filter(e => e.category === "holiday" || e.category === "roshchodesh")
-    .filter(e => daysBetween(today, e.date) >= 0 && daysBetween(today, e.date) <= 30)
-    .filter(e => !/^Erev /.test(e.title) && !/^Mevarchim/.test(e.title));
-  const seen = new Set();
+  const groups = groupCountdownEvents(events)
+    .filter(g => daysBetween(today, g.end) >= 0 && daysBetween(today, g.start) <= 30);
+
   const strip = el("div", "countdown-strip");
-  let i = 0;
-  for (const e of upcoming) {
-    if (seen.has(e.title.replace(/ I{1,2}$/, ""))) continue;
-    seen.add(e.title.replace(/ I{1,2}$/, ""));
-    const d = daysBetween(today, e.date);
+  groups.slice(0, 6).forEach((g, i) => {
+    const untilStart = daysBetween(today, g.start);
+    const ongoing = untilStart <= 0;
+    const label = countdownLabel(g, today);
     const chip = el("button", "countdown-chip");
     chip.type = "button";
     chip.style.animationDelay = `${i * 60}ms`;
-    if (d === 0) chip.classList.add("countdown-chip--today");
-    chip.appendChild(el("span", "countdown-days", d === 0 ? "Today" : `${d}d`));
-    chip.appendChild(el("span", "countdown-title", e.title));
-    chip.title = `See the details for ${e.title}`;
-    chip.addEventListener("click", () => onSelect(e.date));
+    if (ongoing) chip.classList.add("countdown-chip--today");
+    chip.appendChild(el("span", "countdown-days", ongoing ? (label === "today" ? "Today" : label) : label));
+    chip.appendChild(el("span", "countdown-title", g.name));
+    chip.title = `${g.name} · ${label} — see the details`;
+    chip.setAttribute("aria-label", `${g.name}, ${label}`);
+    chip.addEventListener("click", () => onSelect(ongoing ? today : g.start));
     strip.appendChild(chip);
-    i++;
-    if (strip.children.length >= 6) break;
-  }
+  });
   container.appendChild(strip);
 }
 
@@ -403,10 +461,57 @@ function flattenSefaria(arr) {
   return [arr];
 }
 
+/** Parse untrusted HTML without executing anything (unlike innerHTML on a live
+ *  element, DOMParser never runs scripts or fires onerror handlers). */
+function parseHtml(s) {
+  return new DOMParser().parseFromString(`<body>${s || ""}</body>`, "text/html").body;
+}
+
 function stripHtml(s) {
-  const d = document.createElement("div");
-  d.innerHTML = s;
-  return d.textContent || "";
+  return parseHtml(s).textContent || "";
+}
+
+/** Sefaria verses embed translator footnotes as
+ *  <sup class="footnote-marker">n</sup><i class="footnote">…</i>.
+ *  Returns the verse as plain-text pieces with numbered note references
+ *  ({ ref: N }) in place of each footnote, and pushes the note text into `notes`. */
+function cleanSefariaVerse(html, notes) {
+  const body = parseHtml(html);
+  body.querySelectorAll("i.footnote").forEach(fn => {
+    const term = fn.querySelector("b");
+    const termText = term ? term.textContent.trim() : "";
+    if (term) term.remove();
+    notes.push({ term: termText, text: fn.textContent.replace(/\s+/g, " ").trim() });
+    const marker = document.createElement("sup");
+    marker.setAttribute("data-note", String(notes.length));
+    fn.replaceWith(marker);
+  });
+  body.querySelectorAll("sup.footnote-marker").forEach(s => s.remove());
+
+  const pieces = [];
+  const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.nodeType === Node.TEXT_NODE) pieces.push(node.textContent);
+    else if (node.matches("sup[data-note]")) pieces.push({ ref: Number(node.getAttribute("data-note")) });
+  }
+  return pieces;
+}
+
+/** Fill `box` with cleaned verses; note references become small superscripts. */
+function renderVerses(box, verses) {
+  box.innerHTML = "";
+  verses.forEach((pieces, i) => {
+    if (i > 0) box.appendChild(document.createTextNode(" "));
+    pieces.forEach(p => {
+      if (typeof p === "string") box.appendChild(document.createTextNode(p));
+      else {
+        const sup = el("sup", "torah-note-ref", String(p.ref));
+        sup.title = `Note ${p.ref}`;
+        box.appendChild(sup);
+      }
+    });
+  });
 }
 
 function renderTorahPortion(container, portion) {
@@ -436,8 +541,10 @@ function renderTorahPortion(container, portion) {
   }
   card.appendChild(chitasNote);
 
-  const eng = portion.text ? flattenSefaria(portion.text.english).map(stripHtml) : [];
-  const heb = portion.text ? flattenSefaria(portion.text.hebrew).map(stripHtml) : [];
+  const engNotes = [];
+  const hebNotes = [];
+  const eng = portion.text ? flattenSefaria(portion.text.english).map(v => cleanSefariaVerse(v, engNotes)) : [];
+  const heb = portion.text ? flattenSefaria(portion.text.hebrew).map(v => cleanSefariaVerse(v, hebNotes)) : [];
 
   if (eng.length || heb.length) {
     const toggleRow = el("div", "lang-toggle");
@@ -450,23 +557,39 @@ function renderTorahPortion(container, portion) {
     card.appendChild(toggleRow);
 
     const textBox = el("p", "torah-text");
-    textBox.textContent = eng.length ? eng.join(" ") : heb.join(" ");
-    if (!eng.length) textBox.classList.add("torah-text--hebrew");
     card.appendChild(textBox);
 
+    const notesBox = el("details", "torah-notes");
+    card.appendChild(notesBox);
+
+    function showNotes(notes) {
+      notesBox.innerHTML = "";
+      notesBox.hidden = !notes.length;
+      if (!notes.length) return;
+      notesBox.appendChild(el("summary", null, `Translator's notes (${notes.length})`));
+      const ol = el("ol");
+      notes.forEach(n => {
+        const li = el("li");
+        if (n.term) li.appendChild(el("strong", null, n.term + " "));
+        li.appendChild(document.createTextNode(n.text));
+        ol.appendChild(li);
+      });
+      notesBox.appendChild(ol);
+    }
+
+    function showLang(lang) {
+      const isHeb = lang === "he";
+      renderVerses(textBox, isHeb ? heb : eng);
+      showNotes(isHeb ? hebNotes : engNotes);
+      textBox.classList.toggle("torah-text--hebrew", isHeb);
+      hebBtn.classList.toggle("lang-btn--active", isHeb);
+      engBtn.classList.toggle("lang-btn--active", !isHeb);
+    }
+    showLang(eng.length ? "en" : "he");
+
     if (eng.length && heb.length) {
-      engBtn.addEventListener("click", () => {
-        textBox.textContent = eng.join(" ");
-        textBox.classList.remove("torah-text--hebrew");
-        engBtn.classList.add("lang-btn--active");
-        hebBtn.classList.remove("lang-btn--active");
-      });
-      hebBtn.addEventListener("click", () => {
-        textBox.textContent = heb.join(" ");
-        textBox.classList.add("torah-text--hebrew");
-        hebBtn.classList.add("lang-btn--active");
-        engBtn.classList.remove("lang-btn--active");
-      });
+      engBtn.addEventListener("click", () => showLang("en"));
+      hebBtn.addEventListener("click", () => showLang("he"));
     } else {
       hebBtn.disabled = !heb.length;
       engBtn.disabled = !eng.length;
