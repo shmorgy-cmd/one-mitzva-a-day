@@ -347,6 +347,57 @@ function openSettingsPanel(onDone) {
     changed = true;
   });
 
+  // --- Reminders ----------------------------------------------------------
+  const rSection = sEl("section", "settings-section");
+  rSection.appendChild(sEl("h4", "settings-label", "Reminders"));
+  rSection.appendChild(sEl("p", "settings-help", "These only work while this page (or the installed app) is open."));
+  const rStatus = sEl("p", "settings-status");
+  rStatus.setAttribute("role", "status");
+  settings.reminders = settings.reminders || { candles: false, prep: false };
+
+  function reminderToggle(key, text) {
+    const label = sEl("label", "settings-radio");
+    const box = sEl("input");
+    box.type = "checkbox";
+    box.checked = !!settings.reminders[key];
+    box.addEventListener("change", async () => {
+      settings.reminders[key] = box.checked;
+      saveSettings(settings);
+      changed = true;
+      if (box.checked && "Notification" in window && Notification.permission === "default") {
+        try { await Notification.requestPermission(); } catch (e) { /* ignore */ }
+      }
+      renderReminderStatus();
+    });
+    label.appendChild(box);
+    label.appendChild(sEl("span", null, text));
+    return label;
+  }
+
+  function renderReminderStatus() {
+    const anyOn = settings.reminders.candles || settings.reminders.prep;
+    if (!anyOn) { rStatus.textContent = ""; return; }
+    if (settings.reminders.candles && !settings.location) {
+      rStatus.textContent = "Set your city above so we know when candle lighting is.";
+    } else if (!("Notification" in window)) {
+      rStatus.textContent = "This browser doesn't support notifications — reminders will appear on the page instead.";
+    } else if (Notification.permission === "granted") {
+      rStatus.textContent = "Notifications are on.";
+    } else if (Notification.permission === "denied") {
+      rStatus.textContent = "Notifications are blocked for this site — reminders will appear on the page instead.";
+    } else {
+      rStatus.textContent = "Reminders will appear on the page.";
+    }
+  }
+
+  const rGroup = sEl("div", "settings-radios");
+  rGroup.appendChild(reminderToggle("candles", "Candle lighting — 30 minutes before"));
+  rGroup.appendChild(reminderToggle("prep", "When a holiday prep checklist is ready"));
+  rSection.appendChild(rGroup);
+  rSection.appendChild(rStatus);
+  modal.appendChild(rSection);
+  renderReminderStatus();
+
   // --- Done -------------------------------------------------------------
   const done = sEl("button", "settings-done", "Done");
   done.type = "button";

@@ -71,6 +71,7 @@ async function loadCalendarWindow(today) {
   return (data.items || []).map(e => ({
     ...e,
     time: e.date.length > 10 ? e.date.slice(11, 16) : null,
+    at: e.date.length > 10 ? new Date(e.date) : null, // exact moment, for reminders
     date: startOfDay(parseLocalDate(e.date.slice(0, 10)))
   }));
 }
@@ -980,6 +981,8 @@ async function refreshAll() {
     const countdownContainer = document.getElementById("countdown-container");
     countdownContainer.innerHTML = "";
     renderCountdownStrip(countdownContainer, realToday, realTodayEvents, (date) => setViewingDate(date));
+    scheduleReminders(realTodayEvents);
+    renderInstallHint();
   } catch (e) {
     console.error(e);
   }
@@ -1421,6 +1424,8 @@ async function init() {
 
     // A link ending in #print opens the printable Shabbat / Yom Tov sheet directly.
     if (location.hash === "#print") openPrintPreview(realToday);
+
+    initOffline(realTodayEvents);
 
   } catch (err) {
     console.error(err);

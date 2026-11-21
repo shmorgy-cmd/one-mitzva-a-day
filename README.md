@@ -43,6 +43,12 @@ The Settings panel ([`js/settings.js`](js/settings.js)) stores the visitor's cit
 
 The "Print for…" button in the Today summary ([`js/print.js`](js/print.js)) builds a black-and-white sheet for the next Shabbat or Yom Tov stretch (every day until it ends, from Hebcal's data): times for the saved city, the parsha with Sefaria's summary or the holiday readings, prayer changes per day and night, Kiddush and Havdalah outlines, the week's mitzvah, and the quiz with an answer key. A link ending in `#print` opens it directly.
 
+## Installable app, offline and reminders
+
+- [`manifest.json`](manifest.json) + [`icons/`](icons/) make the site installable ("Add to Home Screen").
+- [`sw.js`](sw.js) is the service worker: app files are saved for offline use; Hebcal/Sefaria data is network-first with a saved fallback. **Bump `CACHE_VERSION` in `sw.js` whenever you change any app file**, so visitors get the new version.
+- [`js/offline.js`](js/offline.js) prefetches the next 14 days of data once a day, shows the offline notice and the install hint (Android prompt / iOS "Share → Add to Home Screen"), and runs the opt-in local reminders from Settings (only while the app is open).
+
 ## Personalization
 
 The welcome box (`js/profile.js`) changes the page through [`js/personalize.js`](js/personalize.js):
