@@ -960,3 +960,19 @@ const MITZVOT = [
     inspiration: "Rabbi Tarfon's teaching — not finishing, but not giving up — is a gentle relief. The world isn't yours to fix alone. It's yours to help, one piece at a time. What's one small repair you could make this week?"
   }
 ];
+
+// Sources for the original ten entries (the newer ones carry `sources` inline).
+const ORIGINAL_MITZVA_SOURCES = {
+  "modeh-ani": ["Seder HaYom (R. Moshe ibn Makhir, 16th c.)", "Mishnah Berurah 1:8"],
+  "netilat-yadayim": ["Talmud, Berakhot 60b", "Shulchan Aruch, Orach Chaim 4"],
+  "shoes": ["Talmud, Shabbat 61a", "Shulchan Aruch, Orach Chaim 2:4"],
+  "food-blessings": ["Mishnah Berakhot 6:1", "Talmud, Berakhot 35a", "Shulchan Aruch, Orach Chaim 202–206"],
+  "asher-yatzar": ["Talmud, Berakhot 60b", "Shulchan Aruch, Orach Chaim 6"],
+  "birkat-hamazon": ["Deuteronomy 8:10", "Talmud, Berakhot 48b", "Shulchan Aruch, Orach Chaim 183–201"],
+  "mezuzah": ["Deuteronomy 6:9, 11:20", "Talmud, Menachot 33a–34a", "Shulchan Aruch, Yoreh De'ah 285–291"],
+  "tzitzit": ["Numbers 15:37–41", "Talmud, Menachot 43b", "Shulchan Aruch, Orach Chaim 8–24"],
+  "tzedakah-daily": ["Deuteronomy 15:7–11", "Talmud, Bava Batra 10a", "Shulchan Aruch, Yoreh De'ah 247–249"],
+  "sacred-texts": ["Talmud, Megillah 26b", "Shulchan Aruch, Yoreh De'ah 282"]
+};
+
+MITZVOT.forEach(m => { if (!m.sources) m.sources = ORIGINAL_MITZVA_SOURCES[m.id] || []; });

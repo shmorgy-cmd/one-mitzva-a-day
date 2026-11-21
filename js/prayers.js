@@ -12,6 +12,7 @@ const PRAYERS = {
     title: "Shacharit — the Morning Prayer",
     icon: "sunrise",
     window: "from dawn until midday",
+    sources: ["Genesis 19:27", "Talmud, Berakhot 26b", "Shulchan Aruch, Orach Chaim 89"],
     content: {
       intro: "It's the morning prayer window right now. Shacharit is the day's first conversation with God — traditionally said standing, facing Jerusalem, opening the day by setting its direction before the day sets yours.",
       halacha: [
@@ -26,6 +27,7 @@ const PRAYERS = {
     title: "Mincha — the Afternoon Prayer",
     icon: "sun-high",
     window: "from early afternoon until sunset",
+    sources: ["Genesis 24:63", "I Kings 18:36", "Talmud, Berakhot 6b, 26b", "Shulchan Aruch, Orach Chaim 232–234"],
     content: {
       intro: "It's Mincha time — the afternoon prayer, tucked into the busiest part of the day on purpose. Of the three daily prayers, the Sages considered Mincha the quiet proof of real commitment: nobody has to remind you God exists at sunrise, when the day is fresh, or after dark, when it's finally still. Stopping in the middle of a workday is different.",
       halacha: [
@@ -40,6 +42,7 @@ const PRAYERS = {
     title: "Maariv (Arvit) — the Evening Prayer",
     icon: "moon",
     window: "from nightfall onward",
+    sources: ["Genesis 28:11", "Talmud, Berakhot 26b–27b", "Shulchan Aruch, Orach Chaim 235–237"],
     content: {
       intro: "It's Maariv time — the evening prayer, said after dark to close the day the way it opened, in conversation. Unlike Shacharit and Mincha, Maariv was originally optional in the Talmud before the Jewish people took it on as an unshakeable communal obligation — it's prayer chosen out of love, not just duty.",
       halacha: [

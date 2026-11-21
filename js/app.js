@@ -236,6 +236,15 @@ function resolve(field, ctx) {
   return typeof field === "function" ? field(ctx) : field;
 }
 
+/** A small "Sources:" line for the bottom of a card (null when there are none). */
+function sourcesEl(sources) {
+  if (!sources || !sources.length) return null;
+  const p = el("p", "card-sources");
+  p.appendChild(el("strong", null, "Sources: "));
+  p.appendChild(document.createTextNode(sources.join("; ")));
+  return p;
+}
+
 /** Like el(), but runs the text through the glossary so curious/converting
  *  visitors get tap-to-explain terms. `used` keeps each term to one link per card. */
 function richEl(tag, cls, text, profile, used) {
@@ -300,6 +309,8 @@ function renderOccasionCard(container, occ, ctx, index) {
     card.appendChild(richEl("p", "inspiration", inspiration, profile, used));
   }
 
+  const occSources = sourcesEl(occ.sources);
+  if (occSources) card.appendChild(occSources);
   card.appendChild(reportLink(`occasion:${occ.id}`));
   makeCollapsible(card, 2, index === 0);
   container.appendChild(card);
@@ -659,6 +670,8 @@ function renderPrayerCard(container, prayerInfo) {
 
   card.appendChild(el("h4", "section-label", "For Reflection"));
   card.appendChild(richEl("p", "inspiration", prayer.content.inspiration, profile, used));
+  const prayerSources = sourcesEl(prayer.sources);
+  if (prayerSources) card.appendChild(prayerSources);
   card.appendChild(reportLink(`prayer:${prayerInfo.key}`));
 
   // Keep the header, the intro and (when shown) the "set your city" link visible.
@@ -749,6 +762,8 @@ function appendMitzvahDetail(container, m) {
   if (takingOnBox) container.appendChild(takingOnBox);
   container.appendChild(el("h4", "section-label", "For Reflection"));
   container.appendChild(richEl("p", "inspiration", m.inspiration, profile, used));
+  const mSources = sourcesEl(m.sources);
+  if (mSources) container.appendChild(mSources);
   container.appendChild(reportLink(`mitzvah:${m.id}`));
 }
 

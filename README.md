@@ -29,7 +29,7 @@ Since it's just static files, you can drop the whole folder onto GitHub Pages, N
 
 ## Extending the content
 
-Add new occasions to the `OCCASIONS` array in [`js/content.js`](js/content.js). Each entry needs a `match(ctx)` function (see the comment at the top of that file for what's available on `ctx`) and a `content` object with `intro`, `halacha`, `customs`, and `inspiration`. Higher `priority` wins when multiple occasions match the same day.
+Add new occasions to the `OCCASIONS` array in [`js/content.js`](js/content.js). Each entry needs a `match(ctx)` function (see the comment at the top of that file for what's available on `ctx`) and a `content` object with `intro`, `halacha`, `customs`, and `inspiration`. Higher `priority` wins when multiple occasions match the same day. Add the occasion's classic sources to `OCCASION_SOURCES` at the bottom of `content.js`; mitzvot carry a `sources` array inline. Sources show at the bottom of every card.
 
 ## Settings and location
 

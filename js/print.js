@@ -226,6 +226,7 @@ async function buildPrintSheet(from) {
   const mz = printSection(`This week's mitzvah: ${mitzvah.title}`);
   mz.appendChild(pEl("p", null, mitzvah.intro));
   mz.appendChild(pEl("p", "ps-reflect", mitzvah.inspiration));
+  if (mitzvah.sources && mitzvah.sources.length) mz.appendChild(pEl("p", "ps-note", `Sources: ${mitzvah.sources.join("; ")}`));
   sheet.appendChild(mz);
 
   // Quiz + answer key

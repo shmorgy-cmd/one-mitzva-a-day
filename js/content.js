@@ -724,3 +724,53 @@ const OCCASIONS = [
     }
   }
 ];
+
+/**
+ * Sources for each occasion — the classic texts behind what each card says
+ * (Torah, Talmud, Shulchan Aruch or another standard reference). Shown at the
+ * bottom of every card. When adding an occasion, add its sources here too.
+ */
+const OCCASION_SOURCES = {
+  "elul-general": ["Song of Songs 6:3", "Shulchan Aruch, Orach Chaim 581 (with Rema)", "Mishnah Berurah 581:2", "Likkutei Torah, Re'eh 32b (\"the King in the field\")"],
+  "selichot-start": ["Exodus 34:6–7", "Shulchan Aruch, Orach Chaim 581:1 (with Rema)"],
+  "selichot-start-sephardi": ["Exodus 34:6–7", "Pirkei de-Rabbi Eliezer 46", "Shulchan Aruch, Orach Chaim 581:1"],
+  "erev-rosh-hashana": ["Talmud, Horayot 12a (simanim)", "Talmud, Nedarim 23b", "Shulchan Aruch, Orach Chaim 581, 583"],
+  "rosh-hashana": ["Leviticus 23:23–25", "Numbers 29:1–6", "Mishnah Rosh Hashanah 1:2", "Talmud, Rosh Hashanah 16a–16b", "Shulchan Aruch, Orach Chaim 583–600"],
+  "tzom-gedaliah": ["Jeremiah 41:1–2", "Zechariah 8:19", "Talmud, Rosh Hashanah 18b", "Shulchan Aruch, Orach Chaim 549"],
+  "aseret-yemei-teshuva": ["Isaiah 55:6", "Talmud, Rosh Hashanah 18a", "Shulchan Aruch, Orach Chaim 602–603"],
+  "erev-yom-kippur": ["Talmud, Berakhot 8b", "Mishnah Yoma 8:9", "Shulchan Aruch, Orach Chaim 604–607"],
+  "yom-kippur": ["Leviticus 16:29–31, 23:26–32", "Mishnah Yoma 8:1", "Shulchan Aruch, Orach Chaim 611–623"],
+  "erev-sukkot": ["Leviticus 23:39–43", "Talmud, Sukkah 2a", "Shulchan Aruch, Orach Chaim 625–643"],
+  "sukkot": ["Leviticus 23:34–43", "Talmud, Sukkah 28b, 37b", "Zohar III, 103b (Ushpizin)", "Shulchan Aruch, Orach Chaim 639, 651"],
+  "hoshana-rabbah": ["Talmud, Sukkah 43b–44a", "Shulchan Aruch, Orach Chaim 664"],
+  "shmini-atzeret": ["Leviticus 23:36", "Numbers 29:35", "Rashi on Leviticus 23:36", "Talmud, Ta'anit 2a", "Shulchan Aruch, Orach Chaim 668"],
+  "simchat-torah": ["Deuteronomy 33–34", "Genesis 1", "Shulchan Aruch, Orach Chaim 669 (with Rema)"],
+  "chanukah": ["Talmud, Shabbat 21b–23a", "I Maccabees 4", "Shulchan Aruch, Orach Chaim 670–684"],
+  "tu-bishvat": ["Mishnah Rosh Hashanah 1:1", "Talmud, Rosh Hashanah 14a", "Pri Etz Hadar (Tu BiShvat seder)"],
+  "taanit-esther": ["Esther 4:16, 9:31", "Shulchan Aruch, Orach Chaim 686", "Rema on Orach Chaim 694:1"],
+  "purim": ["Esther 9:20–28", "Talmud, Megillah 7a–7b", "Shulchan Aruch, Orach Chaim 687–695"],
+  "erev-pesach": ["Exodus 12:15–20", "Mishnah Pesachim 1:1", "Tractate Soferim 21:3", "Shulchan Aruch, Orach Chaim 431–445, 470"],
+  "pesach-seder-nights": ["Exodus 12–13", "Mishnah Pesachim 10", "The Haggadah", "Shulchan Aruch, Orach Chaim 472–486"],
+  "pesach-chol-hamoed": ["Leviticus 23:6–8", "Talmud, Chagigah 18a", "Talmud, Arakhin 10a–10b", "Shulchan Aruch, Orach Chaim 530–548"],
+  "pesach-last-days": ["Exodus 14–15", "Talmud, Sanhedrin 39b", "Shulchan Aruch, Orach Chaim 490"],
+  "sefirat-haomer": ["Leviticus 23:15–16", "Talmud, Menachot 65b–66a", "Talmud, Yevamot 62b", "Shulchan Aruch, Orach Chaim 489, 493"],
+  "lag-baomer": ["Talmud, Yevamot 62b", "Rema on Orach Chaim 493:2"],
+  "erev-shavuot": ["Shir HaShirim Rabbah 1:12", "Magen Avraham on Orach Chaim 494"],
+  "shavuot": ["Exodus 19–20", "Leviticus 23:15–21", "The Book of Ruth", "Talmud, Shabbat 86b", "Shulchan Aruch, Orach Chaim 494 (with Rema)"],
+  "shiva-asar-btammuz": ["Mishnah Ta'anit 4:6", "Zechariah 8:19", "Shulchan Aruch, Orach Chaim 549–550"],
+  "three-weeks": ["Lamentations 1:3", "Mishnah Ta'anit 4:6–7", "Shulchan Aruch, Orach Chaim 551"],
+  "tisha-bav": ["Mishnah Ta'anit 4:6", "The Book of Lamentations", "Talmud, Ta'anit 29a–30b", "Shulchan Aruch, Orach Chaim 552–559"],
+  "asara-btevet": ["II Kings 25:1", "Ezekiel 24:1–2", "Zechariah 8:19", "Shulchan Aruch, Orach Chaim 550"],
+  "pesach-sheni": ["Numbers 9:6–14", "Magen Avraham on Orach Chaim 131"],
+  "yom-hashoah": ["Holocaust Martyrs' and Heroes' Remembrance Day Law, Israel (1959)"],
+  "yom-hazikaron": ["Memorial Day for the Fallen of Israel's Wars Law (1963)"],
+  "yom-haatzmaut": ["Israel's Declaration of Independence (1948)", "Independence Day Law, Israel (1949)"],
+  "yom-yerushalayim": ["Psalm 122", "Jerusalem Day Law, Israel (1998)"],
+  "tu-bav": ["Mishnah Ta'anit 4:8", "Talmud, Ta'anit 30b–31a"],
+  "erev-shabbat": ["Exodus 20:8–11", "Mishnah Shabbat 7:2", "Talmud, Shabbat 25b, 119a", "Shulchan Aruch, Orach Chaim 250–263"],
+  "shabbat": ["Genesis 2:1–3", "Exodus 20:8–11", "Deuteronomy 5:12–15", "Talmud, Shabbat 117b", "Shulchan Aruch, Orach Chaim 271–291"],
+  "rosh-chodesh": ["Exodus 12:2", "Numbers 28:11–15", "Pirkei de-Rabbi Eliezer 45", "Shulchan Aruch, Orach Chaim 417–425"],
+  "generic-weekday": ["Talmud, Berakhot 26b", "Talmud, Menachot 43b", "Pirkei Avot 1:15"]
+};
+
+OCCASIONS.forEach(o => { o.sources = OCCASION_SOURCES[o.id] || []; });
