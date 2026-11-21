@@ -728,7 +728,10 @@ function anytimeMitzvot() {
  *  and moves with whatever date is being browsed (true to the site's name). */
 function getMitzvahForDate(date) {
   const pool = anytimeMitzvot();
-  return pool[dayOfYear(date) % pool.length];
+  // Count whole days from a fixed local date (not the day of the year, which restarts
+  // on January 1 and would repeat recent mitzvot within days of New Year).
+  const days = Math.round((startOfDay(date) - new Date(2024, 0, 1)) / 86400000);
+  return pool[((days % pool.length) + pool.length) % pool.length];
 }
 
 function appendMitzvahDetail(container, m) {

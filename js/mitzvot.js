@@ -759,5 +759,204 @@ const MITZVOT = [
     ],
     sources: ["Genesis 29:35", "Rashi on Exodus 7:19", "Talmud, Berakhot 58a", "Pirkei Avot 4:1"],
     inspiration: "\"Who is rich?\" asks Pirkei Avot. \"The one who is happy with what they have.\" Gratitude doesn't change what you have — it changes how you see it. What's one thing you've been taking for granted that deserves a thank-you?"
+  },
+
+  // ---------------------------------------------------------------
+  // Batch 5 (Phase 8)
+  // ---------------------------------------------------------------
+  {
+    id: "tehillim",
+    icon: "book-star",
+    title: "Saying Tehillim",
+    subtitle: "The Book of Psalms — words for every feeling",
+    intro: "Tehillim, the Book of Psalms, is traditionally attributed mostly to King David. For thousands of years, Jews have turned to it in joy, fear, grief and hope. People say psalms for someone who is sick, in hard times, or simply as daily prayer — and they're already woven through the siddur.",
+    steps: [
+      "Many say a few psalms each day — some follow a cycle that finishes the whole book every month or every week.",
+      "When someone is ill or in danger, communities often divide the psalms so the whole book is said together.",
+      "Psalm 23 (\"The Lord is my shepherd\") and Psalm 121 (\"I lift my eyes to the mountains\") are good places to start.",
+      "Reading them in English is completely fine. Their power is in the honesty of their feelings."
+    ],
+    sources: ["Psalms 1–150", "Talmud, Berakhot 4b", "Talmud, Bava Batra 14b"],
+    inspiration: "The psalms don't only praise — they complain, plead, despair and hope, sometimes all in one chapter. They show that you can bring your whole self to God, not just your best self. Is there a psalm that says what you're feeling right now?"
+  },
+  {
+    id: "tevilat-kelim",
+    icon: "wash-cup",
+    title: "Immersing New Dishes",
+    subtitle: "Tevilat kelim — dipping new kitchenware in a mikveh",
+    intro: "New metal and glass utensils used for food — pots, cutlery, glasses — are traditionally immersed in a mikveh (a ritual pool) before their first use, if they were made or sold by someone who isn't Jewish. It's a short ritual that gives new things a Jewish \"welcome\" into the kitchen.",
+    steps: [
+      "Remove stickers and labels, then fully immerse the item in a kelim mikveh (many communities have one).",
+      "Say the blessing \"…al tevilat kelim\" (or \"keli\" for a single item) before immersing.",
+      "Which materials need it — and whether with a blessing — differs: metal and glass yes; ceramics, plastic and others vary. Ask your rabbi.",
+      "It's done once per item; disposable items don't need it."
+    ],
+    sources: ["Numbers 31:22–23", "Talmud, Avodah Zarah 75b", "Shulchan Aruch, Yoreh De'ah 120"],
+    inspiration: "A pot from a store becomes part of a Jewish home through a moment of intention. It's a reminder that even the most practical things — the things we cook and eat with — can be made holy."
+  },
+  {
+    id: "shaatnez",
+    icon: "tzitzit",
+    title: "Shaatnez: Wool and Linen",
+    subtitle: "A garment shouldn't mix wool and linen together",
+    intro: "The Torah forbids wearing a garment containing both wool and linen together — called shaatnez. It's one of the commandments the Torah doesn't explain, a reminder that some mitzvot are done simply out of commitment, not because we fully understand them.",
+    steps: [
+      "Check labels on wool suits, coats and sweaters — linen can hide in collars, linings and padding.",
+      "Many communities have shaatnez testing labs that check clothes for a small fee and can often remove the problem part.",
+      "Other fabric blends (like cotton with wool, or linen with synthetics) are fine.",
+      "If you're just starting out, this is a good one to learn about with a teacher before buying new tailored clothing."
+    ],
+    sources: ["Leviticus 19:19", "Deuteronomy 22:11", "Mishnah Kilayim 9", "Shulchan Aruch, Yoreh De'ah 298–304"],
+    inspiration: "Rashi calls shaatnez a \"decree of the King\" — a law without a stated reason. Not every relationship is built only on what makes sense. Sometimes doing something simply because it was asked is its own kind of love."
+  },
+  {
+    id: "simchat-chatan-kallah",
+    icon: "goblet",
+    title: "Rejoicing with a Bride and Groom",
+    subtitle: "Adding joy to a wedding is a mitzvah",
+    intro: "Bringing joy to a bride and groom on their wedding day is a mitzvah for every guest. The Talmud describes great sages dancing at weddings and debating how best to praise the bride — with everyone agreeing that what matters is making the couple happy.",
+    steps: [
+      "Dance, sing and celebrate with the couple — at Jewish weddings, guests often perform playful entertainment for them.",
+      "Speak warmly to and about the couple; this is a day to make them feel cherished.",
+      "In the week after the wedding, friends often host \"Sheva Brachot\" — festive meals with the seven wedding blessings.",
+      "Helping a couple who can't afford a wedding (hachnasat kallah) is a well-loved form of tzedakah."
+    ],
+    sources: ["Talmud, Berakhot 6b", "Talmud, Ketubot 16b–17a", "Shulchan Aruch, Even HaEzer 65"],
+    inspiration: "The Talmud says that someone who brings joy to a bride and groom is as if they rebuilt one of the ruins of Jerusalem. A wedding is a new home being built. Your joy is part of its foundation."
+  },
+  {
+    id: "free-loans",
+    icon: "coin",
+    title: "Free Loans",
+    subtitle: "Gemilut chasadim — lending without interest",
+    intro: "The Torah commands lending to those in need, and forbids charging interest to a fellow Jew. Many communities have a gemach — a free-loan fund — for money, or for things like baby equipment, wedding dresses and tools. The Talmud calls this kind of kindness even greater than tzedakah.",
+    steps: [
+      "Lend money or things to people who need them — and don't charge interest.",
+      "Put loans in writing and set clear terms, to protect both sides and the friendship.",
+      "Consider supporting or starting a local gemach for something people in your community need.",
+      "Be gentle with borrowers who are struggling to repay; the Torah warns against pressuring the poor."
+    ],
+    sources: ["Exodus 22:24", "Leviticus 25:35–37", "Talmud, Sukkah 49b", "Shulchan Aruch, Yoreh De'ah 159–160"],
+    inspiration: "The Sages explain why a loan can be greater than a gift: it helps someone without making them feel like they're receiving charity. Dignity is part of kindness. Is there something you own that someone else could use?"
+  },
+  {
+    id: "learning-hebrew",
+    icon: "book-star",
+    title: "Learning Hebrew",
+    subtitle: "Opening the door to the language of prayer and Torah",
+    intro: "Prayers can be said in any language you understand, and that's valid prayer. Still, learning even a little Hebrew opens a door: the words of the Torah, the siddur and the blessings carry meanings and wordplay that translations can't fully hold.",
+    steps: [
+      "Start with the alphabet (the alef-bet) and the vowel signs — many free apps and online courses teach reading in a few weeks.",
+      "Learn the meanings of words you say often: Baruch, Adonai, Melech, Shalom, Shema.",
+      "Follow along in a siddur with Hebrew and English side by side.",
+      "Learning with others — a class or a study partner — makes it stick."
+    ],
+    sources: ["Sifrei Devarim 46", "Talmud, Sotah 32b–33a", "Shulchan Aruch, Orach Chaim 101:4"],
+    inspiration: "Every Hebrew letter has a name, a shape and a number — and tradition sees meaning in all of them. You don't need to become fluent to feel the difference. Even recognizing one word in prayer can make it feel like yours."
+  },
+  {
+    id: "honoring-shabbat",
+    icon: "candles-shabbat",
+    title: "Honoring Shabbat",
+    subtitle: "Kavod and oneg — making Shabbat special and joyful",
+    intro: "The prophet Isaiah says to \"call Shabbat a delight\" and to honor it. Beyond resting, there are two positive mitzvot: kavod (honor) — preparing and dressing for Shabbat as for an important guest — and oneg (delight) — enjoying good food, rest and company.",
+    steps: [
+      "Prepare on Friday: clean up, shower, and set a nice table.",
+      "Wear something special — many keep particular clothes just for Shabbat.",
+      "Eat festive meals, sing, rest, take a walk, learn — whatever brings you joy within Shabbat.",
+      "The Talmud tells of great rabbis who personally helped prepare for Shabbat, however important they were."
+    ],
+    sources: ["Isaiah 58:13–14", "Talmud, Shabbat 113a, 119a", "Shulchan Aruch, Orach Chaim 242, 250, 262"],
+    inspiration: "The Sages imagined Shabbat as a queen or a bride arriving each week. You don't greet a queen in old clothes with a messy house. How could you prepare to welcome this coming Shabbat a little differently?"
+  },
+  {
+    id: "remembering-exodus",
+    icon: "matzah",
+    title: "Remembering the Exodus",
+    subtitle: "Recalling the going out of Egypt every day",
+    intro: "The Torah asks us to remember leaving Egypt \"all the days of your life.\" That's why the Exodus is mentioned in the daily prayers — the third paragraph of the Shema ends with it — and in Kiddush, in the Grace After Meals and throughout the year, not only at Pesach.",
+    steps: [
+      "It's fulfilled each morning and night through the last paragraph of the Shema.",
+      "Pause on those words and remember what they mean: from slavery to freedom.",
+      "Notice how many mitzvot are tied to the Exodus — Shabbat, kindness to strangers, honest weights.",
+      "Many find it meaningful to think of one way they're still \"leaving Egypt\" in their own life."
+    ],
+    sources: ["Deuteronomy 16:3", "Mishnah Berakhot 1:5", "Shulchan Aruch, Orach Chaim 67"],
+    inspiration: "The Exodus isn't just history — it's the Jewish story of what freedom is for. Remembering it daily keeps that question alive. What would it mean to live today as someone freed?"
+  },
+  {
+    id: "kiddush-levana",
+    icon: "moon",
+    title: "Blessing the New Moon",
+    subtitle: "Kiddush Levana — a monthly blessing under the night sky",
+    intro: "Once a month, when the new moon is growing, Jews go outside at night to bless God for the moon's renewal. It's often done on a Saturday night, in a joyful group, with songs and greetings of \"Shalom aleichem.\"",
+    steps: [
+      "It's said from a few days after the new moon until the middle of the month, when the moon is visible.",
+      "Go outdoors where you can see the moon, ideally with a group.",
+      "The text is in the siddur; it includes the blessing \"…mechadesh chodashim\" and joyful verses.",
+      "Many communities announce when they'll say it — a good chance to join in."
+    ],
+    sources: ["Talmud, Sanhedrin 41b–42a", "Shulchan Aruch, Orach Chaim 426"],
+    inspiration: "The moon wanes to nothing and then returns, month after month. The Jewish people have long seen themselves in it: diminished, but never gone. Next time you see the crescent moon, let it remind you that renewal is always possible."
+  },
+  {
+    id: "yahrzeit-kaddish",
+    icon: "candle-memorial",
+    title: "Remembering Loved Ones",
+    subtitle: "Yahrzeit and Kaddish — keeping memory alive",
+    intro: "After a parent or close relative dies, mourners say Kaddish — a prayer praising God — in the presence of a minyan. Each year on the Hebrew anniversary of the death (the yahrzeit), a memorial candle is lit, Kaddish is said, and many give tzedakah or learn in the person's memory.",
+    steps: [
+      "Kaddish for a parent is commonly said for eleven months, and then on each yahrzeit.",
+      "Light a 24-hour memorial candle on the evening the yahrzeit begins.",
+      "Giving charity, learning Torah or doing a mitzvah in someone's memory is a way to honor them.",
+      "Converts can and do mourn and remember their non-Jewish family members — ask your rabbi which customs to take on."
+    ],
+    sources: ["Talmud, Sotah 49a", "Rema on Shulchan Aruch, Yoreh De'ah 376:4", "Shulchan Aruch, Yoreh De'ah 402:12"],
+    inspiration: "Kaddish never mentions death. It praises God's greatness — said by someone who has every reason to feel lost. It's a quiet act of faith, and a way of saying, \"their life still matters.\" Who is someone you could remember today?"
+  },
+  {
+    id: "pikuach-nefesh",
+    icon: "heart",
+    title: "Saving a Life",
+    subtitle: "Pikuach nefesh — life comes before almost everything",
+    intro: "Saving a human life overrides nearly every other commandment, including Shabbat and Yom Kippur. The Torah says to \"live by\" its laws — and the Sages read that as \"live by them, not die by them.\" The Torah also forbids standing by while someone's life is in danger.",
+    steps: [
+      "In an emergency, call for help, drive to hospital or do whatever is needed — even on Shabbat. Don't hesitate.",
+      "Someone who is seriously ill should eat on Yom Kippur if a doctor says so.",
+      "Learning first aid or CPR is a practical way to be ready for this mitzvah.",
+      "The Mishnah teaches that saving one life is like saving a whole world."
+    ],
+    sources: ["Leviticus 18:5", "Leviticus 19:16", "Talmud, Yoma 85a–85b", "Mishnah Sanhedrin 4:5"],
+    inspiration: "Judaism treats life as so precious that the most important rules step aside for it. Every person is a whole world. Is learning CPR or first aid something you could do this year?"
+  },
+  {
+    id: "mikveh",
+    icon: "droplet",
+    title: "The Mikveh",
+    subtitle: "A pool of natural water for renewal and transition",
+    intro: "A mikveh is a pool connected to natural water — rain or a spring — used for ritual immersion. It marks spiritual transitions: married women in traditional practice immerse monthly; it's the final step of conversion; and some men immerse before Shabbat or Yom Kippur.",
+    steps: [
+      "Immersion is done after careful preparation (bathing, removing anything between the body and the water).",
+      "For conversion, immersion before a rabbinic court (beit din) is the moment a person becomes Jewish.",
+      "Mikvaot are private and staffed by trained attendants; visits are by appointment.",
+      "If you're curious, many mikvaot offer tours and classes — it's a respectful way to learn more."
+    ],
+    sources: ["Leviticus 15", "Mishnah Mikvaot", "Talmud, Yevamot 46a–47b", "Shulchan Aruch, Yoreh De'ah 201"],
+    inspiration: "Water appears at many beginnings in the Torah — creation, the flood, the splitting of the sea. Immersing in a mikveh is a way of starting fresh: the same person, made new. Where in your life could you use a new beginning?"
+  },
+  {
+    id: "tikkun-olam",
+    icon: "tree",
+    title: "Repairing the World",
+    subtitle: "Tikkun olam — doing your part, without having to finish",
+    intro: "The phrase \"tikkun olam\" — repairing the world — appears in the Mishnah and in the Aleinu prayer, which speaks of perfecting the world under God's sovereignty. Today it often refers to acts of justice and kindness that make the world better.",
+    steps: [
+      "Volunteer for a cause that helps people in need — food banks, tutoring, visiting the lonely.",
+      "Connect your acts of kindness to Jewish values: tzedakah, justice and caring for creation.",
+      "Start where you are: your street, your workplace, your community.",
+      "Pirkei Avot teaches: you aren't obligated to finish the work, but you're not free to stop doing it."
+    ],
+    sources: ["Mishnah Gittin 4:2–3", "Aleinu prayer", "Pirkei Avot 2:16"],
+    inspiration: "Rabbi Tarfon's teaching — not finishing, but not giving up — is a gentle relief. The world isn't yours to fix alone. It's yours to help, one piece at a time. What's one small repair you could make this week?"
   }
 ];
