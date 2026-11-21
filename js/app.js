@@ -141,6 +141,7 @@ function buildContext(today, events, hebrewDateInfo, profile) {
     dow: today.getDay(),
     hebrewMonth,
     hebrewToday,
+    hebrewDateLabel: hd.hd && hd.hm && hd.hy ? `${hd.hd} ${hd.hm} ${hd.hy}` : hebrewToday,
     profile: profile || { reason: null, community: null },
     isSephardi,
     selichotStart,
@@ -226,7 +227,18 @@ function resolve(field, ctx) {
   return typeof field === "function" ? field(ctx) : field;
 }
 
+/** Like el(), but runs the text through the glossary so curious/converting
+ *  visitors get tap-to-explain terms. `used` keeps each term to one link per card. */
+function richEl(tag, cls, text, profile, used) {
+  const e = el(tag, cls);
+  e.innerHTML = glossify(text, profile, used);
+  return e;
+}
+
 function renderOccasionCard(container, occ, ctx, index) {
+  const profile = ctx.profile;
+  const extras = OCCASION_EXTRAS[occ.id] || {};
+  const used = new Set();
   const card = el("article", "occasion-card");
   card.style.animationDelay = `${index * 90}ms`;
 
@@ -236,13 +248,16 @@ function renderOccasionCard(container, occ, ctx, index) {
   card.appendChild(headRow);
 
   const intro = resolve(occ.content.intro, ctx).replace("{{OMER_DAY}}", ctx.omerDay > 0 ? ctx.omerDay : "");
-  card.appendChild(el("p", "intro", intro));
+  card.appendChild(richEl("p", "intro", intro, profile, used));
+
+  const whyBox = renderWhyBox(resolve(extras.why, ctx), profile, used, ctx.hebrewDateLabel);
+  if (whyBox) card.appendChild(whyBox);
 
   const halacha = resolve(occ.content.halacha, ctx);
   if (halacha && halacha.length) {
     card.appendChild(el("h4", "section-label", "Halacha & Practice"));
     const ul = el("ul", "halacha-list");
-    halacha.forEach(h => ul.appendChild(el("li", null, h)));
+    halacha.forEach(h => ul.appendChild(richEl("li", null, h, profile, used)));
     card.appendChild(ul);
   }
 
@@ -250,22 +265,30 @@ function renderOccasionCard(container, occ, ctx, index) {
   if (customs && customs.length) {
     card.appendChild(el("h4", "section-label", "Customs"));
     const ul = el("ul", "customs-list");
-    customs.forEach(c => ul.appendChild(el("li", null, c)));
+    customs.forEach(c => ul.appendChild(richEl("li", null, c, profile, used)));
     card.appendChild(ul);
   }
 
+  const minhagBox = renderMinhagBox(extras.minhagim, profile);
+  if (minhagBox) card.appendChild(minhagBox);
+
   const beginnerNote = resolve(occ.content.beginnerNote, ctx);
-  if (beginnerNote && (ctx.profile.reason === "curious" || ctx.profile.reason === "converting")) {
+  if (beginnerNote && wantsExplanations(profile)) {
     const box = el("div", "beginner-note");
     box.appendChild(el("span", "beginner-note-label", "New to this? "));
-    box.appendChild(el("span", null, beginnerNote));
+    const span = el("span");
+    span.innerHTML = glossify(beginnerNote, profile, used);
+    box.appendChild(span);
     card.appendChild(box);
   }
+
+  const takingOnBox = renderTakingOnBox(resolve(extras.takingOn, ctx), profile, used);
+  if (takingOnBox) card.appendChild(takingOnBox);
 
   const inspiration = resolve(occ.content.inspiration, ctx);
   if (inspiration) {
     card.appendChild(el("h4", "section-label", "For Reflection"));
-    card.appendChild(el("p", "inspiration", inspiration));
+    card.appendChild(richEl("p", "inspiration", inspiration, profile, used));
   }
 
   makeCollapsible(card, 2, index === 0);
@@ -473,15 +496,24 @@ function renderPrayerCard(container, prayerInfo) {
   headRow.appendChild(titleWrap);
   card.appendChild(headRow);
 
-  card.appendChild(el("p", "intro", prayer.content.intro));
+  const profile = currentProfile;
+  const extras = PRAYER_EXTRAS[prayerInfo.key] || {};
+  const used = new Set();
+
+  card.appendChild(richEl("p", "intro", prayer.content.intro, profile, used));
 
   card.appendChild(el("h4", "section-label", "Halacha & Practice"));
   const ul = el("ul", "halacha-list");
-  prayer.content.halacha.forEach(h => ul.appendChild(el("li", null, h)));
+  prayer.content.halacha.forEach(h => ul.appendChild(richEl("li", null, h, profile, used)));
   card.appendChild(ul);
 
+  const minhagBox = renderMinhagBox(extras.minhagim, profile);
+  if (minhagBox) card.appendChild(minhagBox);
+  const takingOnBox = renderTakingOnBox(extras.takingOn, profile, used);
+  if (takingOnBox) card.appendChild(takingOnBox);
+
   card.appendChild(el("h4", "section-label", "For Reflection"));
-  card.appendChild(el("p", "inspiration", prayer.content.inspiration));
+  card.appendChild(richEl("p", "inspiration", prayer.content.inspiration, profile, used));
 
   makeCollapsible(card, 2, false);
   container.appendChild(card);
@@ -504,18 +536,27 @@ function renderPrepCard(container, upcoming, isBrowsingAhead) {
 
   card.appendChild(el("p", "intro", `Since you won't be checking this page once ${guide.name} begins, here's what's worth handling now.`));
 
+  const profile = currentProfile;
+  const extras = PREP_EXTRAS[guide.key] || {};
+  const used = new Set();
+
   card.appendChild(el("h4", "section-label", "Shopping List"));
   const shopUl = el("ul", "halacha-list");
-  guide.shopping.forEach(s => shopUl.appendChild(el("li", null, s)));
+  guide.shopping.forEach(s => shopUl.appendChild(richEl("li", null, s, profile, used)));
   card.appendChild(shopUl);
 
   card.appendChild(el("h4", "section-label", "Before It Begins"));
   const prepUl = el("ul", "halacha-list");
-  guide.prep.forEach(p => prepUl.appendChild(el("li", null, p)));
+  guide.prep.forEach(p => prepUl.appendChild(richEl("li", null, p, profile, used)));
   card.appendChild(prepUl);
 
+  const minhagBox = renderMinhagBox(extras.minhagim, profile);
+  if (minhagBox) card.appendChild(minhagBox);
+  const takingOnBox = renderTakingOnBox(extras.takingOn, profile, used);
+  if (takingOnBox) card.appendChild(takingOnBox);
+
   card.appendChild(el("h4", "section-label", "What to Expect"));
-  card.appendChild(el("p", "intro", guide.expectNote));
+  card.appendChild(richEl("p", "intro", guide.expectNote, profile, used));
 
   makeCollapsible(card, 2, false);
   container.appendChild(card);
@@ -543,13 +584,20 @@ function getMitzvahForDate(date) {
 }
 
 function appendMitzvahDetail(container, m) {
-  container.appendChild(el("p", "intro", m.intro));
+  const profile = currentProfile;
+  const extras = MITZVA_EXTRAS[m.id] || {};
+  const used = new Set();
+  container.appendChild(richEl("p", "intro", m.intro, profile, used));
   container.appendChild(el("h4", "section-label", "How It's Done"));
   const ul = el("ul", "halacha-list");
-  m.steps.forEach(s => ul.appendChild(el("li", null, s)));
+  m.steps.forEach(s => ul.appendChild(richEl("li", null, s, profile, used)));
   container.appendChild(ul);
+  const minhagBox = renderMinhagBox(extras.minhagim, profile);
+  if (minhagBox) container.appendChild(minhagBox);
+  const takingOnBox = renderTakingOnBox(extras.takingOn, profile, used);
+  if (takingOnBox) container.appendChild(takingOnBox);
   container.appendChild(el("h4", "section-label", "For Reflection"));
-  container.appendChild(el("p", "inspiration", m.inspiration));
+  container.appendChild(richEl("p", "inspiration", m.inspiration, profile, used));
 }
 
 function renderDailyMitzvahCard(container, mitzvah) {
@@ -865,6 +913,8 @@ async function setViewingDate(date) {
 
   const todaysMitzvah = getMitzvahForDate(date);
   renderDailyMitzvahCard(document.getElementById("daily-mitzvah-container"), todaysMitzvah);
+  // Re-render so the list picks up the visitor's current profile.
+  renderMitzvotSection(document.getElementById("mitzvot-container"));
 
   renderQuizCard(document.getElementById("quiz-container"), occasions, portion, todaysMitzvah);
 

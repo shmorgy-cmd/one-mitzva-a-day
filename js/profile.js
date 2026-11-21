@@ -8,9 +8,9 @@
 const PROFILE_KEY = "omad_profile_v1";
 
 const REASONS = [
-  { id: "jewish", label: "I'm Jewish", icon: "star", blurb: "See customs framed for your own community's practice." },
-  { id: "converting", label: "I'm exploring conversion", icon: "heart", blurb: "Extra grounding notes on the basics, alongside the daily content." },
-  { id: "curious", label: "Just curious to learn", icon: "book-star", blurb: "Friendly context wherever a term or custom might be unfamiliar." }
+  { id: "jewish", label: "I'm Jewish", icon: "star", blurb: "See your own community's minhagim for each day, prayer and mitzvah." },
+  { id: "converting", label: "I'm exploring conversion", icon: "heart", blurb: "Tap any Hebrew term for its meaning, learn why each date falls when it does, and get practical first steps." },
+  { id: "curious", label: "Just curious to learn", icon: "book-star", blurb: "Tap any Hebrew term for its meaning, and learn why each date falls when it does." }
 ];
 
 const COMMUNITIES = [
@@ -103,7 +103,7 @@ function openOnboarding(onDone) {
     modal.innerHTML = "";
     modal.appendChild(pel("div", "onboarding-badge", getIcon("book-star")));
     modal.appendChild(pel("h3", "onboarding-title", "Which community's customs fit you best?"));
-    modal.appendChild(pel("p", "onboarding-sub", "Some customs — like exactly when Selichot begins — genuinely differ by community. This helps the page match yours."));
+    modal.appendChild(pel("p", "onboarding-sub", "Many customs genuinely differ by community. We'll show yours on each card — or pick \"Other / not sure\" to see them side by side."));
 
     const grid = pel("div", "onboarding-grid onboarding-grid--compact");
     COMMUNITIES.forEach(c => {

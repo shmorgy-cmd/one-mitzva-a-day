@@ -30,3 +30,13 @@ Since it's just static files, you can drop the whole folder onto GitHub Pages, N
 ## Extending the content
 
 Add new occasions to the `OCCASIONS` array in [`js/content.js`](js/content.js). Each entry needs a `match(ctx)` function (see the comment at the top of that file for what's available on `ctx`) and a `content` object with `intro`, `halacha`, `customs`, and `inspiration`. Higher `priority` wins when multiple occasions match the same day.
+
+## Personalization
+
+The welcome box (`js/profile.js`) changes the page through [`js/personalize.js`](js/personalize.js):
+
+- **I'm Jewish + a community**: a "Your custom" box on each card with only that community's minhagim ("Other / not sure" shows all communities side by side).
+- **Just curious**: Hebrew terms become tap-to-explain (from `GLOSSARY`), plus a "Why today?" note on each day.
+- **Exploring conversion**: everything above, plus a "Taking this on" note with a practical first step.
+
+The extra content is keyed by id in `OCCASION_EXTRAS`, `MITZVA_EXTRAS`, `PRAYER_EXTRAS` and `PREP_EXTRAS` — when adding a new occasion, add a matching entry there too. Minhagim vary widely, so new entries should be checked by someone knowledgeable.
