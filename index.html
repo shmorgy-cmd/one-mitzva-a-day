@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>One Mitzva a Day — Judaism, One Day at a Time</title>
   <meta name="description" content="A daily companion for exploring Judaism — today's Torah portion, the halacha and customs of the day, and a spiritual reflection, all keyed to the Jewish calendar." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,7 +26,7 @@
       <p class="tagline">A daily companion for learning, living, and loving Jewish tradition — one day at a time.</p>
       <nav class="site-nav" aria-label="Section navigation">
         <a href="#top">Today</a>
-        <a href="#prep-container">Get Ready</a>
+        <a href="#prep-section">Get Ready</a>
         <a href="#torah-container">Torah</a>
         <a href="#mitzvot-section">Mitzvot</a>
         <a href="#quiz-container">Quiz</a>
@@ -38,20 +38,22 @@
 
   <main class="wrap">
 
-    <section class="date-banner" id="top">
-      <div id="hebrew-date" class="hebrew-date">—</div>
-      <div id="gregorian-date" class="gregorian-date">—</div>
+    <section class="today-summary" id="top" aria-label="Today at a glance">
+      <div class="ts-date">
+        <div id="hebrew-date" class="hebrew-date">—</div>
+        <div id="gregorian-date" class="gregorian-date">—</div>
+      </div>
+      <ul id="today-summary-rows" class="ts-rows" aria-live="polite"></ul>
     </section>
 
     <div id="date-nav-container" aria-label="Browse another day"></div>
 
-    <section id="times-container" aria-label="Candle-lighting and other times"></section>
-
     <section id="prayer-changes-container" aria-label="What changes in prayer today"></section>
 
-    <section id="countdown-container" aria-label="Upcoming dates"></section>
-
-    <section id="prep-container" aria-label="Getting ready for the next chag"></section>
+    <section id="prep-section" aria-label="Getting ready">
+      <div id="countdown-container" aria-label="Upcoming dates"></div>
+      <div id="prep-container" aria-label="Getting ready for the next chag"></div>
+    </section>
 
     <section id="prayer-container" aria-label="Right now: which prayer"></section>
 
@@ -97,6 +99,14 @@
     </section>
 
   </main>
+
+  <nav class="tab-bar" id="tab-bar" aria-label="Sections">
+    <a href="#top" data-icon="star">Today</a>
+    <a href="#prep-section" data-icon="candles-shabbat">Prep</a>
+    <a href="#torah-container" data-icon="tablets">Torah</a>
+    <a href="#mitzvot-section" data-icon="hand">Mitzvot</a>
+    <a href="#quiz-container" data-icon="trophy">Quiz</a>
+  </nav>
 
   <footer class="site-footer">
     <div class="wrap">

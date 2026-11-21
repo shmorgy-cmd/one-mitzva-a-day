@@ -1002,9 +1002,11 @@ function renderPrayerChangeItem(item, used) {
   return li;
 }
 
+/** Renders the full prayer-changes card (collapsed — the Today summary shows the
+ *  headlines) and returns the engine's result for the summary to reuse. */
 function renderPrayerChangesCard(container, date, heb, hebTomorrow, events) {
   container.innerHTML = "";
-  if (!heb || !heb.hm) return;
+  if (!heb || !heb.hm) return null;
   const israel = isInIsrael(currentSettings);
   const changes = getPrayerChanges({
     date, heb, hebTomorrow, israel, events,
@@ -1048,7 +1050,9 @@ function renderPrayerChangesCard(container, date, heb, hebTomorrow, events) {
   }
 
   card.appendChild(el("p", "pc-review", "A learning aid that still needs review by a rabbi. Customs differ between communities — check with your rabbi before relying on it."));
+  makeCollapsible(card, 1, false);
   container.appendChild(card);
+  return changes;
 }
 
 // --- Times card ------------------------------------------------------
@@ -1074,39 +1078,139 @@ function timedEventLabel(e) {
   return e.title;
 }
 
-function renderTimesCard(container, events, date) {
-  container.innerHTML = "";
-  const timed = events
+function timedEventsOn(events, date) {
+  return events
     .filter(e => e.time && daysBetween(e.date, date) === 0)
     .filter(e => e.category === "candles" || e.category === "havdalah" || /^Fast (begins|ends)/.test(e.title))
     .sort((a, b) => a.time.localeCompare(b.time));
+}
 
-  if (!timed.length && !(isTimesDay(events, date) && !currentSettings.location)) return;
+// --- Prep helpers ----------------------------------------------------
 
-  const card = el("article", "times-card");
-  const head = el("div", "times-head");
-  head.appendChild(el("h3", null, "Times today"));
-  if (currentSettings.location) head.appendChild(el("span", "times-place", `for ${currentSettings.location.name}`));
-  card.appendChild(head);
-
-  if (!timed.length) {
-    card.appendChild(el("p", "times-empty", "Set your city to see candle-lighting, Havdalah and fast times for today."));
-    const btn = el("button", "times-set-city", "Set your city");
-    btn.type = "button";
-    btn.addEventListener("click", openSettings);
-    card.appendChild(btn);
-  } else {
-    const list = el("ul", "times-list");
-    timed.forEach(e => {
-      const li = el("li");
-      li.appendChild(el("span", "times-label", timedEventLabel(e)));
-      li.appendChild(el("span", "times-value", fmtClock(e.time)));
-      list.appendChild(li);
-    });
-    card.appendChild(list);
-    card.appendChild(el("p", "times-note", "Times from Hebcal. Customs differ (for example, many light candles 40 minutes before sunset in Jerusalem) — follow your community."));
+/** The next prep guide after `date`: either open now ({ ready: true }) or the
+ *  number of days until its checklist opens. Uses this year's Hebcal dates. */
+function nextPrepInfo(events, date) {
+  const open = findUpcomingPrepGuide(events, date);
+  if (open) return { ready: true, name: open.guide.name, daysUntil: open.daysUntil };
+  let best = null;
+  for (const guide of PREP_GUIDES) {
+    const evt = events.find(e => guide.matchTitle(e.title) && daysBetween(date, e.date) > 0);
+    if (!evt) continue;
+    const daysUntil = daysBetween(date, evt.date);
+    if (!best || daysUntil < best.daysUntil) best = { ready: false, name: guide.name, daysUntil, opensIn: daysUntil - guide.leadDays };
   }
-  container.appendChild(card);
+  return best;
+}
+
+/** The next holiday after `date` (one entry per multi-day holiday), skipping
+ *  special Shabbatot, Rosh Chodesh and the Omer count. */
+function nextHoliday(events, date) {
+  return groupCountdownEvents(events).find(g =>
+    daysBetween(date, g.start) > 0 &&
+    g.events[0].category === "holiday" &&
+    g.events[0].subcat !== "shabbat");
+}
+
+function inDays(n) {
+  return n === 0 ? "today" : n === 1 ? "tomorrow" : `in ${n} days`;
+}
+
+// --- Today summary ---------------------------------------------------
+
+/** Opens the first collapsible card inside `containerId` and scrolls to it. */
+function goToSection(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const card = container.querySelector("article");
+  const head = card && card.querySelector(".card-head--toggle");
+  if (card && head && !card.classList.contains("is-open")) head.click();
+  container.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function summaryRow({ icon, label, value, note, onClick, actionLabel }) {
+  const li = el("li", "ts-row-wrap");
+  const row = el(onClick ? "button" : "div", "ts-row");
+  if (onClick) {
+    row.type = "button";
+    row.addEventListener("click", onClick);
+    if (actionLabel) row.setAttribute("aria-label", `${label}: ${value}. ${actionLabel}`);
+  }
+  const badge = el("span", "ts-icon");
+  badge.innerHTML = getIcon(icon);
+  row.appendChild(badge);
+  const text = el("span", "ts-text");
+  text.appendChild(el("span", "ts-label", label));
+  text.appendChild(el("span", "ts-value", value));
+  if (note) text.appendChild(el("span", "ts-note", note));
+  row.appendChild(text);
+  if (onClick) row.appendChild(el("span", "ts-chevron", "›"));
+  li.appendChild(row);
+  return li;
+}
+
+function renderTodaySummary({ date, events, occasions, changes, mitzvah }) {
+  const list = document.getElementById("today-summary-rows");
+  list.innerHTML = "";
+  const isToday = daysBetween(realToday, date) === 0;
+
+  // 1. Today's occasion in one line
+  const [top, season] = occasions;
+  const occLine = top.id === "generic-weekday"
+    ? (season ? season.title : "No holiday — an ordinary day in the Jewish calendar")
+    : [top.title, season && season.title].filter(Boolean).join(" · ");
+  list.appendChild(summaryRow({
+    icon: top.icon, label: isToday ? "Today" : "This day", value: occLine,
+    onClick: () => goToSection("occasion-container"), actionLabel: "Open today's card"
+  }));
+
+  // 2. Prayer changes (headlines only)
+  if (changes) {
+    const tonightTitle = (t) => `Tonight: ${t.replace(/\s*(from )?tonight$/i, "")}`;
+    const titles = [...changes.today.map(i => i.title), ...changes.tonight.map(i => tonightTitle(i.title))];
+    const shown = titles.slice(0, 3).join(" · ");
+    const value = titles.length ? shown + (titles.length > 3 ? ` · +${titles.length - 3} more` : "") : "No changes — the regular service";
+    list.appendChild(summaryRow({
+      icon: "book-star", label: "In prayer", value,
+      note: "A learning aid — check with your rabbi",
+      onClick: () => goToSection("prayer-changes-container"), actionLabel: "Open prayer changes"
+    }));
+  }
+
+  // 3. Times (or a prompt to set the city on days that need them)
+  const timed = timedEventsOn(events, date);
+  if (timed.length) {
+    list.appendChild(summaryRow({
+      icon: "candles-shabbat", label: `Times · ${currentSettings.location.name}`,
+      value: timed.map(e => `${timedEventLabel(e)} ${fmtClock(e.time)}`).join(" · ")
+    }));
+  } else if (!currentSettings.location && isTimesDay(events, date)) {
+    list.appendChild(summaryRow({
+      icon: "candles-shabbat", label: "Times", value: "Set your city for candle-lighting and other times",
+      onClick: openSettings, actionLabel: "Open settings"
+    }));
+  }
+
+  // 4. Mitzvah of the day
+  list.appendChild(summaryRow({
+    icon: mitzvah.icon, label: "Mitzvah of the day", value: mitzvah.title,
+    onClick: () => goToSection("daily-mitzvah-container"), actionLabel: "Open the mitzvah"
+  }));
+
+  // 5. Next holiday + prep countdown
+  const next = nextHoliday(events, date);
+  const prep = nextPrepInfo(events, date);
+  const parts = [];
+  if (next) parts.push(`${next.name} ${inDays(daysBetween(date, next.start))}`);
+  if (prep) {
+    if (prep.ready) parts.push(`${prep.name} prep list is ready (${inDays(prep.daysUntil)})`);
+    else if (prep.opensIn > 0) parts.push(`${prep.name} prep list opens ${inDays(prep.opensIn)}`);
+  }
+  if (parts.length) {
+    list.appendChild(summaryRow({
+      icon: "star", label: "Coming up", value: parts.join(" · "),
+      onClick: () => goToSection("prep-section"), actionLabel: "Open the prep section"
+    }));
+  }
 }
 
 // --- Browsing state -------------------------------------------------
@@ -1156,7 +1260,7 @@ function renderViewingBanner(date) {
   backBtn.type = "button";
   backBtn.addEventListener("click", () => setViewingDate(realToday));
   banner.appendChild(backBtn);
-  document.querySelector(".date-banner").insertAdjacentElement("afterend", banner);
+  document.querySelector(".ts-date").insertAdjacentElement("beforebegin", banner);
 }
 
 async function setViewingDate(date) {
@@ -1172,9 +1276,8 @@ async function setViewingDate(date) {
   document.getElementById("hebrew-date").textContent = hebrewInfo ? hebrewInfo.hebrew || "" : "";
   document.getElementById("gregorian-date").textContent = fmtDate(date);
   renderViewingBanner(date);
-  renderTimesCard(document.getElementById("times-container"), events, date);
   const hebTomorrow = await getHebrewDateCached(addDays(date, 1));
-  renderPrayerChangesCard(document.getElementById("prayer-changes-container"), date, hebrewInfo, hebTomorrow, events);
+  const changes = renderPrayerChangesCard(document.getElementById("prayer-changes-container"), date, hebrewInfo, hebTomorrow, events);
 
   const ctx = buildContext(date, events, hebrewInfo, currentProfile);
   const occasions = pickOccasions(ctx);
@@ -1193,14 +1296,22 @@ async function setViewingDate(date) {
   prepContainer.innerHTML = "";
   const upcomingPrep = findUpcomingPrepGuide(events, date);
   renderPrepCard(prepContainer, upcomingPrep, daysBetween(realToday, date) !== 0);
+  if (!upcomingPrep) {
+    const info = nextPrepInfo(events, date);
+    const msg = info
+      ? `No holiday prep needed yet. The ${info.name} checklist opens ${inDays(Math.max(info.opensIn, 0))}.`
+      : "No major holiday prep in the next few weeks.";
+    prepContainer.appendChild(el("p", "prep-empty", msg));
+  }
+
+  const todaysMitzvah = getMitzvahForDate(date);
+  renderDailyMitzvahCard(document.getElementById("daily-mitzvah-container"), todaysMitzvah);
+  renderTodaySummary({ date, events, occasions, changes, mitzvah: todaysMitzvah });
 
   const torahContainer = document.getElementById("torah-container");
   torahContainer.innerHTML = "";
   const portion = await loadTorahPortion(events, date).catch(e => { console.error(e); return null; });
   renderTorahPortion(torahContainer, portion);
-
-  const todaysMitzvah = getMitzvahForDate(date);
-  renderDailyMitzvahCard(document.getElementById("daily-mitzvah-container"), todaysMitzvah);
   // Re-render so the list picks up the visitor's current profile.
   renderMitzvotSection(document.getElementById("mitzvot-container"));
 
@@ -1298,4 +1409,40 @@ async function init() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", init);
+/** Mobile bottom tab bar: icons, and highlight the section currently on screen. */
+function initTabBar() {
+  const bar = document.getElementById("tab-bar");
+  if (!bar) return;
+  const links = [...bar.querySelectorAll("a")];
+  links.forEach(a => {
+    const label = a.textContent;
+    a.innerHTML = `<span class="tab-icon" aria-hidden="true">${getIcon(a.dataset.icon)}</span><span>${label}</span>`;
+  });
+  // The active tab is the last section whose top has scrolled above 40% of the screen.
+  function updateActiveTab() {
+    const line = window.innerHeight * 0.4;
+    let active = links[0];
+    links.forEach(a => {
+      const target = document.getElementById(a.getAttribute("href").slice(1));
+      if (target && target.getBoundingClientRect().top <= line) active = a;
+    });
+    links.forEach(a => {
+      const on = a === active;
+      a.classList.toggle("is-active", on);
+      if (on) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current");
+    });
+  }
+  let pending = false;
+  window.addEventListener("scroll", () => {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => { pending = false; updateActiveTab(); });
+  }, { passive: true });
+  window.updateActiveTab = updateActiveTab;
+  updateActiveTab();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initTabBar();
+  init();
+});
