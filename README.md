@@ -49,6 +49,14 @@ The "Print for…" button in the Today summary ([`js/print.js`](js/print.js)) bu
 - [`sw.js`](sw.js) is the service worker: app files are saved for offline use; Hebcal/Sefaria data is network-first with a saved fallback. **Bump `CACHE_VERSION` in `sw.js` whenever you change any app file**, so visitors get the new version.
 - [`js/offline.js`](js/offline.js) prefetches the next 14 days of data once a day, shows the offline notice and the install hint (Android prompt / iOS "Share → Add to Home Screen"), and runs the opt-in local reminders from Settings (only while the app is open).
 
+## Optional outside services ([`js/config.js`](js/config.js))
+
+Each one stays off while its value in `js/config.js` is empty:
+
+- **`oneSignalAppId`** — weekly/holiday push messages. Create a free OneSignal account → New App → Web; site URL `https://shmorgy-cmd.github.io`; choose "Custom code"; under advanced settings set the service worker path to `/one-mitzva-a-day/`, the main and updater worker filename to `sw.js`, and the scope to `/one-mitzva-a-day/`. Paste the App ID here. The OneSignal script only loads for visitors who turn on "Weekly & holiday messages" in Settings. Send messages from the OneSignal dashboard.
+- **`goatCounterCode`** — cookie-free visit counts. Create a site at goatcounter.com and paste its code (the part before `.goatcounter.com`).
+- **`reportEmail`** — where "Report an error" links go. Empty = a prefilled GitHub issue on this repo.
+
 ## Personalization
 
 The welcome box (`js/profile.js`) changes the page through [`js/personalize.js`](js/personalize.js):

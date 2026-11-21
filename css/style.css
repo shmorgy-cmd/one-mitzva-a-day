@@ -418,6 +418,20 @@ button.ts-row:focus-visible {
   }
 }
 
+.report-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.report-link:hover,
+.report-link:focus-visible { color: var(--flag-blue); }
+
+.settings-push { margin-top: 12px; }
+
 /* ---------------------------------------------------------------- */
 /* Offline notice, install hint, reminder toast                       */
 /* ---------------------------------------------------------------- */

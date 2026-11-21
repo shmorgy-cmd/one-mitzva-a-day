@@ -12,7 +12,14 @@
  * Bump CACHE_VERSION whenever app files change so visitors get the update.
  */
 
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v7";
+
+// For visitors who opted in to OneSignal messages, OneSignal registers this same
+// file with its own query parameters (appId, sdkVersion…) — only then is its
+// push code loaded. Everyone else's worker never contacts OneSignal.
+if (/[?&]appId=/.test(self.location.search)) {
+  importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
+}
 const APP_CACHE = `omad-app-${CACHE_VERSION}`;
 const DATA_CACHE = "omad-data";
 const FONT_CACHE = "omad-fonts";
@@ -22,6 +29,8 @@ const APP_FILES = [
   "index.html",
   "manifest.json",
   "css/style.css",
+  "js/config.js",
+  "js/integrations.js",
   "js/icons.js",
   "js/profile.js",
   "js/personalize.js",
@@ -126,8 +135,10 @@ self.addEventListener("fetch", (event) => {
   }
 });
 
-// Clicking a reminder notification focuses (or opens) the app.
+// Clicking one of our own local reminders focuses (or opens) the app.
+// (OneSignal's notifications are handled by OneSignal's own code.)
 self.addEventListener("notificationclick", (event) => {
+  if (!/^(candles|prep)-/.test(event.notification.tag || "")) return;
   event.notification.close();
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {

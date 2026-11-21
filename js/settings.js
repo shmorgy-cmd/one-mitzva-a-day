@@ -395,6 +395,26 @@ function openSettingsPanel(onDone) {
   rGroup.appendChild(reminderToggle("prep", "When a holiday prep checklist is ready"));
   rSection.appendChild(rGroup);
   rSection.appendChild(rStatus);
+
+  // Weekly & holiday messages (OneSignal push) — only offered once configured.
+  if (pushConfigured()) {
+    const pushLabel = sEl("label", "settings-radio settings-push");
+    const pushBox = sEl("input");
+    pushBox.type = "checkbox";
+    pushBox.checked = pushOptedIn();
+    const pushStatus = sEl("p", "settings-status");
+    pushStatus.setAttribute("role", "status");
+    pushBox.addEventListener("change", async () => {
+      pushStatus.textContent = "One moment…";
+      pushStatus.textContent = await setPushOptIn(pushBox.checked);
+    });
+    pushLabel.appendChild(pushBox);
+    pushLabel.appendChild(sEl("span", null, "Weekly & holiday messages — even when the app is closed"));
+    rSection.appendChild(pushLabel);
+    rSection.appendChild(sEl("p", "settings-help", "Sent through OneSignal, an outside service, which stores a subscription ID for this device — no name or email. On iPhone, add the app to your home screen first."));
+    rSection.appendChild(pushStatus);
+  }
+
   modal.appendChild(rSection);
   renderReminderStatus();
 

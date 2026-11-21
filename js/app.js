@@ -300,6 +300,7 @@ function renderOccasionCard(container, occ, ctx, index) {
     card.appendChild(richEl("p", "inspiration", inspiration, profile, used));
   }
 
+  card.appendChild(reportLink(`occasion:${occ.id}`));
   makeCollapsible(card, 2, index === 0);
   container.appendChild(card);
 }
@@ -610,6 +611,7 @@ function renderTorahPortion(container, portion) {
   link.target = "_blank";
   link.rel = "noopener";
   card.appendChild(link);
+  card.appendChild(reportLink(`torah:${portion.parashaName}${portion.aliyaRef ? ":" + portion.aliyaRef : ""}`));
 
   makeCollapsible(card, 3, false);
   container.appendChild(card);
@@ -657,6 +659,7 @@ function renderPrayerCard(container, prayerInfo) {
 
   card.appendChild(el("h4", "section-label", "For Reflection"));
   card.appendChild(richEl("p", "inspiration", prayer.content.inspiration, profile, used));
+  card.appendChild(reportLink(`prayer:${prayerInfo.key}`));
 
   // Keep the header, the intro and (when shown) the "set your city" link visible.
   makeCollapsible(card, precise ? 2 : 3, false);
@@ -701,6 +704,7 @@ function renderPrepCard(container, upcoming, isBrowsingAhead) {
 
   card.appendChild(el("h4", "section-label", "What to Expect"));
   card.appendChild(richEl("p", "intro", guide.expectNote, profile, used));
+  card.appendChild(reportLink(`prep:${guide.key}`));
 
   makeCollapsible(card, 2, false);
   container.appendChild(card);
@@ -742,6 +746,7 @@ function appendMitzvahDetail(container, m) {
   if (takingOnBox) container.appendChild(takingOnBox);
   container.appendChild(el("h4", "section-label", "For Reflection"));
   container.appendChild(richEl("p", "inspiration", m.inspiration, profile, used));
+  container.appendChild(reportLink(`mitzvah:${m.id}`));
 }
 
 function renderDailyMitzvahCard(container, mitzvah) {
@@ -1053,6 +1058,7 @@ function renderPrayerChangesCard(container, date, heb, hebTomorrow, events) {
   }
 
   card.appendChild(el("p", "pc-review", "A learning aid that still needs review by a rabbi. Customs differ between communities — check with your rabbi before relying on it."));
+  card.appendChild(reportLink(`prayer-changes:${heb.hd}-${heb.hm}`));
   makeCollapsible(card, 1, false);
   container.appendChild(card);
   return changes;
@@ -1443,14 +1449,33 @@ function initTabBar() {
     const label = a.textContent;
     a.innerHTML = `<span class="tab-icon" aria-hidden="true">${getIcon(a.dataset.icon)}</span><span>${label}</span>`;
   });
-  // The active tab is the last section whose top has scrolled above 40% of the screen.
+  // Sections that belong to each tab; today's cards (prayer, occasion) count as "Today"
+  // even though they sit below the Prep section on the page.
+  const extra = {
+    top: ["prayer-changes-container", "prayer-container", "morning-mitzvot-container", "occasion-container"]
+  };
+  const sections = [];
+  links.forEach(a => {
+    const id = a.getAttribute("href").slice(1);
+    [id, ...(extra[id] || [])].forEach(sid => sections.push({ id: sid, link: a }));
+  });
+
+  // The active tab owns the lowest section whose top has scrolled past a line
+  // near the top of the screen; at the very bottom of the page, the last tab.
   function updateActiveTab() {
-    const line = window.innerHeight * 0.4;
+    // Sections are scrolled to ~12px from the top (scroll-margin), so a line at 60px
+    // picks the section just tapped even when it's short (like Prep).
+    const line = 60;
     let active = links[0];
-    links.forEach(a => {
-      const target = document.getElementById(a.getAttribute("href").slice(1));
-      if (target && target.getBoundingClientRect().top <= line) active = a;
+    let best = -Infinity;
+    sections.forEach(({ id, link }) => {
+      const target = document.getElementById(id);
+      if (!target || !target.offsetHeight) return;
+      const top = target.getBoundingClientRect().top;
+      if (top <= line && top > best) { best = top; active = link; }
     });
+    const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+    if (atBottom) active = links[links.length - 1];
     links.forEach(a => {
       const on = a === active;
       a.classList.toggle("is-active", on);

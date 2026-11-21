@@ -26,6 +26,9 @@ function oEl(tag, cls, text) {
 
 async function registerServiceWorker() {
   if (!("serviceWorker" in navigator) || location.protocol === "file:") return null;
+  // Subscribed to OneSignal messages: OneSignal registers sw.js itself (with its
+  // parameters); registering it again here would drop its push code.
+  if (typeof pushOptedIn === "function" && pushOptedIn()) return null;
   try {
     swRegistration = await navigator.serviceWorker.register("sw.js");
     return swRegistration;
