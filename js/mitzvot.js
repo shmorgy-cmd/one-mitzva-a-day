@@ -297,5 +297,159 @@ const MITZVOT = [
     ],
     sources: ["Talmud, Berakhot 29b–30a", "Shulchan Aruch, Orach Chaim 110:4–7"],
     inspiration: "Tradition doesn't only pray for arriving safely — it prays for the road itself, \"in peace.\" Every journey has an in-between part. This prayer asks for that part to be held, too."
+  },
+
+  // ---------------------------------------------------------------
+  // Batch 2 (Phase 8)
+  // ---------------------------------------------------------------
+  {
+    id: "tefillin",
+    icon: "tzitzit",
+    title: "Tefillin",
+    subtitle: "Binding words of Torah on the arm and head each weekday morning",
+    intro: "Tefillin are two small black leather boxes holding handwritten passages from the Torah, including the Shema. The Torah says, \"Bind them as a sign on your hand, and they shall be a reminder between your eyes\" — so one is wrapped on the arm, facing the heart, and one is worn on the head.",
+    steps: [
+      "Traditionally worn by men from bar mitzvah during weekday morning prayers — not on Shabbat or major festivals. Practices for women vary by community and movement.",
+      "The arm tefillin goes on first — on the weaker arm (the left for right-handed people) — with a blessing, then the head tefillin.",
+      "Taking them off goes in reverse: head first, then arm. The exact wrapping differs between communities.",
+      "Many synagogues and Chabad centers will happily show you how and lend a pair. If you're in the process of conversion, ask your rabbi when and whether to start."
+    ],
+    sources: ["Deuteronomy 6:8", "Exodus 13:9, 13:16", "Talmud, Menachot 34b–36a", "Shulchan Aruch, Orach Chaim 25–27"],
+    inspiration: "Tefillin tie the mind and the heart together, literally — one box near each. The idea is that what we think and what we feel shouldn't drift apart. For a few minutes each morning, the body itself becomes a reminder of what matters."
+  },
+  {
+    id: "shabbat-candles",
+    icon: "candles-shabbat",
+    title: "Lighting Shabbat Candles",
+    subtitle: "Two flames that turn Friday evening into Shabbat",
+    intro: "Shortly before sunset on Friday, candles are lit to welcome Shabbat — traditionally at least two, for the Torah's two commands to \"remember\" and \"guard\" the day. It's often the moment a home shifts from the rush of the week into rest.",
+    steps: [
+      "Light before sunset — commonly 18 minutes before (40 in Jerusalem). Check the time for your city.",
+      "Traditionally the woman of the home lights; anyone living alone lights for themselves, and others can light too.",
+      "Many light first, cover their eyes and then say the blessing \"…l'hadlik ner shel Shabbat\"; some say the blessing first. Follow your community.",
+      "It's a lovely moment for a quiet personal prayer for family and loved ones. Ask your rabbi whether to say the blessing before conversion."
+    ],
+    sources: ["Talmud, Shabbat 25b", "Rambam, Hilchot Shabbat 5:1", "Shulchan Aruch, Orach Chaim 263"],
+    inspiration: "The Sages said Shabbat candles bring shalom bayit — peace in the home — because no one wants to eat their Friday dinner in the dark. Light is a kind of welcome. Even if nothing else about this Friday is different, try lighting two candles and watching them for a minute."
+  },
+  {
+    id: "havdalah",
+    icon: "goblet",
+    title: "Havdalah",
+    subtitle: "Saying goodbye to Shabbat with wine, spices and flame",
+    intro: "Havdalah (\"separation\") is the short ceremony that ends Shabbat on Saturday night, once three stars are out. It uses all the senses — wine to taste, sweet spices to smell, a braided candle to see — to mark the line between holy time and the week ahead.",
+    steps: [
+      "Wait until Shabbat has ended (check the Havdalah time for your city).",
+      "Blessings are said over wine (or grape juice), fragrant spices and the flame of a braided candle with several wicks.",
+      "Many hold their fingers up to the candle to see the light reflected on their nails, then say the final blessing separating holy and ordinary.",
+      "A common custom is to put out the candle in a little of the leftover wine, and to wish everyone \"Shavua tov\" — a good week."
+    ],
+    sources: ["Exodus 20:8", "Talmud, Pesachim 103a–106a", "Talmud, Berakhot 33a", "Shulchan Aruch, Orach Chaim 296–299"],
+    inspiration: "Tradition says we receive an \"extra soul\" on Shabbat, and the spices at Havdalah comfort us as it leaves. It's a gentle idea: endings deserve attention too. Next Saturday night, try marking the moment instead of letting the week rush back in."
+  },
+  {
+    id: "blessings-for-news",
+    icon: "book-star",
+    title: "Blessings for Good and Hard News",
+    subtitle: "Short blessings for the moments that change a day",
+    intro: "Judaism has a blessing ready for the big moments of life — not only for food. Hearing good news, or news that's painful, both have their own short blessing, so that even the most emotional moments can be met with words.",
+    steps: [
+      "Good news that benefits you and others (like the birth of a child): \"HaTov v'HaMeitiv\" — \"Who is good and does good.\"",
+      "Good news that's mainly yours: Shehecheyanu (see that mitzvah).",
+      "On hearing of a death or very hard news: \"Baruch Dayan HaEmet\" — \"Blessed is the true Judge\" — an acceptance, not a celebration.",
+      "Many say just the closing words in English or Hebrew. There's no wrong way to start."
+    ],
+    sources: ["Mishnah Berakhot 9:2–3", "Talmud, Berakhot 59b–60a", "Shulchan Aruch, Orach Chaim 222–223"],
+    inspiration: "The Mishnah says we bless for the bad just as we bless for the good. That's not pretending pain is fine — it's refusing to face it alone. Words like \"Baruch Dayan HaEmet\" give people something to hold on to when there's nothing else to say."
+  },
+  {
+    id: "onaat-devarim",
+    icon: "heart",
+    title: "Kind Words",
+    subtitle: "Not hurting or embarrassing anyone with what you say",
+    intro: "The Torah forbids \"wronging one another\" — and the Sages read this as being about words. Hurting someone's feelings, humiliating them, or reminding them of a past they've moved on from is treated as a serious wrong. Embarrassing someone in public, the Talmud says, is like shedding blood.",
+    steps: [
+      "Don't remind people of past mistakes they've worked to leave behind — or remind a convert of the life they lived before.",
+      "Never shame someone in front of others; if you need to correct someone, do it privately and gently.",
+      "Avoid teasing that stings, nicknames people dislike, and questions meant to make someone feel small.",
+      "The same rule even covers asking a shopkeeper the price of something you have no intention of buying, just to waste their time."
+    ],
+    sources: ["Leviticus 25:17", "Talmud, Bava Metzia 58b–59a", "Shulchan Aruch, Choshen Mishpat 228"],
+    inspiration: "The Talmud notices that when someone is embarrassed, their face goes pale — as if the blood drained out. That's why it compares shaming to harm. Kindness in speech is something you can practice dozens of times a day."
+  },
+  {
+    id: "ahavat-hager",
+    icon: "heart",
+    title: "Loving the Convert",
+    subtitle: "\"You shall love the stranger, for you were strangers in Egypt\"",
+    intro: "The Torah repeats its call to love and protect the ger — the stranger, and in rabbinic reading, the person who joins the Jewish people — more often than almost any other command. Converts are full members of the Jewish people, and welcoming them is a mitzvah for everyone.",
+    steps: [
+      "Welcome converts and people exploring conversion warmly — invite them for Shabbat, introduce them, include them.",
+      "Never treat a convert as less Jewish, or keep bringing up their background in a way that singles them out.",
+      "Answer questions patiently; every Jew was once a beginner at something.",
+      "If you're converting yourself: this mitzvah is about you. Tradition calls converts \"children of Abraham and Sarah.\""
+    ],
+    sources: ["Deuteronomy 10:19", "Leviticus 19:33–34", "Talmud, Bava Metzia 59b", "Rambam, Letter to Ovadiah the Convert"],
+    inspiration: "When a convert named Ovadiah asked whether he could say \"God of our fathers\" in prayer, Maimonides answered: yes — Abraham is your father. Belonging isn't measured by ancestry. Who in your community might be waiting for someone to make them feel at home?"
+  },
+  {
+    id: "honest-business",
+    icon: "coin",
+    title: "Honest Business",
+    subtitle: "Fair weights, fair prices, and paying people on time",
+    intro: "The Torah commands honest weights and measures, and forbids holding back a worker's wages overnight. The Talmud says that one of the first questions a person is asked after this life is simply: \"Did you deal honestly in business?\" Holiness, in Judaism, includes how you earn and spend.",
+    steps: [
+      "Be truthful about what you sell and what it costs; don't create false impressions.",
+      "Pay workers and freelancers promptly — the Torah specifically says not to make them wait.",
+      "Keep promises and agreements, even small, informal ones.",
+      "Returning extra change, or pointing out a billing mistake in your favor, is the same mitzvah in everyday form."
+    ],
+    sources: ["Leviticus 19:13, 19:35–36", "Deuteronomy 25:13–16", "Talmud, Shabbat 31a", "Shulchan Aruch, Choshen Mishpat 231, 339"],
+    inspiration: "It's easy to treat business as a separate world from spiritual life. The Torah insists otherwise: the same chapter that says \"be holy\" talks about honest scales and paying wages. Where in your working week could honesty become a quiet daily practice?"
+  },
+  {
+    id: "torah-study",
+    icon: "book-star",
+    title: "Learning Torah Every Day",
+    subtitle: "Even a few minutes, at a set time, counts",
+    intro: "Studying Torah is one of the central mitzvot — the Mishnah lists it alongside kindness and honoring parents, and says it's \"equal to them all\" because it leads to all of them. The goal isn't to become a scholar overnight, but to make learning a regular part of every day.",
+    steps: [
+      "Pick a set time, even five or ten minutes — the Sages taught \"make your Torah study a fixed habit.\"",
+      "Start with something accessible: the weekly Torah portion (on this site), a page of Pirkei Avot, or a short daily-learning app or book.",
+      "Learning with a partner (a chavruta) or in a class makes it more alive and helps you keep going.",
+      "Questions are a good sign. In Jewish learning, asking well is part of understanding."
+    ],
+    sources: ["Deuteronomy 6:7", "Mishnah Peah 1:1", "Pirkei Avot 1:15", "Talmud, Shabbat 31a"],
+    inspiration: "Hillel was once too poor to pay for entry to the study hall, so the story goes, he climbed onto the roof to listen through the skylight — in the snow. You don't need anything that dramatic. Just a few minutes today, at a time you'll keep."
+  },
+  {
+    id: "asking-forgiveness",
+    icon: "hand",
+    title: "Asking Forgiveness",
+    subtitle: "Making things right with people, not only with God",
+    intro: "Jewish tradition teaches that Yom Kippur atones for wrongs between a person and God — but wrongs against other people are only forgiven once you've made peace with them. Asking forgiveness, and granting it, is an everyday mitzvah, not only a once-a-year one.",
+    steps: [
+      "Acknowledge what you did specifically and sincerely, and fix any harm you can (for example, returning money or correcting a false story).",
+      "If someone doesn't forgive you at first, tradition says to try again respectfully — up to three times.",
+      "When someone asks you for forgiveness, try to be easy to appease and not to hold on to grudges.",
+      "In situations of abuse or serious harm, there's no obligation to forgive or reconcile — a rabbi or counselor can help you think it through."
+    ],
+    sources: ["Mishnah Yoma 8:9", "Rambam, Hilchot Teshuvah 2:9–10", "Shulchan Aruch, Orach Chaim 606"],
+    inspiration: "Saying \"I'm sorry\" well is one of the hardest and bravest things a person can do. Rambam said that someone who forgives easily shows the character of the Jewish people. Is there one conversation you've been putting off?"
+  },
+  {
+    id: "kindness-to-animals",
+    icon: "tree",
+    title: "Kindness to Animals",
+    subtitle: "Tza'ar ba'alei chayim — not causing animals needless pain",
+    intro: "The Torah tells us to help an overburdened donkey even if it belongs to someone we dislike, and to let animals rest on Shabbat. From verses like these, the Sages derived a general principle: causing animals unnecessary suffering is forbidden, and caring for them is a mitzvah.",
+    steps: [
+      "If you have pets or animals, feed them before you eat yourself — the Talmud learns this from the order of a verse in the Shema.",
+      "Don't cause needless pain — in how animals are kept, handled, worked or played with.",
+      "Help an animal in distress when you safely can.",
+      "Kosher slaughter itself is designed to be quick, and is one reason tradition takes animal welfare seriously."
+    ],
+    sources: ["Exodus 23:5, 23:12", "Deuteronomy 11:15, 22:4", "Talmud, Berakhot 40a", "Talmud, Bava Metzia 32b"],
+    inspiration: "The Midrash says Moses and King David were chosen to lead because of how gently they cared for their flocks. How someone treats those who can't speak for themselves says a lot about them. If you have a pet, try feeding it first today — a small daily reminder."
   }
 ];
