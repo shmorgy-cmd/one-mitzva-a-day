@@ -451,5 +451,159 @@ const MITZVOT = [
     ],
     sources: ["Exodus 23:5, 23:12", "Deuteronomy 11:15, 22:4", "Talmud, Berakhot 40a", "Talmud, Bava Metzia 32b"],
     inspiration: "The Midrash says Moses and King David were chosen to lead because of how gently they cared for their flocks. How someone treats those who can't speak for themselves says a lot about them. If you have a pet, try feeding it first today — a small daily reminder."
+  },
+
+  // ---------------------------------------------------------------
+  // Batch 3 (Phase 8)
+  // ---------------------------------------------------------------
+  {
+    id: "blessings-of-wonder",
+    icon: "sunrise",
+    title: "Blessings for Sights and Smells",
+    subtitle: "A rainbow, thunder, the ocean, a sweet fragrance — each has a blessing",
+    intro: "Jewish tradition has short blessings for moments of wonder in the natural world. Seeing a rainbow, hearing thunder, smelling fragrant spices or seeing the ocean after a long time — each gets its own line of praise, turning a passing moment into a conscious one.",
+    steps: [
+      "Rainbow: \"…zocher habrit\" — \"who remembers the covenant\" (and, tradition says, look but don't stare).",
+      "Thunder: \"…shekocho u'gevurato malei olam\" — \"whose strength and power fill the world.\" Lightning: \"…oseh ma'aseh bereishit\" — \"who makes the work of creation.\"",
+      "Fragrant spices or plants: \"…borei minei besamim\" or \"…borei atzei besamim\" — the blessing depends on the source of the smell.",
+      "Each begins \"Baruch atah Adonai, Eloheinu melech ha'olam…\" — a small card or app with the list makes it easy to start."
+    ],
+    sources: ["Mishnah Berakhot 9:2", "Talmud, Berakhot 43a–43b, 59a", "Shulchan Aruch, Orach Chaim 216–229"],
+    inspiration: "The Talmud says a person should say a hundred blessings a day. That sounds like a lot, until you realize how much there is to notice. Next time the sky does something remarkable, try stopping to say one line about it."
+  },
+  {
+    id: "kosher-animals",
+    icon: "bread",
+    title: "Which Foods Are Kosher",
+    subtitle: "Animals, fish and birds the Torah permits — and how to tell",
+    intro: "The Torah lists which animals may be eaten: land animals that both have split hooves and chew their cud (like cows and sheep), fish with both fins and scales, and certain birds. Most insects and shellfish aren't kosher. Kosher meat also has to be slaughtered and prepared in a specific way.",
+    steps: [
+      "Meat and poultry must come from a kosher animal, be slaughtered by a trained shochet, and have the blood removed (traditionally by soaking and salting).",
+      "Fish need fins and scales — salmon and tuna are kosher; shellfish, shark and catfish aren't.",
+      "In packaged foods, look for a hechsher (a kosher certification symbol) — ingredients can be surprising.",
+      "Keeping kosher is often taken on step by step. Ask a rabbi or teacher which steps to start with."
+    ],
+    sources: ["Leviticus 11", "Deuteronomy 14:3–21", "Talmud, Chullin 59a–66a", "Shulchan Aruch, Yoreh De'ah 79–85"],
+    inspiration: "The Torah doesn't give one reason for kashrut — and that's part of the point. Choosing what you eat is a daily act of commitment, made three times a day. Some find it builds discipline; others find it makes every meal feel a little bit holy."
+  },
+  {
+    id: "tzniut",
+    icon: "heart",
+    title: "Dignity and Modesty",
+    subtitle: "Tzniut — carrying yourself with quiet dignity",
+    intro: "Tzniut is often translated \"modesty,\" but it's broader than clothing: it's about dignity, humility and privacy in how a person dresses, speaks and acts. The prophet Micah sums up what God asks as \"to do justice, love kindness, and walk humbly.\"",
+    steps: [
+      "It applies to everyone: not showing off, not drawing attention to yourself, giving quiet help rather than public displays.",
+      "Speech counts too — talking about others and about yourself with discretion.",
+      "Standards of dress vary widely between communities. If you're joining a particular community, ask your rabbi or a friend there what's customary.",
+      "The heart of it isn't judging others — it's how you carry yourself."
+    ],
+    sources: ["Micah 6:8", "Talmud, Sukkah 49b", "Talmud, Makkot 24a"],
+    inspiration: "The Sages noticed the Torah's most important moments often happen in private. Dignity isn't the same as hiding — it's knowing that your worth doesn't depend on being seen. What would it look like to do one good thing today that nobody knows about?"
+  },
+  {
+    id: "praying-for-others",
+    icon: "hand",
+    title: "Praying for Others",
+    subtitle: "Including other people's needs in your own prayers",
+    intro: "When his sister Miriam was ill, Moses prayed the shortest prayer in the Torah: \"El na, refa na lah\" — \"Please, God, heal her, please.\" Jewish tradition encourages praying for other people — the sick, those in trouble, friends and strangers — in your own words or with traditional texts.",
+    steps: [
+      "Anyone can pray for someone else, in any language, at any time.",
+      "In synagogue, a \"Mi Sheberach\" prayer for healing is often said during the Torah reading — using the person's Hebrew name and their mother's name, if known.",
+      "Tehillim (Psalms) are often said for people who are sick or in danger.",
+      "The Talmud teaches that when you pray for someone else while needing the same thing yourself, you're answered first."
+    ],
+    sources: ["Numbers 12:13", "Talmud, Bava Kamma 92a", "Talmud, Berakhot 12b"],
+    inspiration: "Moses' prayer for Miriam is just five Hebrew words. Prayer doesn't need to be long or eloquent to be real. Who could you hold in mind, even for one sentence, today?"
+  },
+  {
+    id: "head-covering",
+    icon: "star",
+    title: "Covering the Head",
+    subtitle: "The kippah and other head coverings — a sign of awareness",
+    intro: "Many Jewish men wear a kippah (yarmulke), either always or during prayer and meals, as a reminder that there is Someone above. It's a long-standing custom rather than a Torah commandment. Practices for women vary: in many traditional communities, married women cover their hair.",
+    steps: [
+      "Common practice: men cover their heads during prayer, Torah study and when saying blessings; many wear a kippah all day.",
+      "The Talmud tells of a mother who told her son to cover his head \"so that the fear of Heaven will be upon you.\"",
+      "Customs for women differ a lot between communities — from no covering to scarves, hats or wigs after marriage. There's no single right answer for everyone.",
+      "Visiting a synagogue? Kippot are usually available at the door, and anyone is welcome to wear one."
+    ],
+    sources: ["Talmud, Shabbat 156b", "Talmud, Kiddushin 31a", "Shulchan Aruch, Orach Chaim 2:6"],
+    inspiration: "A kippah doesn't do anything practical — and that's its strength. It's a small, constant reminder that you're not the highest thing in the room. Many people find that wearing something on purpose changes how they act, a little."
+  },
+  {
+    id: "giving-with-dignity",
+    icon: "coin",
+    title: "Giving with Dignity",
+    subtitle: "Maimonides' eight levels of tzedakah",
+    intro: "Maimonides ranked giving in eight levels — from giving grudgingly at the bottom, to helping someone become self-sufficient at the top. In between, giving anonymously, so neither side knows the other, protects the dignity of the person receiving help.",
+    steps: [
+      "Highest: helping someone stand on their own — a loan, a job, a partnership.",
+      "Next: giving so that neither the giver nor the receiver knows the other's identity (for example, through a trusted fund).",
+      "Lower levels include giving before being asked, after being asked, too little but kindly — and, at the bottom, grudgingly. Every level still counts.",
+      "Many have a custom of setting aside a tenth of their income (ma'aser) for tzedakah. Ask a rabbi or teacher how it might work for you."
+    ],
+    sources: ["Deuteronomy 15:7–11", "Rambam, Hilchot Matanot Aniyim 10:7–14", "Shulchan Aruch, Yoreh De'ah 249"],
+    inspiration: "Even the lowest rung of Maimonides' ladder — giving grudgingly — is still on the ladder. That's encouraging: you don't need perfect motives to start. Give, and let the giving shape the heart over time."
+  },
+  {
+    id: "comforting-mourners",
+    icon: "candle-memorial",
+    title: "Comforting Mourners",
+    subtitle: "Nichum aveilim — sitting with someone in their loss",
+    intro: "After a close relative's funeral, Jewish mourners \"sit shiva\" for seven days, usually at home, while friends and community come to comfort them. Visiting a shiva house is a mitzvah for anyone — and it's mostly about being present, not about finding the right words.",
+    steps: [
+      "Let the mourner speak first. Often the best thing is to listen, or to share a memory of the person who died.",
+      "Avoid cheerful greetings and attempts to explain the loss; simple presence means more.",
+      "A traditional phrase on leaving is \"HaMakom yenachem etchem…\" — \"May God comfort you among the mourners of Zion and Jerusalem.\"",
+      "Practical help — meals, errands, joining a minyan so the mourner can say Kaddish — is a real comfort."
+    ],
+    sources: ["Genesis 25:11", "Talmud, Sotah 14a", "Talmud, Moed Katan 28b", "Shulchan Aruch, Yoreh De'ah 376"],
+    inspiration: "Job's friends did best in the first seven days, when they simply sat with him in silence. Comfort isn't about fixing grief. Showing up, and staying a while, is the mitzvah."
+  },
+  {
+    id: "saying-amen",
+    icon: "book-star",
+    title: "Saying Amen",
+    subtitle: "Joining in someone else's blessing",
+    intro: "\"Amen\" means \"it is true\" or \"so be it.\" When someone says a blessing within your hearing, answering amen joins you to it. The Talmud goes so far as to say that answering amen can be even greater than saying the blessing yourself.",
+    steps: [
+      "Answer \"amen\" after hearing someone finish a blessing — at the table, in synagogue, anywhere.",
+      "Say it clearly but not too fast, and only after the blessing has ended.",
+      "During Kaddish, the congregation answers \"Amen, yehei shmei rabba…\" — \"Amen, may His great name be blessed…\" — one of the most important responses in the service.",
+      "It's a beautiful way for beginners to participate in prayer before knowing all the words."
+    ],
+    sources: ["Talmud, Berakhot 53b", "Talmud, Shabbat 119b", "Shulchan Aruch, Orach Chaim 124, 215"],
+    inspiration: "Amen is one of the few Hebrew words that's traveled into almost every language. It's a word of agreement — of saying \"me too.\" In prayer, it means nobody has to stand alone."
+  },
+  {
+    id: "respecting-elders",
+    icon: "hand",
+    title: "Respecting Elders and Teachers",
+    subtitle: "\"Rise before the aged, and honor the face of the old\"",
+    intro: "The Torah tells us to stand up for older people and to honor them. The Talmud describes great sages standing up for any elderly person — Jewish or not — out of respect for a life full of experience. Teachers, too, are owed special honor for what they give.",
+    steps: [
+      "Stand when an elderly person or your teacher enters the room, or offer your seat.",
+      "Speak respectfully and patiently, and value their experience.",
+      "Thank the people who have taught you — tradition says even someone who taught you a single word deserves honor.",
+      "Visiting or calling an older relative or neighbor is this mitzvah in action."
+    ],
+    sources: ["Leviticus 19:32", "Talmud, Kiddushin 32b–33a", "Pirkei Avot 4:12", "Shulchan Aruch, Yoreh De'ah 244"],
+    inspiration: "The Talmud says Rabbi Yochanan would stand for elderly non-Jews, saying, \"How many troubles have passed over them!\" Respect for age is respect for everything a person has carried. Who is an older person in your life you could honor this week?"
+  },
+  {
+    id: "making-peace",
+    icon: "heart",
+    title: "Making Peace Between People",
+    subtitle: "Following Aaron: \"love peace and pursue peace\"",
+    intro: "The Mishnah lists bringing peace between people among the deeds whose reward is felt even in this life. Aaron, Moses' brother, was famous for it: when two people quarreled, he would quietly go to each one and help them find their way back to the other.",
+    steps: [
+      "When friends or family are in conflict, look for ways to help each one see the other's side — gently, and without taking over.",
+      "Speak well of each person to the other; don't carry hurtful remarks back and forth.",
+      "Make the first move in your own disagreements — a call, a note, an invitation.",
+      "Peace doesn't mean ignoring real harm; it means not letting pride keep people apart."
+    ],
+    sources: ["Mishnah Peah 1:1", "Pirkei Avot 1:12", "Avot de-Rabbi Natan 12", "Talmud, Yevamot 65b"],
+    inspiration: "Hillel said: \"Be like the students of Aaron — love peace and pursue it.\" Pursue is an active word: peace usually doesn't arrive by waiting. Is there a small bridge you could help build today?"
   }
 ];
