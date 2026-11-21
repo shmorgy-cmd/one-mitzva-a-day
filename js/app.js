@@ -303,6 +303,9 @@ function renderOccasionCard(container, occ, ctx, index) {
   const takingOnBox = renderTakingOnBox(resolve(extras.takingOn, ctx), profile, used);
   if (takingOnBox) card.appendChild(takingOnBox);
 
+  const convertBox = renderConvertNoteBox(occ.id, profile, used);
+  if (convertBox) card.appendChild(convertBox);
+
   const inspiration = resolve(occ.content.inspiration, ctx);
   if (inspiration) {
     card.appendChild(el("h4", "section-label", "For Reflection"));

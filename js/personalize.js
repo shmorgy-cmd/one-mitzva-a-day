@@ -998,6 +998,40 @@ const OCCASION_EXTRAS = {
 };
 
 // ---------------------------------------------------------------------
+// "If you're converting" notes — shown only for the conversion profile, on
+// the occasions where someone in the process most often has questions about
+// their status, what to do (or not yet do), or how it feels.
+// ---------------------------------------------------------------------
+
+const CONVERT_NOTES = {
+  "shabbat": "Many rabbis ask people who haven't yet converted to keep Shabbat warmly but not completely — often by doing one small, deliberate act of \"work\" — because full Shabbat observance is described as a sign of the covenant itself, which you enter at conversion. Other rabbis guide this differently. It isn't a test of commitment; ask your sponsoring rabbi what they'd like you to do.",
+  "erev-shabbat": "Candle lighting is often one of the first practices people take on. Some rabbis suggest lighting without the blessing, or saying it without God's name, until you've converted, because the blessing says God \"commanded us.\" Your rabbi will tell you which — either way, the light and the pause are fully yours to enjoy.",
+  "rosh-hashana": "You're welcome at High Holiday services, and many synagogues set aside seats for people who are learning. It's very normal to feel like an outsider the first time — the liturgy is long and unfamiliar. Many converts remember hearing the shofar as the moment something clicked. Just listening is enough.",
+  "yom-kippur": "Before conversion, you aren't obligated to fast, though many people choose to as a way of practicing — partly or fully, if their health allows. Talk to your rabbi (and your doctor, if needed) beforehand. Teshuva — returning and starting over — is open to every human being, and today it's yours too.",
+  "sukkot": "Sukkot has a universal side: in Temple times, seventy offerings were brought on Sukkot for the seventy nations of the world. Sitting in a sukkah as a guest — the Ushpizin tradition is all about guests — is a beautiful way to experience the holiday before conversion. You'll be welcomed in almost any community sukkah.",
+  "simchat-torah": "Simchat Torah celebrates the Torah you're choosing to take on. Join the dancing — no one is checking your status at the door. Ask your rabbi about community customs on holding a Torah scroll; in any case, watching the scrolls carried in joy is a powerful way to feel part of it.",
+  "chanukah": "Chanukah is a story about choosing Jewish identity when the surrounding culture pulled the other way — something many converts feel deeply. If your family celebrates Christmas, it can be a tender season. Many converts find warm ways to honor their family while keeping their own practice; it's a good conversation to have with your rabbi.",
+  "purim": "Purim is the story of Esther, who kept her Jewish identity hidden until the moment she chose to stand with her people. The day's mitzvot — giving to the poor, sending food to friends, hearing the Megillah — are easy to take part in right now, and a joyful way to connect with a community.",
+  "pesach-seder-nights": "You're warmly welcome at a Seder. The Haggadah asks everyone to see themselves as having left Egypt — and Maimonides told a convert that he, too, may say \"who brought our fathers out of Egypt,\" because Abraham is the father of everyone who joins. Ask your rabbi how to approach chametz in your own home before conversion.",
+  "shavuot": "Shavuot belongs to converts in a special way. The Book of Ruth, read today, tells of a woman who chose the Jewish people: \"Your people shall be my people, and your God my God.\" The Talmud teaches that the souls of all future converts stood at Sinai — tradition holds you were already there.",
+  "tisha-bav": "Joining the Jewish people means joining its memory, the sorrow as well as the joy. Ruth's \"your people shall be my people\" includes days like this one. Before conversion, fasting is a personal choice — ask your rabbi. Sitting with the readings, even for a while, is a meaningful way to take part.",
+  "yom-hashoah": "Many people in the conversion process wonder whether this grief is \"theirs.\" Joining the Jewish people means carrying its memory, and being present today matters. Some converts also have family histories connected to the war in other, complicated ways; that can be hard, and it's worth talking through with your rabbi or someone you trust.",
+  "rosh-chodesh": "Living by the Hebrew calendar is a quiet but real part of becoming Jewish — noticing the new moon, knowing what month it is, feeling the year's rhythm. Many people use Rosh Chodesh as a monthly check-in: what have I learned, what's next? It's a natural time for a conversation with your rabbi.",
+  "sefirat-haomer": "The Omer is a journey from freedom to Sinai, counted one day at a time — a fitting picture of conversion itself. Many rabbis suggest counting each night without the blessing before conversion. Either way, the steady, daily counting is the point: growth happens a day at a time.",
+  "generic-weekday": "Ordinary days are where conversion really happens. A beit din (rabbinic court) usually cares less about how much you know than about steady, sincere commitment: regular prayer, learning, Shabbat, and belonging to a community. One small practice, kept consistently, is worth more than many tried once."
+};
+
+/** "If you're converting" box — conversion profile only. */
+function renderConvertNoteBox(occasionId, profile, used) {
+  const text = CONVERT_NOTES[occasionId];
+  if (!text || !isConverting(profile)) return null;
+  const box = pzEl("div", "convert-box");
+  box.appendChild(pzEl("p", "convert-box-label", "If you're converting"));
+  box.appendChild(pzEl("p", null, glossify(text, profile, used)));
+  return box;
+}
+
+// ---------------------------------------------------------------------
 // Everyday mitzvot (keyed by mitzvot.js ids)
 // ---------------------------------------------------------------------
 
