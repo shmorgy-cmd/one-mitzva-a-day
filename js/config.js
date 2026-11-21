@@ -12,6 +12,11 @@ const SITE_CONFIG = {
   // ".goatcounter.com" in your GoatCounter site address, e.g. "onemitzva".
   goatCounterCode: "",
 
+  // Kit (kit.com) weekly email sign-up. In Kit: Grow → Landing Pages & Forms →
+  // your form → Publish → HTML; the number in
+  // action="https://app.kit.com/forms/1234567/subscriptions" is the form ID.
+  kitFormId: "",
+
   // "Report an error" links go here. Leave empty to use GitHub issues instead.
   reportEmail: "",
   reportIssuesUrl: "https://github.com/shmorgy-cmd/one-mitzva-a-day/issues/new"

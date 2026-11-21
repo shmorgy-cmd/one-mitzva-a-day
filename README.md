@@ -54,6 +54,7 @@ The "Print for…" button in the Today summary ([`js/print.js`](js/print.js)) bu
 Each one stays off while its value in `js/config.js` is empty:
 
 - **`oneSignalAppId`** — weekly/holiday push messages. Create a free OneSignal account → New App → Web; site URL `https://shmorgy-cmd.github.io`; choose "Custom code"; under advanced settings set the service worker path to `/one-mitzva-a-day/`, the main and updater worker filename to `sw.js`, and the scope to `/one-mitzva-a-day/`. Paste the App ID here. The OneSignal script only loads for visitors who turn on "Weekly & holiday messages" in Settings. Send messages from the OneSignal dashboard.
+- **`kitFormId`** — the weekly email sign-up card. In Kit, create a form, then Publish → HTML and copy the number from `action="https://app.kit.com/forms/<ID>/subscriptions"`. The card is a plain HTML form posted to Kit (no Kit script loads); it stays hidden while this is empty.
 - **`goatCounterCode`** — cookie-free visit counts. Create a site at goatcounter.com and paste its code (the part before `.goatcounter.com`).
 - **`reportEmail`** — where "Report an error" links go. Empty = a prefilled GitHub issue on this repo.
 

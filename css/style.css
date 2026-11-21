@@ -433,6 +433,86 @@ button.ts-row:focus-visible {
 .settings-push { margin-top: 12px; }
 
 /* ---------------------------------------------------------------- */
+/* Weekly email sign-up                                               */
+/* ---------------------------------------------------------------- */
+
+.newsletter-card {
+  margin: 28px 0 24px;
+  padding: 24px 26px;
+  background: linear-gradient(160deg, #f3f6fd 0%, var(--paper) 70%);
+  border: 1px solid #c9d6f2;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.newsletter-card h3 { margin: 0 0 4px; }
+.newsletter-sub { color: var(--ink-soft); margin: 0 0 14px; }
+
+.newsletter-form {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.newsletter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.newsletter-field em { font-weight: 400; }
+
+.newsletter-field input {
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.newsletter-field input:focus {
+  outline: none;
+  border-color: var(--flag-blue-bright);
+  box-shadow: 0 0 0 3px rgba(47, 102, 208, 0.15);
+}
+
+.newsletter-btn {
+  padding: 11px 20px;
+  border: none;
+  border-radius: 999px;
+  background: var(--flag-blue);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.newsletter-btn:hover { background: var(--flag-blue-deep); }
+.newsletter-btn:disabled { opacity: 0.6; cursor: default; }
+
+.newsletter-fine,
+.newsletter-status {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.newsletter-status { color: var(--flag-blue-deep); font-weight: 600; }
+
+@media (max-width: 600px) {
+  .newsletter-card { padding: 20px 18px; }
+  .newsletter-form { grid-template-columns: 1fr; }
+}
+
+/* ---------------------------------------------------------------- */
 /* Offline notice, install hint, reminder toast                       */
 /* ---------------------------------------------------------------- */
 

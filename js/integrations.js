@@ -87,6 +87,66 @@ function loadAnalytics() {
   document.head.appendChild(s);
 }
 
+// --- Weekly email sign-up (Kit) -------------------------------------------------
+
+/** Renders the sign-up card when a Kit form ID is configured. It's a plain HTML
+ *  form posted to Kit — no Kit script is loaded, and nothing is sent until the
+ *  visitor presses Subscribe. */
+function renderNewsletterCard() {
+  const container = document.getElementById("newsletter-container");
+  if (!container) return;
+  container.innerHTML = "";
+  const formId = SITE_CONFIG && SITE_CONFIG.kitFormId;
+  if (!formId) return;
+
+  const card = document.createElement("article");
+  card.className = "newsletter-card";
+  card.innerHTML = `
+    <h3>This week in Judaism</h3>
+    <p class="newsletter-sub">One short email before each Shabbat: what's coming up, a mitzvah to try, and a link to the printable Shabbat sheet.</p>
+    <form class="newsletter-form" method="post" novalidate>
+      <label class="newsletter-field">
+        <span>First name <em>(optional)</em></span>
+        <input type="text" name="fields[first_name]" autocomplete="given-name" maxlength="60" />
+      </label>
+      <label class="newsletter-field">
+        <span>Email</span>
+        <input type="email" name="email_address" autocomplete="email" required />
+      </label>
+      <button type="submit" class="newsletter-btn">Subscribe</button>
+      <p class="newsletter-fine">Sent with Kit. We'll only use your email for this newsletter, and you can unsubscribe from any email.</p>
+      <p class="newsletter-status" role="status"></p>
+    </form>`;
+  const form = card.querySelector("form");
+  form.action = `https://app.kit.com/forms/${encodeURIComponent(formId)}/subscriptions`;
+  const status = card.querySelector(".newsletter-status");
+  const emailInput = form.querySelector('input[type="email"]');
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!emailInput.value || !emailInput.checkValidity()) {
+      status.textContent = "Please enter a valid email address.";
+      emailInput.focus();
+      return;
+    }
+    const btn = form.querySelector("button");
+    btn.disabled = true;
+    status.textContent = "Subscribing…";
+    try {
+      // Kit doesn't allow reading the reply from another site, so the request is
+      // sent "no-cors"; a network failure still lands in the catch below.
+      await fetch(form.action, { method: "POST", body: new FormData(form), mode: "no-cors" });
+      form.reset();
+      status.textContent = "Almost done — check your inbox and confirm your subscription.";
+    } catch (err) {
+      status.textContent = "That didn't go through — please check your connection and try again.";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+  container.appendChild(card);
+}
+
 // --- Report an error --------------------------------------------------------------
 
 /** A small "Report an error" link for a content card. The report includes the
@@ -123,5 +183,6 @@ function reportLink(cardId) {
 
 document.addEventListener("DOMContentLoaded", () => {
   loadAnalytics();
+  renderNewsletterCard();
   if (pushOptedIn()) loadOneSignal().catch(e => console.warn("OneSignal", e));
 });
