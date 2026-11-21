@@ -1,8 +1,8 @@
 /**
  * prayers.js — figures out which of the three daily prayers (Shacharit,
  * Mincha, Maariv) we're currently in the window for, using precise zmanim
- * (halachic times) from Hebcal when the visitor shares their location, and
- * a reasonable clock-based approximation otherwise.
+ * (halachic times) from Hebcal for the visitor's saved city (settings.js),
+ * and a reasonable clock-based approximation when no city is saved.
  */
 
 const ZMANIM_BASE = "https://www.hebcal.com/zmanim";
@@ -54,21 +54,8 @@ const PRAYERS = {
 
 function pad2(n) { return String(n).padStart(2, "0"); }
 
-/** Try to get the visitor's location for precise zmanim; resolves to null on any failure/denial. */
-function tryGeolocate(timeoutMs = 6000) {
-  return new Promise((resolve) => {
-    if (!("geolocation" in navigator)) return resolve(null);
-    const timer = setTimeout(() => resolve(null), timeoutMs);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => { clearTimeout(timer); resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }); },
-      () => { clearTimeout(timer); resolve(null); },
-      { timeout: timeoutMs, maximumAge: 60 * 60 * 1000 }
-    );
-  });
-}
-
 async function fetchZmanim(loc, dateISO) {
-  const url = `${ZMANIM_BASE}?cfg=json&latitude=${loc.lat}&longitude=${loc.lon}&date=${dateISO}`;
+  const url = `${ZMANIM_BASE}?cfg=json&date=${dateISO}${hebcalLocationQuery(loc)}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("zmanim request failed");
   const data = await res.json();
@@ -94,15 +81,36 @@ function determinePrayerWindow(now, times) {
   return { key: "maariv", precise: false };
 }
 
-async function loadPrayerCard(today) {
+/** Uses the saved city (if any) — never prompts for browser location on its own. */
+async function loadPrayerCard(today, location) {
   const now = new Date();
   let times = null;
-  try {
-    const loc = await tryGeolocate();
-    if (loc) times = await fetchZmanim(loc, toISO(today));
-  } catch (e) {
-    console.warn("zmanim fetch failed, using clock estimate", e);
+  if (location) {
+    try {
+      times = await fetchZmanim(location, toISO(today));
+    } catch (e) {
+      console.warn("zmanim fetch failed, using clock estimate", e);
+    }
   }
   const { key, precise } = determinePrayerWindow(now, times);
-  return { prayer: PRAYERS[key], key, precise, times };
+  return { prayer: PRAYERS[key], key, precise, times, placeName: location ? location.name : null };
+}
+
+function fmtZman(iso) {
+  // Hebcal zmanim are ISO strings in the city's own time zone; show that wall-clock time.
+  const m = /T(\d{2}):(\d{2})/.exec(iso || "");
+  if (!m) return null;
+  return new Date(2000, 0, 1, Number(m[1]), Number(m[2])).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+/** The window for the current prayer, as exact clock times for the saved city. */
+function prayerWindowTimes(key, times) {
+  if (!times) return null;
+  const range = {
+    shacharit: [times.alotHaShachar, times.chatzot, "Dawn", "midday"],
+    mincha: [times.minchaGedola, times.sunset, "Earliest", "sunset"],
+    maariv: [times.tzeit85deg || times.dusk, times.chatzotNight, "Nightfall", "halachic midnight (ideally)"]
+  }[key];
+  if (!range || !range[0] || !range[1]) return null;
+  return `${range[2]} ${fmtZman(range[0])} until ${range[3]} ${fmtZman(range[1])}`;
 }

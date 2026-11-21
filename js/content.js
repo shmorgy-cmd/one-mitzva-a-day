@@ -420,7 +420,8 @@ const OCCASIONS = [
     icon: "matzah",
     title: "Pesach — Chol HaMoed",
     priority: 60,
-    match: (ctx) => ctx.findEvent(e => /^Pesach (III|IV|V|VI)(\s|$)/.test(e.title) && ctx.isToday(e.date)),
+    // Hebcal marks every Chol HaMoed day "(CH’’M)"; in Israel that includes Pesach II.
+    match: (ctx) => ctx.findEvent(e => /^Pesach [IVX]+ \(CH/.test(e.title) && ctx.isToday(e.date)),
     content: {
       intro: "Today is one of the intermediate days (Chol HaMoed) of Pesach — a middle status between the fuller restrictions of the first days and an ordinary weekday.",
       halacha: [

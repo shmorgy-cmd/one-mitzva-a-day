@@ -898,7 +898,255 @@ h1, h2, h3, h4 {
   transition: all 0.18s ease;
 }
 
-.profile-pill svg { width: 16px; height: 16px; }
+.profile-pill svg { width: 16px; height: 16px; flex: 0 0 auto; }
+
+.profile-pill span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-pill { max-width: 100%; }
+
+/* ---------------------------------------------------------------- */
+/* Times card                                                         */
+/* ---------------------------------------------------------------- */
+
+.times-card {
+  margin: 18px 0 6px;
+  padding: 16px 20px;
+  background: var(--paper);
+  border: 1px solid var(--gold-light);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+.times-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.times-head h3 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.times-place {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+}
+
+.times-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+.times-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 7px 0;
+  border-top: 1px solid var(--line);
+}
+
+.times-list li:first-child { border-top: none; }
+
+.times-label { color: var(--ink); }
+
+.times-value {
+  font-family: "Fraunces", serif;
+  font-weight: 700;
+  color: var(--flag-blue-deep);
+  font-size: 1.1rem;
+  white-space: nowrap;
+}
+
+.times-note,
+.times-empty {
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+  margin: 8px 0 0;
+}
+
+.times-set-city,
+.settings-done {
+  margin-top: 10px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: none;
+  background: var(--flag-blue);
+  color: #fff;
+  font-family: "Source Sans 3", sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.times-set-city:hover,
+.settings-done:hover { background: var(--flag-blue-deep); }
+
+/* ---------------------------------------------------------------- */
+/* Settings panel                                                     */
+/* ---------------------------------------------------------------- */
+
+.onboarding-modal.settings-modal { text-align: left; }
+
+.settings-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-head .onboarding-title { margin: 0; }
+
+.settings-close {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.settings-close:hover { color: var(--flag-blue-deep); }
+
+.settings-privacy {
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+  margin: 4px 0 8px;
+}
+
+.settings-section {
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+
+.settings-label {
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 4px;
+}
+
+.settings-help {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+}
+
+.settings-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.settings-current-name { font-weight: 700; color: var(--flag-blue-deep); }
+.settings-current-region { color: var(--ink-soft); }
+.settings-current-none { color: var(--ink-soft); font-style: italic; }
+
+.settings-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 1rem;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: var(--flag-blue-bright);
+  box-shadow: 0 0 0 3px rgba(47, 102, 208, 0.15);
+}
+
+.settings-results {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+}
+
+.settings-result {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.settings-result:hover,
+.settings-result:focus-visible {
+  background: #eef2fc;
+  outline: none;
+}
+
+.settings-result-name { font-weight: 600; color: var(--flag-blue-deep); }
+.settings-result-region { display: block; font-size: 0.82rem; color: var(--ink-soft); }
+
+.settings-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 8px;
+  color: var(--flag-blue);
+  font: inherit;
+  font-size: 0.88rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.settings-current .settings-link-btn { margin-top: 0; }
+
+.settings-status {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  margin: 6px 0 0;
+  min-height: 1em;
+}
+
+.settings-radios {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-radio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.settings-radio input { accent-color: var(--flag-blue); width: 18px; height: 18px; }
+
+.settings-community { margin-top: 14px; }
+
+.settings-done {
+  display: block;
+  margin: 8px 0 0 auto;
+}
+
+.prayer-set-city { margin: 0 0 12px; }
+
+@media (max-width: 600px) {
+  .onboarding-modal.settings-modal { padding: 24px 20px; }
+}
 
 .profile-pill:hover {
   border-color: var(--flag-blue-bright);

@@ -63,9 +63,16 @@ function needsErevTavshilin(yomTovFirstDay) {
 async function loadCalendarWindow(today) {
   const start = toISO(addDays(today, -25));
   const end = toISO(addDays(today, 40));
-  const url = `${HEBCAL_BASE}?v=1&cfg=json&start=${start}&end=${end}&maj=on&min=on&mod=on&nx=on&mf=on&ss=on&s=on&o=on&leyning=on`;
+  const url = `${HEBCAL_BASE}?v=1&cfg=json&start=${start}&end=${end}&maj=on&min=on&mod=on&nx=on&mf=on&ss=on&s=on&o=on&leyning=on${hebcalCalendarQuery(currentSettings)}`;
   const data = await fetchJSON(url);
-  return (data.items || []).map(e => ({ ...e, date: startOfDay(parseLocalDate(e.date)) }));
+  // Timed events (candle lighting, Havdalah, fast begins/ends) come as
+  // "2026-12-18T16:12:00-05:00" — keep the wall-clock time for display, in the
+  // saved city's own time zone, and use the date part for matching days.
+  return (data.items || []).map(e => ({
+    ...e,
+    time: e.date.length > 10 ? e.date.slice(11, 16) : null,
+    date: startOfDay(parseLocalDate(e.date.slice(0, 10)))
+  }));
 }
 
 async function loadHebrewDate(today) {
@@ -113,7 +120,8 @@ function buildContext(today, events, hebrewDateInfo, profile) {
   }
 
   // Omer count: Pesach day 2 (16 Nisan) is Omer day 1. Find Pesach II event.
-  const pesachII = findEvent(e => e.title === "Pesach II" || e.title === "Pesach II (CH''M)");
+  // "Pesach II" outside Israel; "Pesach II (CH’’M)" (Chol HaMoed) in Israel.
+  const pesachII = findEvent(e => /^Pesach II\b/.test(e.title));
   let omerDay = -1;
   if (pesachII) {
     const diff = daysBetween(pesachII.date, today) + 1;
@@ -615,9 +623,20 @@ function renderPrayerCard(container, prayerInfo) {
   headRow.appendChild(iconBadge(prayer.icon, "icon-badge--gold"));
   const titleWrap = el("div");
   titleWrap.appendChild(el("h3", null, prayer.title));
-  titleWrap.appendChild(el("p", "torah-meta", `Right now (${prayer.window}${precise ? ", based on your location" : ", approximate — set your location for exact times"})`));
+  const windowText = precise ? prayerWindowTimes(prayerInfo.key, prayerInfo.times) : null;
+  titleWrap.appendChild(el("p", "torah-meta", precise
+    ? `Right now in ${prayerInfo.placeName}${windowText ? ` · ${windowText}` : ""}`
+    : `Right now (${prayer.window}, approximate)`));
   headRow.appendChild(titleWrap);
   card.appendChild(headRow);
+
+  if (!precise) {
+    // Sits outside the collapsible header, so tapping it doesn't toggle the card.
+    const setCity = el("button", "settings-link-btn prayer-set-city", "Set your city for exact times");
+    setCity.type = "button";
+    setCity.addEventListener("click", openSettings);
+    card.appendChild(setCity);
+  }
 
   const profile = currentProfile;
   const extras = PRAYER_EXTRAS[prayerInfo.key] || {};
@@ -638,7 +657,8 @@ function renderPrayerCard(container, prayerInfo) {
   card.appendChild(el("h4", "section-label", "For Reflection"));
   card.appendChild(richEl("p", "inspiration", prayer.content.inspiration, profile, used));
 
-  makeCollapsible(card, 2, false);
+  // Keep the header, the intro and (when shown) the "set your city" link visible.
+  makeCollapsible(card, precise ? 2 : 3, false);
   container.appendChild(card);
 }
 
@@ -927,6 +947,9 @@ function ordinal(n) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
+const GEAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>';
+
+/** The settings button under the date nav — summarizes city + profile and opens the panel. */
 function renderProfilePill(profile) {
   const existing = document.getElementById("profile-pill");
   if (existing) existing.remove();
@@ -934,18 +957,91 @@ function renderProfilePill(profile) {
   const pill = el("button", "profile-pill");
   pill.id = "profile-pill";
   pill.type = "button";
-  const label = profile && profile.reason
-    ? `${reasonLabel(profile.reason)}${profile.community ? " · " + communityLabel(profile.community) : ""}`
-    : "Personalize this page";
-  pill.innerHTML = `${getIcon("book-star")}<span>${label}</span>`;
-  pill.addEventListener("click", () => {
-    openOnboarding((newProfile) => {
-      currentProfile = newProfile;
-      renderProfilePill(newProfile);
-      setViewingDate(viewingDate);
-    });
-  });
+  pill.setAttribute("aria-label", `Settings: ${settingsSummary(currentSettings, profile)}`);
+  pill.innerHTML = GEAR_SVG;
+  pill.appendChild(el("span", null, settingsSummary(currentSettings, profile)));
+  pill.addEventListener("click", openSettings);
   document.querySelector(".date-nav").insertAdjacentElement("afterend", pill);
+}
+
+function openSettings() {
+  openSettingsPanel((changed) => { if (changed) refreshAll(); });
+}
+
+/** Re-read settings and re-fetch everything that depends on location, the
+ *  Israel setting, or the profile. */
+async function refreshAll() {
+  currentSettings = getSettings();
+  currentProfile = getProfile();
+  renderProfilePill(currentProfile);
+  browseEvents = null;
+  try {
+    realTodayEvents = await loadCalendarWindow(realToday);
+    const countdownContainer = document.getElementById("countdown-container");
+    countdownContainer.innerHTML = "";
+    renderCountdownStrip(countdownContainer, realToday, realTodayEvents, (date) => setViewingDate(date));
+  } catch (e) {
+    console.error(e);
+  }
+  await setViewingDate(viewingDate);
+}
+
+// --- Times card ------------------------------------------------------
+
+function fmtClock(hhmm) {
+  const [h, m] = hhmm.split(":").map(Number);
+  return new Date(2000, 0, 1, h, m).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+/** Days when a times card is worth showing even before a city is set. */
+function isTimesDay(events, date) {
+  const dow = date.getDay();
+  if (dow === 5 || dow === 6) return true;
+  return events.some(e => daysBetween(e.date, date) === 0 &&
+    (e.yomtov || /^Erev /.test(e.title) || e.subcat === "fast"));
+}
+
+function timedEventLabel(e) {
+  if (e.category === "candles") return e.memo && /Parashat|Shabbat/.test(e.memo) ? "Shabbat candle lighting" : "Candle lighting";
+  if (e.category === "havdalah") return e.date.getDay() === 6 ? "Shabbat ends · Havdalah" : "Holiday ends · Havdalah";
+  if (/^Fast begins/.test(e.title)) return `Fast begins${e.memo ? " · " + e.memo : ""}`;
+  if (/^Fast ends/.test(e.title)) return `Fast ends${e.memo ? " · " + e.memo : ""}`;
+  return e.title;
+}
+
+function renderTimesCard(container, events, date) {
+  container.innerHTML = "";
+  const timed = events
+    .filter(e => e.time && daysBetween(e.date, date) === 0)
+    .filter(e => e.category === "candles" || e.category === "havdalah" || /^Fast (begins|ends)/.test(e.title))
+    .sort((a, b) => a.time.localeCompare(b.time));
+
+  if (!timed.length && !(isTimesDay(events, date) && !currentSettings.location)) return;
+
+  const card = el("article", "times-card");
+  const head = el("div", "times-head");
+  head.appendChild(el("h3", null, "Times today"));
+  if (currentSettings.location) head.appendChild(el("span", "times-place", `for ${currentSettings.location.name}`));
+  card.appendChild(head);
+
+  if (!timed.length) {
+    card.appendChild(el("p", "times-empty", "Set your city to see candle-lighting, Havdalah and fast times for today."));
+    const btn = el("button", "times-set-city", "Set your city");
+    btn.type = "button";
+    btn.addEventListener("click", openSettings);
+    card.appendChild(btn);
+  } else {
+    const list = el("ul", "times-list");
+    timed.forEach(e => {
+      const li = el("li");
+      li.appendChild(el("span", "times-label", timedEventLabel(e)));
+      li.appendChild(el("span", "times-value", fmtClock(e.time)));
+      list.appendChild(li);
+    });
+    card.appendChild(list);
+    card.appendChild(el("p", "times-note", "Times from Hebcal. Customs differ (for example, many light candles 40 minutes before sunset in Jerusalem) — follow your community."));
+  }
+  container.appendChild(card);
 }
 
 // --- Browsing state -------------------------------------------------
@@ -960,6 +1056,7 @@ let browseEvents = null;
 let browseWindowStart = null;
 let browseWindowEnd = null;
 let currentProfile = null;
+let currentSettings = getSettings();
 const hebrewDateCache = new Map();
 
 async function ensureEventsCover(date) {
@@ -1010,6 +1107,7 @@ async function setViewingDate(date) {
   document.getElementById("hebrew-date").textContent = hebrewInfo ? hebrewInfo.hebrew || "" : "";
   document.getElementById("gregorian-date").textContent = fmtDate(date);
   renderViewingBanner(date);
+  renderTimesCard(document.getElementById("times-container"), events, date);
 
   const ctx = buildContext(date, events, hebrewInfo, currentProfile);
   const occasions = pickOccasions(ctx);
@@ -1046,7 +1144,7 @@ async function setViewingDate(date) {
   prayerContainer.innerHTML = "";
   morningContainer.innerHTML = "";
   if (daysBetween(realToday, date) === 0) {
-    const prayerInfo = await loadPrayerCard(date).catch(e => { console.error(e); return null; });
+    const prayerInfo = await loadPrayerCard(date, currentSettings.location).catch(e => { console.error(e); return null; });
     renderPrayerCard(prayerContainer, prayerInfo);
     if (prayerInfo && prayerInfo.key === "shacharit") {
       renderMorningMitzvotCard(morningContainer);
