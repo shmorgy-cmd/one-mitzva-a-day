@@ -1492,6 +1492,99 @@ button.ts-row:focus-visible {
 .settings-done:hover { background: var(--flag-blue-deep); }
 
 /* ---------------------------------------------------------------- */
+/* "What to do today" card                                            */
+/* ---------------------------------------------------------------- */
+
+.guide-card {
+  margin-top: 18px;
+  border: 1px solid var(--gold-light);
+}
+
+.dg-item {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: #fbfaf6;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--gold);
+  border-radius: 10px;
+}
+
+.dg-item p { margin: 0; }
+
+.dg-title {
+  font-weight: 700;
+  font-size: 1.02rem;
+  color: var(--flag-blue-deep);
+}
+
+.dg-when {
+  margin-top: 2px !important;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #8a6418;
+}
+
+.dg-steps {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.dg-steps li { margin-bottom: 4px; }
+
+.dg-blessing {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.dg-blessing-name {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.dg-blessing-he {
+  font-family: "Frank Ruhl Libre", serif;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--flag-blue-deep);
+  margin-top: 4px !important;
+}
+
+.dg-blessing-tr {
+  font-style: italic;
+  margin-top: 4px !important;
+}
+
+.dg-blessing-en {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin-top: 2px !important;
+}
+
+.dg-sub,
+.dg-convert,
+.dg-setcity {
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+}
+
+.dg-convert {
+  padding: 8px 12px;
+  background: #eef8f6;
+  border: 1px solid #a9d6cf;
+  border-radius: 8px;
+  color: #165d52;
+}
+
+.dg-pray { margin: 0 0 4px; }
+
+/* ---------------------------------------------------------------- */
 /* Prayer changes card                                                */
 /* ---------------------------------------------------------------- */
 

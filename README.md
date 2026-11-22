@@ -39,6 +39,10 @@ The Settings panel ([`js/settings.js`](js/settings.js)) stores the visitor's cit
 
 [`js/prayer-changes.js`](js/prayer-changes.js) works out what changes in the prayers for a given day (Ya'aleh v'Yavo, Hallel, Tachanun, Al HaNissim, fast-day additions, the Omer, Avinu Malkeinu, Selichot, the Ten Days changes, and the seasonal rain/dew wording) from the Hebrew date, the Israel setting and Hebcal's events. It's a pure function with no page code. Open [`tests.html`](tests.html) on the local server to check it against about 25 known dates (it fetches live Hebcal data). **The halachic content still needs rabbinic review.**
 
+## "What to do today" guide
+
+[`js/daily-guide.js`](js/daily-guide.js) turns each day into concrete instructions — **tonight** (the evening that starts the next Jewish day) and **today**: how many Chanukah candles and in what order, which blessings (written out in Hebrew, transliteration and English — e.g. Shehecheyanu only on the first night), Shabbat/Yom Tov candles with the right blessing, Kiddush and Havdalah variants, the Seder, the chametz search and deadlines, Eruv Tavshilin, the shofar and Tashlich, the lulav (not on Shabbat), the sukkah and Ushpizin, the Purim mitzvot, fast times, and the day's readings. Times come from Hebcal's events for the saved city. `tests.html` checks it on known dates.
+
 ## Printable Shabbat / Yom Tov sheet
 
 The "Print for…" button in the Today summary ([`js/print.js`](js/print.js)) builds a black-and-white sheet for the next Shabbat or Yom Tov stretch (every day until it ends, from Hebcal's data): times for the saved city, the parsha with Sefaria's summary or the holiday readings, prayer changes per day and night, Kiddush and Havdalah outlines, the week's mitzvah, and the quiz with an answer key. A link ending in `#print` opens it directly.

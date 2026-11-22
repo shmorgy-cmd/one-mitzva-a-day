@@ -34,6 +34,7 @@
 </main>
 
 <script src="js/prayer-changes.js"></script>
+<script src="js/daily-guide.js"></script>
 <script>
 // Each case: date, calendar (israel), optional community, and the item ids that
 // must / must not appear in today / tonight / season.
@@ -63,6 +64,35 @@ const CASES = [
   { date: "2026-10-18", name: "Outside Israel: 7 Cheshvan — still V'ten beracha", season: ["vten-beracha"] },
   { date: "2027-12-04", name: "Outside Israel, Dec 4 2027 — no start (Feb 2028 has 29 days)", notTonight: ["tal-umatar-start"], season: ["vten-beracha"] },
   { date: "2027-12-05", name: "Outside Israel, Dec 5 2027 — starts tonight", tonight: ["tal-umatar-start"] }
+];
+
+// "What to do today" guide: item ids that must appear, and checks on details
+// (blessings said, titles) that a reader must not get wrong.
+const GUIDE_CASES = [
+  { date: "2026-12-04", name: "Erev Chanukah (Fri): 1 candle, 3 blessings, before Shabbat candles", tonight: ["chanukah-lights", "candles"], check: g => {
+      const c = g.tonight.find(i => i.id === "chanukah-lights");
+      return c.title.includes("Light 1 Chanukah candle") && c.blessings.includes("shehecheyanu") && c.blessings.length === 3 && /Before the Shabbat candles/.test(c.when);
+    } },
+  { date: "2026-12-05", name: "Chanukah night 2 (Sat): 2 candles, no Shehecheyanu, after Shabbat", tonight: ["chanukah-lights", "havdalah"], check: g => {
+      const c = g.tonight.find(i => i.id === "chanukah-lights");
+      return c.title.includes("Light 2 Chanukah candles") && !c.blessings.includes("shehecheyanu") && /After Shabbat/.test(c.when);
+    } },
+  { date: "2026-12-07", name: "Chanukah weekday: 4 candles tonight, day 3, Numbers 7 reading", tonight: ["chanukah-lights"], today: ["chanukah-day"], check: g =>
+      g.tonight[0].title.includes("Light 4") && g.today.find(i => i.id === "chanukah-day").title === "Day 3 of Chanukah" && g.read.some(r => r.title.includes("Numbers 7:24–35")) },
+  { date: "2026-12-12", name: "8th day of Chanukah: no lighting tonight", today: ["chanukah-day"], notTonight: ["chanukah-lights"], check: g => /eighth day/.test(g.today.find(i => i.id === "chanukah-day").title) },
+  { date: "2027-04-20", name: "Night before Erev Pesach: search for chametz", tonight: ["bedikat-chametz"] },
+  { date: "2027-04-21", name: "Erev Pesach: deadlines today, Seder tonight (no separate Kiddush), Yom Tov candles + Shehecheyanu", today: ["erev-pesach-day"], tonight: ["seder", "candles"], notTonight: ["kiddush"], check: g => {
+      const c = g.tonight.find(i => i.id === "candles");
+      return c.blessings[0] === "yomTovCandles" && c.blessings.includes("shehecheyanu");
+    } },
+  { date: "2027-04-27", name: "Before the last days of Pesach: candles without Shehecheyanu", tonight: ["candles"], check: g => !g.tonight.find(i => i.id === "candles").blessings.includes("shehecheyanu") },
+  { date: "2027-10-02", name: "Rosh Hashanah on Shabbat: no shofar; second-night candles; YaKNeHaZ", today: ["shofar"], tonight: ["candles", "kiddush"], check: g =>
+      /No shofar/.test(g.today.find(i => i.id === "shofar").title) && /YaKNeHaZ/.test(g.tonight.find(i => i.id === "kiddush").title) && /second night/.test(g.tonight.find(i => i.id === "candles").title) },
+  { date: "2027-10-03", name: "Rosh Hashanah day 2 after Shabbat: shofar with blessings, Tashlich", today: ["shofar", "tashlich"], check: g => g.today.find(i => i.id === "shofar").blessings.length === 2 },
+  { date: "2027-10-16", name: "Sukkot I on Shabbat: no lulav", today: ["no-lulav", "sukkah-day"], notToday: ["lulav"] },
+  { date: "2027-10-17", name: "Sukkot II: first lulav of the year, with Shehecheyanu", today: ["lulav"], check: g => g.today.find(i => i.id === "lulav").blessings.includes("shehecheyanu") },
+  { date: "2027-03-22", name: "Ta'anit Esther / Erev Purim: fast, half-shekel, Megillah tonight", today: ["fast", "half-shekel"], tonight: ["megillah-night"] },
+  { date: "2027-03-23", name: "Purim day: the four mitzvot, Esther read", today: ["purim-day"], check: g => g.read.some(r => r.id === "esther") }
 ];
 
 function parseLocalDate(str) {
@@ -124,7 +154,34 @@ async function run() {
     tr.children[3].firstChild.textContent = ok ? got : problems.join("; ") + " — got: " + got;
     tbody.appendChild(tr);
   }
-  document.getElementById("summary").textContent = `${pass} passed, ${fail} failed (of ${CASES.length})`;
+  for (const c of GUIDE_CASES) {
+    const tr = document.createElement("tr");
+    const date = parseLocalDate(c.date);
+    const problems = [];
+    let got = "";
+    try {
+      const [events, heb] = await Promise.all([loadEvents(date, !!c.israel), loadHeb(date)]);
+      const g = getDailyGuide({ date, heb, israel: !!c.israel, events, community: null });
+      const t = g.today.map(i => i.id), n = g.tonight.map(i => i.id);
+      check(t, c.today, true, "today", problems);
+      check(t, c.notToday, false, "today", problems);
+      check(n, c.tonight, true, "tonight", problems);
+      check(n, c.notTonight, false, "tonight", problems);
+      if (c.check && !problems.length && !c.check(g)) problems.push("detail check failed");
+      got = `tonight [${g.tonight.map(i => i.title).join(" | ")}] · today [${g.today.map(i => i.title).join(" | ")}]`;
+    } catch (e) {
+      problems.push("error: " + e.message);
+    }
+    const ok = !problems.length;
+    ok ? pass++ : fail++;
+    tr.innerHTML = `<td class="${ok ? "pass" : "fail"}">${ok ? "PASS" : "FAIL"}</td><td>${c.date}</td><td></td><td><code></code></td>`;
+    tr.children[2].textContent = "Guide: " + c.name;
+    tr.children[3].firstChild.textContent = ok ? got : problems.join("; ") + " — got: " + got;
+    tbody.appendChild(tr);
+  }
+
+  const total = CASES.length + GUIDE_CASES.length;
+  document.getElementById("summary").textContent = `${pass} passed, ${fail} failed (of ${total})`;
   document.title = `${fail ? "FAIL" : "PASS"} — Prayer Changes Tests`;
 }
 run();

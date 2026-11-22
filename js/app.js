@@ -151,6 +151,12 @@ function buildContext(today, events, hebrewDateInfo, profile) {
     hebrewMonth,
     hebrewToday,
     hebrewDateLabel: hd.hd && hd.hm && hd.hy ? `${hd.hd} ${hd.hm} ${hd.hy}` : hebrewToday,
+    // Chanukah: Hebcal names each day by the candles lit that evening.
+    chanukahCandlesTonight: (() => {
+      const e = events.find(ev => /^Chanukah: \d+ Candles?$/.test(ev.title) && daysBetween(ev.date, today) === 0);
+      return e ? Number(/(\d+)/.exec(e.title)[1]) : 0;
+    })(),
+    chanukahLastDay: events.some(ev => ev.title === "Chanukah: 8th Day" && daysBetween(ev.date, today) === 0),
     profile: profile || { reason: null, community: null },
     isSephardi,
     selichotStart,
@@ -1015,6 +1021,124 @@ async function refreshAll() {
   await setViewingDate(viewingDate);
 }
 
+// --- "What to do today" card -------------------------------------------
+
+function renderBlessing(key) {
+  const b = blessingText(key);
+  if (!b) return null;
+  const box = el("div", "dg-blessing");
+  box.appendChild(el("p", "dg-blessing-name", b.name));
+  const he = el("p", "dg-blessing-he", b.he);
+  he.lang = "he";
+  he.dir = "rtl";
+  box.appendChild(he);
+  box.appendChild(el("p", "dg-blessing-tr", b.tr));
+  box.appendChild(el("p", "dg-blessing-en", b.en));
+  return box;
+}
+
+function renderGuideItem(item, used) {
+  const wrap = el("div", "dg-item");
+  wrap.appendChild(el("p", "dg-title", item.title));
+  if (item.when) wrap.appendChild(el("p", "dg-when", item.when));
+  if (item.steps && item.steps.length) {
+    const ol = el("ol", "dg-steps");
+    item.steps.forEach(s => ol.appendChild(richEl("li", null, s, currentProfile, used)));
+    wrap.appendChild(ol);
+  }
+  (item.blessings || []).forEach(k => {
+    const b = renderBlessing(k);
+    if (b) wrap.appendChild(b);
+  });
+  prayerCustomsFor(item, currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null).forEach(c => {
+    const p = el("p", "pc-custom");
+    p.appendChild(el("strong", null, `${c.label}: `));
+    p.appendChild(document.createTextNode(c.text));
+    wrap.appendChild(p);
+  });
+  return wrap;
+}
+
+/** Builds the guide for a date; returns it for the Today summary to reuse. */
+function renderDailyGuideCard(container, date, heb, events, changes, mitzvah) {
+  container.innerHTML = "";
+  if (!heb || !heb.hm) return null;
+  const guide = getDailyGuide({
+    date, heb, israel: isInIsrael(currentSettings), events,
+    community: currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null,
+    fmt: fmtClock
+  });
+  const used = new Set();
+  const isToday = daysBetween(realToday, date) === 0;
+
+  const card = el("article", "occasion-card guide-card");
+  const head = el("div", "card-head");
+  head.appendChild(iconBadge("star", "icon-badge--gold"));
+  const titleWrap = el("div");
+  titleWrap.appendChild(el("h3", null, isToday ? "What to do today" : "What to do this day"));
+  titleWrap.appendChild(el("p", "torah-meta", `${shortDate(date)} · ${heb.hd} ${heb.hm}${currentSettings.location ? " · " + currentSettings.location.name : ""}`));
+  head.appendChild(titleWrap);
+  card.appendChild(head);
+
+  const blessingsShown = [...guide.tonight, ...guide.today].some(i => i.blessings && i.blessings.length);
+  if (blessingsShown && isConverting(currentProfile)) {
+    card.appendChild(el("p", "dg-convert", "Blessings that say \"who has commanded us\": ask your rabbi whether to say them before your conversion — doing the practice itself is always welcome."));
+  }
+  if (!currentSettings.location && [...guide.tonight, ...guide.today].some(i => i.when)) {
+    const p = el("p", "dg-setcity");
+    p.appendChild(document.createTextNode("Times shown are general. "));
+    const btn = el("button", "settings-link-btn", "Set your city for exact times");
+    btn.type = "button";
+    btn.addEventListener("click", openSettings);
+    p.appendChild(btn);
+    card.appendChild(p);
+  }
+
+  function section(label, sub, items) {
+    if (!items.length) return;
+    const h = el("h4", "section-label", label);
+    card.appendChild(h);
+    if (sub) card.appendChild(el("p", "dg-sub", sub));
+    items.forEach(i => card.appendChild(renderGuideItem(i, used)));
+  }
+
+  if (!guide.tonight.length && !guide.today.length) {
+    card.appendChild(el("p", "dg-sub", "No special observances today — a regular day is still full of Jewish practice: the three daily prayers, blessings before and after eating, a little Torah learning, and one mitzvah to focus on."));
+  }
+  section("Tonight", "The Jewish day begins at nightfall, so this evening already belongs to tomorrow's date.", guide.tonight);
+  section("Today", null, guide.today);
+  section("Read", null, guide.read);
+
+  if (changes) {
+    card.appendChild(el("h4", "section-label", "Pray"));
+    const titles = changes.today.map(i => i.title);
+    const p = el("p", "dg-pray", titles.length ? titles.join(" · ") : "No changes — the regular service.");
+    card.appendChild(p);
+    const link = el("button", "settings-link-btn", "See where each change goes in the prayers");
+    link.type = "button";
+    link.addEventListener("click", () => goToSection("prayer-changes-container"));
+    card.appendChild(link);
+  }
+
+  if (mitzvah) {
+    card.appendChild(el("h4", "section-label", "Practice"));
+    const p = el("p", "dg-pray");
+    p.appendChild(el("strong", null, mitzvah.title));
+    p.appendChild(document.createTextNode(` — ${mitzvah.subtitle}`));
+    card.appendChild(p);
+    const link = el("button", "settings-link-btn", "How to do it");
+    link.type = "button";
+    link.addEventListener("click", () => goToSection("daily-mitzvah-container"));
+    card.appendChild(link);
+  }
+
+  card.appendChild(el("p", "pc-review", "A learning aid — customs differ, so check the details with your rabbi."));
+  card.appendChild(reportLink(`guide:${toISO(date)}`));
+  makeCollapsible(card, 1, true);
+  container.appendChild(card);
+  return guide;
+}
+
 // --- Prayer changes card ---------------------------------------------
 
 function renderPrayerChangeItem(item, used) {
@@ -1178,7 +1302,7 @@ function summaryRow({ icon, label, value, note, onClick, actionLabel }) {
   return li;
 }
 
-function renderTodaySummary({ date, events, occasions, changes, mitzvah }) {
+function renderTodaySummary({ date, events, occasions, changes, mitzvah, guide }) {
   const list = document.getElementById("today-summary-rows");
   list.innerHTML = "";
   const isToday = daysBetween(realToday, date) === 0;
@@ -1192,6 +1316,25 @@ function renderTodaySummary({ date, events, occasions, changes, mitzvah }) {
     icon: top.icon, label: isToday ? "Today" : "This day", value: occLine,
     onClick: () => goToSection("occasion-container"), actionLabel: "Open today's card"
   }));
+
+  // 1b. What to do — the most concrete actions for tonight and today
+  if (guide) {
+    // Short form: the title up to its first " — ", plus the clock time if there is one.
+    const short = (i) => {
+      const t = (i.when || "").match(/\d{1,2}:\d{2}(\s?[AP]M)?/i);
+      return `${i.title.split(" — ")[0].replace(/ tonight$/i, "")}${t ? ` · ${t[0]}` : ""}`;
+    };
+    const actions = [
+      ...guide.tonight.map((i, k) => (k === 0 ? "Tonight: " : "") + short(i)),
+      ...guide.today.map(short)
+    ];
+    if (actions.length) {
+      list.appendChild(summaryRow({
+        icon: "hand", label: "To do", value: actions.slice(0, 2).join(" · ") + (actions.length > 2 ? ` · +${actions.length - 2} more` : ""),
+        onClick: () => goToSection("guide-container"), actionLabel: "Open what to do today"
+      }));
+    }
+  }
 
   // 2. Prayer changes (headlines only)
   if (changes) {
@@ -1353,7 +1496,8 @@ async function setViewingDate(date) {
 
   const todaysMitzvah = getMitzvahForDate(date);
   renderDailyMitzvahCard(document.getElementById("daily-mitzvah-container"), todaysMitzvah);
-  renderTodaySummary({ date, events, occasions, changes, mitzvah: todaysMitzvah });
+  const guide = renderDailyGuideCard(document.getElementById("guide-container"), date, hebrewInfo, events, changes, todaysMitzvah);
+  renderTodaySummary({ date, events, occasions, changes, mitzvah: todaysMitzvah, guide });
 
   const torahContainer = document.getElementById("torah-container");
   torahContainer.innerHTML = "";
@@ -1473,7 +1617,7 @@ function initTabBar() {
   // Sections that belong to each tab; today's cards (prayer, occasion) count as "Today"
   // even though they sit below the Prep section on the page.
   const extra = {
-    top: ["prayer-changes-container", "prayer-container", "morning-mitzvot-container", "occasion-container"]
+    top: ["guide-container", "prayer-changes-container", "prayer-container", "morning-mitzvot-container", "occasion-container"]
   };
   const sections = [];
   links.forEach(a => {

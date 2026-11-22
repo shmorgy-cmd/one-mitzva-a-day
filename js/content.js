@@ -308,7 +308,17 @@ const OCCASIONS = [
     priority: 85,
     match: (ctx) => ctx.findEvent(e => /^Chanukah/.test(e.title) && ctx.isToday(e.date)),
     content: {
-      intro: "Today is a day of Chanukah, the eight-day Festival of Lights commemorating the Maccabees' military victory over the Seleucid Greek empire and the rededication of the Temple — and the small jar of oil, enough for one day, that miraculously burned for eight.",
+      intro: (ctx) => {
+        const n = ctx.chanukahCandlesTonight;
+        const lead = n === 1
+          ? "Chanukah begins tonight: light the first candle (plus the shamash) after nightfall, with three blessings. "
+          : n > 1
+            ? `Tonight is night ${n} of Chanukah: light ${n} candles plus the shamash, with two blessings. `
+            : ctx.chanukahLastDay
+              ? "Today is the eighth and last day of Chanukah — there's no lighting tonight. "
+              : "";
+        return lead + "Chanukah is the eight-day Festival of Lights commemorating the Maccabees' military victory over the Seleucid Greek empire and the rededication of the Temple — and the small jar of oil, enough for one day, that miraculously burned for eight.";
+      },
       halacha: [
         "The Chanukah menorah (chanukiah) is lit each night after nightfall (before, on Friday, ahead of Shabbat candles), adding one more flame each night, ideally placed where it can be seen from the street or a window to publicize the miracle.",
         "The blessings are recited before lighting: 'l'hadlik ner shel Chanukah,' 'she'asah nisim,' and, on the first night, Shehecheyanu.",
