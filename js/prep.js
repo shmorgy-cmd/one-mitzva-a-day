@@ -264,6 +264,130 @@ const PREP_GUIDES = [
     ],
     expectNote: "Purim isn't a Yom Tov — work is allowed, though many take the day off. The Megillah is read at night and in the morning, Al HaNissim is added to the prayers, and Tachanun is left out.",
     sources: ["The Book of Esther", "Talmud, Megillah 7a–7b", "Shulchan Aruch, Orach Chaim 686–695"]
+  },
+
+  // --- Batch 2: the Omer season's special days ------------------------------------
+  {
+    key: "yom-hashoah",
+    kind: "day",
+    matchTitle: (title) => title === "Yom HaShoah",
+    when: (d, fmt) => `${fmt(d)} (it begins the evening before)`,
+    name: "Yom HaShoah (Holocaust Remembrance Day)",
+    icon: "candle-memorial",
+    leadDays: 7,
+    history: [
+      "Between 1933 and 1945, Nazi Germany and its collaborators murdered six million Jews — about one and a half million of them children. Whole communities, with centuries of Jewish life, learning and culture, were destroyed.",
+      "In 1951 Israel's Knesset set the 27th of Nisan as Yom HaShoah VeHaGevurah — the Day of the Holocaust and Heroism — close to the anniversary of the Warsaw Ghetto Uprising, which began on the eve of Pesach 1943. The date shifts by a day when it would touch Shabbat.",
+      "In Israel, a siren sounds for two minutes at 10 a.m. and the whole country stops and stands in silence. The national ceremony at Yad Vashem, in Jerusalem, opens the evening before."
+    ],
+    meaning: "Remembering is itself a Jewish command — \"Zachor\", remember. On this day we remember people, not numbers, and we honor both those who were murdered and those who resisted, rescued, survived and rebuilt Jewish life afterwards.",
+    practices: [
+      "Choose one name to remember. Yad Vashem's online database holds millions of victims' names, many with photos and stories.",
+      "Listen to or read a survivor's testimony — Yad Vashem and the USC Shoah Foundation have thousands online.",
+      "Light a memorial candle the evening before.",
+      "Say a chapter of Psalms or the memorial prayer El Malei Rachamim; with a minyan, Kaddish is said."
+    ],
+    prep: [
+      "Find a ceremony near you — synagogues, Jewish community centers and schools often hold one the evening before or on the day.",
+      "Get a 24-hour memorial (yahrzeit) candle.",
+      "If you have children, think ahead about age-appropriate ways to talk about the Holocaust.",
+      "Some communities remember the Holocaust mainly on Asara B'Tevet or Tisha B'Av instead — follow your community."
+    ],
+    shopping: ["A 24-hour memorial candle"],
+    expectNote: "It's a national day of remembrance rather than a religious holiday: most siddurim have no prayer changes, and work is allowed. In Israel, places of entertainment close from the evening before.",
+    sources: ["Deuteronomy 25:17 (\"Remember\")", "Knesset resolution, 1951; Yom HaShoah law, 1959", "Yad Vashem (yadvashem.org)"]
+  },
+  {
+    key: "yom-hazikaron",
+    kind: "day",
+    matchTitle: (title) => title === "Yom HaZikaron",
+    when: (d, fmt) => `Yom HaZikaron: ${fmt(d)} · Yom HaAtzma'ut: ${fmt(addDays(d, 1))} (each begins the evening before)`,
+    name: "Yom HaZikaron and Yom HaAtzma'ut",
+    icon: "flag-star",
+    leadDays: 7,
+    history: [
+      "On the 5th of Iyar 5708 — May 14, 1948 — David Ben-Gurion read Israel's Declaration of Independence in Tel Aviv. The next day, the armies of five Arab states invaded, and the War of Independence cost about 6,000 Israeli lives.",
+      "The day before Independence Day is Yom HaZikaron, Israel's Memorial Day for fallen soldiers — and, since 1997, for victims of terror too. In Israel, sirens sound at 8 p.m. as it begins and at 11 a.m. the next morning, and everything stops.",
+      "The two days sit back to back on purpose: the joy of independence is bound up with what it cost. The switch from mourning to celebration happens at nightfall, at a ceremony on Mount Herzl in Jerusalem. The dates move by a day or two when they would touch Shabbat."
+    ],
+    meaning: "For many, these two days hold a whole people's story in one evening: grief for those who gave their lives, and gratitude for a Jewish state after nearly 2,000 years of exile. Jewish communities relate to the religious side differently — some say Hallel with a blessing, some without, and many Haredi communities don't mark the day religiously. Every one of these views deserves respect.",
+    practices: [
+      "Learn about one fallen soldier or victim of terror — Israel's official Yizkor site tells each of their stories.",
+      "Stand for a minute of silence when the siren sounds in Israel, wherever you are.",
+      "Read Israel's Declaration of Independence, or learn the words of Hatikvah.",
+      "On Yom HaAtzma'ut, celebrate: Israeli food and music, or a call to friends and family in Israel."
+    ],
+    prep: [
+      "Find a ceremony near you — many communities hold a combined Yom HaZikaron–Yom HaAtzma'ut event.",
+      "Ask your synagogue what it adds to the prayers (some say Hallel) — the \"In prayer\" card shows the customs on the day.",
+      "Plan a festive meal for Yom HaAtzma'ut — in Israel, a barbecue (\"mangal\") is the classic.",
+      "Get an Israeli flag to hang."
+    ],
+    shopping: [
+      "An Israeli flag",
+      "Israeli food: hummus, pita, falafel, Israeli salad",
+      "A memorial candle for Yom HaZikaron, if you'd like"
+    ],
+    expectNote: "Both are national days, not Yom Tov: work and phones are fine. Prayer customs differ by community. Since these days fall during the Omer, many who keep its mourning customs lift them for Yom HaAtzma'ut.",
+    sources: ["Israel's Declaration of Independence (1948)", "Memorial Day law (1963)", "Israel's Yizkor site (izkor.gov.il)"]
+  },
+  {
+    key: "lag-baomer",
+    kind: "day",
+    matchTitle: (title) => title === "Lag BaOmer",
+    when: (d, fmt) => `${fmt(d)} (it begins the evening before)`,
+    name: "Lag BaOmer",
+    icon: "sun-high",
+    leadDays: 7,
+    history: [
+      "Lag BaOmer is the 33rd day of the Omer count — \"Lag\" is how 33 is written in Hebrew letters (ל״ג). It falls on the 18th of Iyar.",
+      "The Talmud tells that 24,000 students of Rabbi Akiva died in a plague between Pesach and Shavuot \"because they didn't treat each other with respect\". By tradition, the dying stopped on Lag BaOmer — so the Omer's mourning customs are lifted on this day (for some, from now on; for others, just for the day).",
+      "It's also the yahrzeit (anniversary of death) of Rabbi Shimon bar Yochai, the 2nd-century sage whom tradition links to the Zohar, the central book of Kabbalah. He asked that his day be one of joy, and hundreds of thousands gather at his grave in Meron, in northern Israel."
+    ],
+    meaning: "A day about respect and about light. Rabbi Akiva's students were great scholars who failed at the basics of how they treated one another; Rabbi Shimon's teachings are about the hidden light of the Torah. The bonfires lit on Lag BaOmer stand for that light.",
+    practices: [
+      "Strengthen one relationship — reach out to someone you've been short with.",
+      "Learn Rabbi Akiva's teaching: \"Love your neighbor as yourself — this is a great principle of the Torah.\"",
+      "Join a community bonfire, picnic or parade.",
+      "Count the Omer the night before: day 33."
+    ],
+    prep: [
+      "Find a local bonfire, picnic or Lag BaOmer parade — Chabad centers host many.",
+      "If you keep the Omer mourning customs, Lag BaOmer is when many schedule haircuts, weddings and live music — check your community's custom.",
+      "Some families hold a boy's first haircut (upsherin) at age three on this day.",
+      "Pack outdoor food; children traditionally play with bows and arrows."
+    ],
+    shopping: ["Food for a picnic or barbecue", "Marshmallows for the bonfire"],
+    expectNote: "A joyful day with no work restrictions; Tachanun is left out of the prayers.",
+    sources: ["Talmud, Yevamot 62b", "Leviticus 19:18", "Shulchan Aruch, Orach Chaim 493"]
+  },
+  {
+    key: "yom-yerushalayim",
+    kind: "day",
+    matchTitle: (title) => title === "Yom Yerushalayim",
+    when: (d, fmt) => `${fmt(d)} (it begins the evening before)`,
+    name: "Yom Yerushalayim (Jerusalem Day)",
+    icon: "gates",
+    leadDays: 7,
+    history: [
+      "Jerusalem has been the center of Jewish prayer for 3,000 years, since King David made it his capital and King Solomon built the Temple there. Jews face it in every Amidah, and the Seder ends with \"Next year in Jerusalem\".",
+      "From 1948 to 1967, the Old City was under Jordanian rule and Jews couldn't pray at the Western Wall. On the 28th of Iyar 5727 — June 7, 1967 — during the Six-Day War, Israeli paratroopers reached the Old City and the Wall.",
+      "Israel's Chief Rabbinate declared the day one of thanksgiving in 1968, and in 1998 the Knesset made it a national holiday."
+    ],
+    meaning: "A day of thanks for being able to return to the places Jews prayed toward for centuries — and of prayer for the city's peace: \"Pray for the peace of Jerusalem\" (Psalm 122). As with Yom HaAtzma'ut, communities mark it in different ways.",
+    practices: [
+      "Read Psalm 122 or Psalm 126 (\"When God returned the exiles of Zion, we were like dreamers\").",
+      "Take a virtual tour of the Old City or the Western Wall, or learn about the Temple's history.",
+      "Say the blessing for Jerusalem in Grace After Meals (\"Uvnei Yerushalayim\") with extra attention.",
+      "Pray for peace in Jerusalem, for everyone who lives there."
+    ],
+    prep: [
+      "Find a community event or celebration near you.",
+      "Ask your synagogue about its prayer customs — some say Hallel.",
+      "It falls during the Omer; many who keep the Omer's mourning customs lift them for the day."
+    ],
+    expectNote: "A national day rather than a Yom Tov: work and phones are fine.",
+    sources: ["Psalm 122", "Psalm 137:5–6", "Chief Rabbinate of Israel (1968)"]
   }
 ];
 

@@ -1217,5 +1217,17 @@ const PREP_EXTRAS = {
       ashkenazi: ["Hamantaschen are the classic Purim pastry."],
       sephardi: ["Traditional treats include orejas de Haman (fried \"Haman's ears\") and ma'amoul."]
     }
+  },
+  "yom-hashoah": {
+    takingOn: "Attending a community Yom HaShoah ceremony is a meaningful way to stand with the Jewish people — everyone is welcome."
+  },
+  "yom-hazikaron": {
+    takingOn: "A community Yom HaZikaron–Yom HaAtzma'ut ceremony is a moving way to feel the connection between the Jewish people and Israel — everyone is welcome."
+  },
+  "lag-baomer": {
+    takingOn: "A Lag BaOmer bonfire or picnic is one of the friendliest community events of the year — a great place to meet people."
+  },
+  "yom-yerushalayim": {
+    takingOn: "Reading Psalm 122 slowly, in English or Hebrew, is a simple way to connect with the day."
   }
 };

@@ -749,7 +749,7 @@ function renderDayPrepCard(container, upcoming, isBrowsingAhead) {
   const headRow = el("div", "card-head");
   headRow.appendChild(iconBadge(guide.icon, "icon-badge--gold"));
   const titleWrap = el("div");
-  titleWrap.appendChild(el("h3", null, `Let's get ready: ${guide.name}`));
+  titleWrap.appendChild(el("h3", null, daysUntil === 0 ? `Today: ${guide.name}` : `Let's get ready: ${guide.name}`));
   const asOf = isBrowsingAhead ? " (from the day you're viewing)" : "";
   const whenLine = guide.when ? guide.when(date, fmt) : fmt(date);
   titleWrap.appendChild(el("p", "torah-meta", `${inDays(daysUntil).replace(/^in /, "In ").replace(/^today$/, "Today").replace(/^tomorrow$/, "Tomorrow")}${asOf} · ${whenLine}`));
