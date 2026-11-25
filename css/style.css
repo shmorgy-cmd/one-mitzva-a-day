@@ -259,6 +259,9 @@ button.ts-row:focus-visible {
 }
 
 #prayer-changes-container,
+#zmanim-container,
+#guide-container,
+#daily-mitzvah-container,
 #prep-section,
 #occasion-container,
 #torah-container,
@@ -2278,4 +2281,26 @@ body.no-scroll { overflow: hidden; }
 
 @media print {
   .pt-box:not([open]) { display: none; }
+}
+
+/* Fast days in the countdown strip */
+.countdown-tag {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #6b4a12;
+  background: #f6ead0;
+}
+
+.countdown-chip--today .countdown-tag { color: var(--flag-blue-deep); background: var(--cream); }
+
+#countdown-container { margin-top: 4px; }
+
+.prep-history {
+  margin: 0 0 10px;
+  line-height: 1.65;
 }

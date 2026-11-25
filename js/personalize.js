@@ -1196,5 +1196,26 @@ const PREP_EXTRAS = {
       chabad: ["Plan to bring the children to synagogue to hear the Ten Commandments."],
       litvish: ["Skip the greenery if you follow the Vilna Gaon, and plan your night-learning schedule."]
     }
+  },
+  "chanukah": {
+    takingOn: "Lighting the menorah is one of the most welcoming practices to start with: there's no restriction on work, and the whole family can join. Ask your rabbi whether to say the blessings before your conversion — lighting itself is always welcome.",
+    minhagim: {
+      ashkenazi: ["Each family member often has their own menorah; Maoz Tzur is sung after lighting."],
+      sephardi: ["One menorah for the household, lit by the head of the family; Psalm 30 is said afterwards."],
+      chabad: ["Buy a menorah with straight, even branches, and place it in the doorway opposite the mezuzah."]
+    }
+  },
+  "asara-btevet": {
+    takingOn: "Fasting is a serious commitment — talk to your rabbi before taking it on. A gentle first step is to give tzedakah and spend a few minutes learning about the day."
+  },
+  "tu-bishvat": {
+    takingOn: "A Tu BiShvat seder with friends is a relaxed, joyful way to practice the blessings over food — no Hebrew needed to start."
+  },
+  "purim": {
+    takingOn: "Hearing the Megillah at a synagogue is a great first Purim experience — it's loud, joyful and welcoming. Mishloach Manot is a lovely way to connect with your new community.",
+    minhagim: {
+      ashkenazi: ["Hamantaschen are the classic Purim pastry."],
+      sephardi: ["Traditional treats include orejas de Haman (fried \"Haman's ears\") and ma'amoul."]
+    }
   }
 };

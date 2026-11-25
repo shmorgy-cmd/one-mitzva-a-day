@@ -134,7 +134,8 @@ function renderInstallHint() {
   actions.appendChild(dismiss);
   hint.appendChild(actions);
 
-  const anchor = document.getElementById("profile-pill") || document.getElementById("date-nav-container");
+  // Below the date bar, the settings button and the countdown strip.
+  const anchor = document.getElementById("countdown-container") || document.getElementById("profile-pill") || document.getElementById("date-nav-container");
   anchor.insertAdjacentElement("afterend", hint);
 }
 
