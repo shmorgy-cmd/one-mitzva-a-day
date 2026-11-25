@@ -2160,3 +2160,122 @@ body.no-scroll { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* --- Full prayer texts (prayer-texts.js) --------------------------------- */
+.pt-box {
+  margin-top: 10px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.pt-summary {
+  cursor: pointer;
+  padding: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  list-style-position: inside;
+}
+
+.pt-name {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--flag-blue);
+}
+
+.pt-hint {
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+}
+
+.pt-box[open] .pt-hint { display: none; }
+
+.pt-note {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0 12px 6px;
+}
+
+.pt-line {
+  padding: 6px 12px 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.pt-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.pt-source {
+  display: inline-block;
+  margin: 4px 12px 10px;
+  font-size: 0.82rem;
+}
+
+.pc-item .pt-box { margin-top: 8px; }
+
+/* --- Zmanim card ---------------------------------------------------------- */
+.zm-next {
+  margin: 0 0 6px;
+  padding: 8px 12px;
+  background: #fbf5e6;
+  border: 1px solid var(--gold-light);
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.zm-list { margin: 0 0 6px; }
+
+.zm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.zm-row:last-child { border-bottom: none; }
+
+.zm-row dt {
+  font-size: 0.9rem;
+  color: var(--ink);
+  min-width: 0;
+}
+
+.zm-row dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--flag-blue-deep);
+}
+
+.zm-note {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.zm-row.is-past dt,
+.zm-row.is-past dd { opacity: 0.5; }
+
+.zm-row.is-next {
+  background: #fbf5e6;
+  margin: 0 -8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+@media print {
+  .pt-box:not([open]) { display: none; }
+}

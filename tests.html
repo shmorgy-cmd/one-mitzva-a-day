@@ -35,6 +35,7 @@
 
 <script src="js/prayer-changes.js"></script>
 <script src="js/daily-guide.js"></script>
+<script src="js/prayer-texts.js"></script>
 <script>
 // Each case: date, calendar (israel), optional community, and the item ids that
 // must / must not appear in today / tonight / season.
@@ -92,8 +93,44 @@ const GUIDE_CASES = [
   { date: "2027-10-16", name: "Sukkot I on Shabbat: no lulav", today: ["no-lulav", "sukkah-day"], notToday: ["lulav"] },
   { date: "2027-10-17", name: "Sukkot II: first lulav of the year, with Shehecheyanu", today: ["lulav"], check: g => g.today.find(i => i.id === "lulav").blessings.includes("shehecheyanu") },
   { date: "2027-03-22", name: "Ta'anit Esther / Erev Purim: fast, half-shekel, Megillah tonight", today: ["fast", "half-shekel"], tonight: ["megillah-night"] },
-  { date: "2027-03-23", name: "Purim day: the four mitzvot, Esther read", today: ["purim-day"], check: g => g.read.some(r => r.id === "esther") }
+  { date: "2027-03-23", name: "Purim day: the four mitzvot, Esther read", today: ["purim-day"], check: g => g.read.some(r => r.id === "esther") },
+  { date: "2026-11-30", name: "Monday: Torah reading at Shacharit from the coming parsha (Vayeshev), with Tachanun", today: ["weekday-torah"], check: g => {
+      const i = g.today.find(x => x.id === "weekday-torah");
+      return /Monday/.test(i.title) && i.steps[0].includes("Vayeshev") && i.steps[0].includes("Genesis 37:1–11") && /V'hu Rachum/.test(i.steps[1]);
+    } },
+  { date: "2026-12-03", name: "Thursday: Torah reading at Shacharit", today: ["weekday-torah"] },
+  { date: "2026-12-01", name: "Tuesday: no weekday Torah reading", notToday: ["weekday-torah"] },
+  { date: "2026-12-07", name: "Monday of Chanukah: only the Chanukah reading", notToday: ["weekday-torah"] },
+  { date: "2026-11-27", name: "Friday: candles, Kabbalat Shabbat, then Kiddush with Shalom Aleichem, washing and HaMotzi", tonight: ["candles", "kabbalat-shabbat", "kiddush"], check: g => {
+      const k = g.tonight.find(i => i.id === "kiddush");
+      const keys = k.texts.map(t => t.key);
+      const order = g.tonight.map(i => i.id);
+      const blessingOrder = k.texts.filter(t => t.key === "blessing").map(t => t.opts.key).join(",");
+      return keys.indexOf("shalomAleichem") === 0 && keys.indexOf("kiddushShabbatNight") === 1 && blessingOrder === "netilatYadayim,hamotzi" &&
+        order.indexOf("candles") < order.indexOf("kabbalat-shabbat") && order.indexOf("kabbalat-shabbat") < order.indexOf("kiddush");
+    } },
+  { date: "2026-11-28", name: "Shabbat: daytime Kiddush text, full Havdalah tonight", today: ["shabbat-day"], tonight: ["havdalah"], check: g => {
+      const h = getPrayerText("havdalah", g.tonight.find(i => i.id === "havdalah").texts.find(t => t.key === "havdalah").opts);
+      return g.today.find(i => i.id === "shabbat-day").texts[0].key === "kiddushShabbatDay" && h.lines.length === 5;
+    } },
+  { date: "2027-10-15", name: "Erev Sukkot on Friday: festival Kiddush for Sukkot with Shabbat note, sukkah blessing, Shehecheyanu", tonight: ["kiddush"], check: g => {
+      const ref = g.tonight.find(i => i.id === "kiddush").texts[0];
+      const t = getPrayerText(ref.key, ref.opts);
+      return ref.key === "kiddushYomTov" && t.lines[1].he.includes("חג הסכות הזה") && /also Shabbat/.test(t.note) && t.lines.some(l => /sukkah/i.test(l.label)) && t.lines.some(l => l.label === "Shehecheyanu");
+    } },
+  { date: "2027-05-24", name: "Omer: count day 33 tonight, with the words", tonight: ["count-omer"], check: g => {
+      const ref = g.tonight.find(i => i.id === "count-omer").texts[0];
+      return getPrayerText(ref.key, ref.opts).lines[1].he === "היום שלשה ושלשים יום, שהם ארבעה שבועות וחמשה ימים לעמר.";
+    } }
 ];
+
+// The Omer count words for a few tricky days.
+const OMER_WORDS = {
+  1: "יום אחד", 2: "שני ימים", 7: "שבעה ימים, שהם שבוע אחד", 10: "עשרה ימים, שהם שבוע אחד ושלשה ימים",
+  11: "אחד עשר יום, שהם שבוע אחד וארבעה ימים", 12: "שנים עשר יום, שהם שבוע אחד וחמשה ימים",
+  20: "עשרים יום, שהם שני שבועות וששה ימים", 21: "אחד ועשרים יום, שהם שלשה שבועות",
+  49: "תשעה וארבעים יום, שהם שבעה שבועות"
+};
 
 function parseLocalDate(str) {
   const [y, m, d] = str.split("-").map(Number);
@@ -168,6 +205,10 @@ async function run() {
       check(n, c.tonight, true, "tonight", problems);
       check(n, c.notTonight, false, "tonight", problems);
       if (c.check && !problems.length && !c.check(g)) problems.push("detail check failed");
+      [...g.tonight, ...g.today].forEach(i => (i.texts || []).forEach(ref => {
+        const t = getPrayerText(ref.key, ref.opts);
+        if (!t || !t.lines.every(l => l && l.he && l.tr && l.en)) problems.push(`text "${ref.key}" in ${i.id} is missing words`);
+      }));
       got = `tonight [${g.tonight.map(i => i.title).join(" | ")}] · today [${g.today.map(i => i.title).join(" | ")}]`;
     } catch (e) {
       problems.push("error: " + e.message);
@@ -180,7 +221,18 @@ async function run() {
     tbody.appendChild(tr);
   }
 
-  const total = CASES.length + GUIDE_CASES.length;
+  for (const [n, words] of Object.entries(OMER_WORDS)) {
+    const tr = document.createElement("tr");
+    const got = omerCountWords(Number(n)).he;
+    const ok = got === words;
+    ok ? pass++ : fail++;
+    tr.innerHTML = `<td class="${ok ? "pass" : "fail"}">${ok ? "PASS" : "FAIL"}</td><td>—</td><td></td><td><code></code></td>`;
+    tr.children[2].textContent = `Omer words: day ${n}`;
+    tr.children[3].firstChild.textContent = got;
+    tbody.appendChild(tr);
+  }
+
+  const total = CASES.length + GUIDE_CASES.length + Object.keys(OMER_WORDS).length;
   document.getElementById("summary").textContent = `${pass} passed, ${fail} failed (of ${total})`;
   document.title = `${fail ? "FAIL" : "PASS"} — Prayer Changes Tests`;
 }

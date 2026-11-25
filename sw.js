@@ -12,7 +12,7 @@
  * Bump CACHE_VERSION whenever app files change so visitors get the update.
  */
 
-const CACHE_VERSION = "v19";
+const CACHE_VERSION = "v20";
 
 // For visitors who opted in to OneSignal messages, OneSignal registers this same
 // file with its own query parameters (appId, sdkVersion…) — only then is its
@@ -38,6 +38,7 @@ const APP_FILES = [
   "js/prayers.js",
   "js/prayer-changes.js",
   "js/daily-guide.js",
+  "js/prayer-texts.js",
   "js/print.js",
   "js/prep.js",
   "js/content.js",

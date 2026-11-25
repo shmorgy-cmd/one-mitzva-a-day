@@ -41,7 +41,15 @@ The Settings panel ([`js/settings.js`](js/settings.js)) stores the visitor's cit
 
 ## "What to do today" guide
 
-[`js/daily-guide.js`](js/daily-guide.js) turns each day into concrete instructions — **tonight** (the evening that starts the next Jewish day) and **today**: how many Chanukah candles and in what order, which blessings (written out in Hebrew, transliteration and English — e.g. Shehecheyanu only on the first night), Shabbat/Yom Tov candles with the right blessing, Kiddush and Havdalah variants, the Seder, the chametz search and deadlines, Eruv Tavshilin, the shofar and Tashlich, the lulav (not on Shabbat), the sukkah and Ushpizin, the Purim mitzvot, fast times, and the day's readings. Times come from Hebcal's events for the saved city. `tests.html` checks it on known dates.
+[`js/daily-guide.js`](js/daily-guide.js) turns each day into concrete instructions — **tonight** (the evening that starts the next Jewish day) and **today**: how many Chanukah candles and in what order, which blessings (written out in Hebrew, transliteration and English — e.g. Shehecheyanu only on the first night), Shabbat/Yom Tov candles with the right blessing, Kiddush and Havdalah variants, the Seder, the chametz search and deadlines, Eruv Tavshilin, the shofar and Tashlich, the lulav (not on Shabbat), the sukkah and Ushpizin, the Purim mitzvot, fast times, and the day's readings. Times come from Hebcal's events for the saved city. `tests.html` checks it on known dates. On Mondays and Thursdays (only) it adds the Shacharit Torah reading — the opening section of the coming Shabbat's parsha, from Hebcal's leyning data — unless the day has its own reading. Fridays get the full evening: candles, Kabbalat Shabbat, Shalom Aleichem, Kiddush, washing, HaMotzi and Birkat HaMazon.
+
+## Prayer texts
+
+[`js/prayer-texts.js`](js/prayer-texts.js) holds the actual words of the prayers the site mentions — Hebrew, transliteration and our own English — so the guide and the prayer-changes card can show them: HaNerot Halalu, Ma'oz Tzur, Al HaNissim (Chanukah/Purim), Ya'aleh v'Yavo (naming the day), Aneinu, Atah Chonantanu, the rain and dew phrases, the Ten Days additions, the Omer count (worded for each of the 49 days), Lecha Dodi, Shalom Aleichem, the Shabbat and festival Kiddush, Havdalah and the Torah blessings. Hallel (Psalms 113–118) loads live from Sefaria. `PRAYER_CHANGE_TEXTS` maps each prayer-change id to its texts. Wording follows the common Ashkenazi siddur and still needs review.
+
+## Zmanim
+
+The Zmanim card shows the viewed day's times for the saved city from Hebcal's `/zmanim`, grouped by what you're doing, with earliest and latest: tallit and tefillin, Shacharit, the morning Shema (Magen Avraham and Gra), Mincha and Maariv. Chabad profiles get the Alter Rebbe's times. Without a city it asks for one instead of guessing.
 
 ## Printable Shabbat / Yom Tov sheet
 

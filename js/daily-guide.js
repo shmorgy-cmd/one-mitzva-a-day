@@ -13,7 +13,8 @@
  *     fmt       – optional "HH:MM" → display time formatter
  *
  *   returns { tonight: [item], today: [item], read: [item] }
- *   item = { id, title, when?, steps?: [string], blessings?: [key], customs? }
+ *   item = { id, title, when?, steps?: [string], blessings?: [key],
+ *            texts?: [{ key, opts? }] (full prayers, see prayer-texts.js), customs? }
  *
  * Everything comes from Hebcal's events for that year — nothing date-specific
  * is hard-coded. Uses pcDayInfo / pcAddDays / pcSameDay from prayer-changes.js.
@@ -51,7 +52,13 @@ const BLESSINGS = {
   bedikah: { name: "Searching for chametz", mitzvah: true, he: "על ביעור חמץ", tr: "al bi'ur chametz.", en: "concerning removing chametz." },
   eruv: { name: "Eruv Tavshilin", mitzvah: true, he: "על מצות ערוב", tr: "al mitzvat eruv.", en: "concerning the mitzvah of eruv." },
   omer: { name: "Counting the Omer", mitzvah: true, he: "על ספירת העמר", tr: "al sefirat ha'omer.", en: "concerning counting the Omer." },
-  haetz: { name: "Fruit from a tree", he: "בורא פרי העץ", tr: "borei p'ri ha'etz.", en: "who creates the fruit of the tree." }
+  haetz: { name: "Fruit from a tree", he: "בורא פרי העץ", tr: "borei p'ri ha'etz.", en: "who creates the fruit of the tree." },
+  hagafen: { name: "Over wine or grape juice", he: "בורא פרי הגפן", tr: "borei p'ri hagafen.", en: "who creates the fruit of the vine." },
+  netilatYadayim: { name: "Washing hands before bread", mitzvah: true, he: "על נטילת ידים", tr: "al n'tilat yadayim.", en: "concerning washing the hands." },
+  hamotzi: { name: "HaMotzi — over the challah", he: "המוציא לחם מן הארץ", tr: "hamotzi lechem min ha'aretz.", en: "who brings forth bread from the earth." },
+  besamim: { name: "Over the spices", he: "בורא מיני בשמים", tr: "borei minei v'samim.", en: "who creates the different kinds of spices." },
+  fire: { name: "Over the flame", he: "בורא מאורי האש", tr: "borei m'orei ha'eish.", en: "who creates the lights of fire." },
+  hallel: { name: "Before Hallel", mitzvah: true, he: "לגמור את ההלל", tr: "lig'mor et haHallel.", en: "to complete the Hallel." }
 };
 
 // The Torah reading on each day of Chanukah: the gifts of that day's tribal
@@ -127,6 +134,7 @@ function getDailyGuide({ date, heb, israel, events, community, fmt }) {
       when,
       steps,
       blessings: n === 1 ? ["chanukahLight", "chanukahMiracles", "shehecheyanu"] : ["chanukahLight", "chanukahMiracles"],
+      texts: [{ key: "haneirotHalalu" }, { key: "maozTzur" }],
       customs: {
         ashkenazi: "Each member of the family lights their own menorah; Maoz Tzur is sung afterwards.",
         sephardi: "One menorah for the household; Psalm 30 is said afterwards. Some say the first blessing as \"…l'hadlik ner shel Chanukah.\"",
@@ -194,20 +202,52 @@ function getDailyGuide({ date, heb, israel, events, community, fmt }) {
     });
   }
 
+  // --- Friday night: Kabbalat Shabbat -----------------------------------------
+  if (nextIsShabbat && !next.yomKippur) {
+    tonight.push({
+      id: "kabbalat-shabbat",
+      title: nextYT ? "Evening prayers: Shabbat and the festival" : "Kabbalat Shabbat — welcoming Shabbat",
+      when: "Around candle-lighting time, at synagogue or at home",
+      steps: nextYT
+        ? ["Kabbalat Shabbat is shortened tonight (many start from Psalm 92), followed by the festival Maariv with Shabbat additions."]
+        : [
+          "Kabbalat Shabbat: six psalms (one for each weekday), then the song Lecha Dodi, then Psalm 92 (\"Mizmor shir l'yom haShabbat\").",
+          "Then Maariv for Shabbat: the Amidah has seven blessings, and everyone says \"Vay'chulu\" together afterwards.",
+          "Praying at home is fine — even just Lecha Dodi and the Shabbat Amidah is a beautiful start."
+        ],
+      texts: nextYT ? [] : [{ key: "lechaDodi" }]
+    });
+  }
+
   // --- Kiddush tonight ------------------------------------------------------
   if (nextIsShabbat || nextYT) {
     if (!next.yomKippur) {
       const yaknehaz = isShabbat && nextYT;
+      const festKey = ptFestivalKey(next);
+      const kiddushText = nextYT
+        ? { key: "kiddushYomTov", opts: { festival: festKey, shehecheyanu: !lastDaysPesachNext, shabbat: nextIsShabbat, havdalah: yaknehaz } }
+        : { key: "kiddushShabbatNight" };
+      const shabbatOnly = nextIsShabbat && !nextYT;
       tonight.push({
         id: "kiddush",
-        title: yaknehaz ? "Kiddush with Havdalah tonight (YaKNeHaZ)" : `${nextYT ? "Festival" : "Shabbat"} Kiddush at the evening meal`,
+        title: yaknehaz ? "Kiddush with Havdalah tonight (YaKNeHaZ)" : `${nextYT ? "Festival" : "Shabbat"} dinner: Kiddush, washing, HaMotzi`,
         steps: yaknehaz
-          ? ["Shabbat ends and the festival begins tonight, so Kiddush also does Havdalah: wine, Kiddush, the blessing over light (looking at existing candles), Havdalah ending \"bein kodesh l'kodesh\", and Shehecheyanu.", "No spices, and don't light a new flame."]
+          ? ["Shabbat ends and the festival begins tonight, so Kiddush also does Havdalah: wine, Kiddush, the blessing over light (looking at existing candles), Havdalah ending \"bein kodesh l'kodesh\", and Shehecheyanu.", "No spices, and don't light a new flame.", "Then wash hands and say HaMotzi over two loaves."]
           : [
-            nextIsShabbat && !nextYT ? "Many first sing Shalom Aleichem and Eishet Chayil." : "Use the festival Kiddush from the siddur or machzor.",
-            "Kiddush over a cup of wine or grape juice, then wash hands and say HaMotzi over two loaves (challot).",
-            ...(next.roshHashana ? ["Rosh Hashanah night: dip the challah in honey, and eat an apple dipped in honey with \"Yehi ratzon…\" — may it be a good and sweet year."] : [])
-          ]
+            shabbatOnly ? "At the table, sing Shalom Aleichem (welcoming the Shabbat angels). Many also sing Eishet Chayil and bless their children." : "Use the festival Kiddush from the siddur or machzor.",
+            "Kiddush over a full cup of wine or grape juice — the words are below.",
+            "Wash your hands with a cup (twice on the right, twice on the left, or three times each, by custom), say \"al n'tilat yadayim\", and don't talk until after HaMotzi.",
+            "Uncover the two challot, say HaMotzi, then dip or sprinkle the bread with salt and share it.",
+            ...(next.roshHashana ? ["Rosh Hashanah night: dip the challah in honey, and eat an apple dipped in honey with \"Yehi ratzon…\" — may it be a good and sweet year."] : []),
+            "After the meal, say Birkat HaMazon (Grace After Meals) — from a siddur or a small bencher."
+          ],
+        // In the order they're said: (Shalom Aleichem), Kiddush, washing, HaMotzi.
+        texts: [
+          ...(shabbatOnly ? [{ key: "shalomAleichem" }] : []),
+          kiddushText,
+          { key: "blessing", opts: { key: "netilatYadayim" } },
+          { key: "blessing", opts: { key: "hamotzi" } }
+        ]
       });
     }
   }
@@ -223,7 +263,11 @@ function getDailyGuide({ date, heb, israel, events, community, fmt }) {
       when: havdalahTime ? `After ${havdalahTime}` : "After nightfall, when three stars appear (set your city for the exact time)",
       steps: afterShabbat
         ? ["Say \"Baruch hamavdil bein kodesh l'chol\" or pray Maariv (with Atah Chonantanu) before doing any work.", "Havdalah: blessings over wine, fragrant spices, and the flame of a braided candle, then the Havdalah blessing."]
-        : ["After a holiday that ends on a weekday: Havdalah over wine with just the Havdalah blessing — no spices or candle.", ...(info.yomKippur ? ["After Yom Kippur, the Havdalah candle is lit from a flame that burned all through the fast; there are no spices (unless it's also Shabbat)."] : [])]
+        : ["After a holiday that ends on a weekday: Havdalah over wine with just the Havdalah blessing — no spices or candle.", ...(info.yomKippur ? ["After Yom Kippur, the Havdalah candle is lit from a flame that burned all through the fast; there are no spices (unless it's also Shabbat)."] : [])],
+      texts: [
+        ...(afterShabbat ? [{ key: "hamavdil" }] : []),
+        { key: "havdalah", opts: { afterShabbat, afterYomKippur: info.yomKippur } }
+      ]
     });
   }
 
@@ -308,9 +352,56 @@ function getDailyGuide({ date, heb, israel, events, community, fmt }) {
     });
   }
 
+  // --- Counting the Omer tonight -------------------------------------------------
+  if (next.omerDay) {
+    tonight.push({
+      id: "count-omer",
+      title: `Count the Omer tonight: day ${next.omerDay}`,
+      when: "After nightfall (usually at the end of Maariv)",
+      steps: [
+        "Stand, say the blessing, then the count for tonight.",
+        "If you forget tonight, count tomorrow during the day without the blessing — then keep counting with the blessing on the following nights."
+      ],
+      texts: [{ key: "omerCount", opts: { day: next.omerDay, community: comm } }]
+    });
+  }
+
   // =====================================================================
   // TODAY (daytime)
   // =====================================================================
+
+  // --- Monday and Thursday: the Torah is read at Shacharit ----------------------
+  // Only on these two days (and only when the day has no special reading of its
+  // own — Rosh Chodesh, Chanukah, a fast…, whose readings come from Hebcal below).
+  const ownReading = evToday.some(e => e.leyning && e.leyning.torah && e.category !== "parashat");
+  if ((dow === 1 || dow === 4) && !ownReading && !info.yomTov && !info.roshHashana && !info.yomKippur) {
+    const parsha = events
+      .filter(e => e.category === "parashat" && e.date > date && e.leyning && e.leyning["1"])
+      .sort((a, b) => a.date - b.date)[0];
+    const noTachanun = noTachanunReason(heb, info, comm);
+    const steps = [];
+    if (parsha) {
+      steps.push(`The first part of this Shabbat's portion, ${parsha.title}, is read — the opening section (${parsha.leyning["1"].replace(/(\d+):(\d+)-\1:/, "$1:$2–")}), divided among three people: a Kohen, a Levi and a Yisrael.`);
+    } else {
+      steps.push("The opening of the coming Shabbat's Torah portion is read, divided among three people: a Kohen, a Levi and a Yisrael.");
+    }
+    steps.push(noTachanun
+      ? `No Tachanun today (${noTachanun}), so the longer Monday/Thursday prayers before the reading are left out too.`
+      : "Before the reading: the longer Monday and Thursday Tachanun (starting \"V'hu Rachum\"), and \"El Erech Apayim\" as the Ark is opened.");
+    steps.push("After the reading: the Torah is lifted (Hagbah) and dressed, and on Mondays and Thursdays a few short \"Yehi Ratzon\" prayers are said for the community before it's returned to the Ark.");
+    steps.push("No minyan? Read the section on your own from a Chumash — without the blessings.");
+    today.push({
+      id: "weekday-torah",
+      title: `${dow === 1 ? "Monday" : "Thursday"}: the Torah is read at Shacharit`,
+      when: "Morning prayers, after the Amidah",
+      steps,
+      texts: [{ key: "torahBlessings" }],
+      customs: {
+        sephardi: "The Sephardi order of Tachanun and of taking out the Torah is different (the Torah is often raised before the reading) — follow your siddur.",
+        chabad: "Follow the order in the Chabad siddur (Tehillat Hashem) — the wording differs a little."
+      }
+    });
+  }
 
   if (info.chanukahDay) {
     const eighth = has(evToday, /^Chanukah: 8th Day$/);
@@ -322,7 +413,8 @@ function getDailyGuide({ date, heb, israel, events, community, fmt }) {
         "Full Hallel after the Amidah at Shacharit.",
         "Add Al HaNissim to every Amidah and to Grace After Meals.",
         ...(eighth ? ["Chanukah ends tonight — there's no lighting this evening."] : [])
-      ]
+      ],
+      texts: [{ key: "alHanissim", opts: { occasion: "chanukah" } }, { key: "hallel", opts: { community: comm } }]
     });
     if (CHANUKAH_READINGS[dayNum] && !isShabbat) {
       read.push({ id: "chanukah-reading", title: `Torah reading: ${CHANUKAH_READINGS[dayNum]}`, steps: [`The gifts of the tribal leader for day ${dayNum} of the Temple's dedication.${info.roshChodesh ? " Today it's read together with the Rosh Chodesh reading." : ""}`] });
@@ -338,7 +430,8 @@ function getDailyGuide({ date, heb, israel, events, community, fmt }) {
         "Shabbat morning prayers with the Torah reading, then Kiddush (V'shamru and the blessing over wine) before lunch.",
         "Eat three meals over Shabbat — the third (Seudah Shlishit) in the late afternoon.",
         "Rest: no melacha (creative work) until Shabbat ends."
-      ]
+      ],
+      texts: [{ key: "kiddushShabbatDay" }]
     });
   }
 
@@ -431,6 +524,7 @@ function getDailyGuide({ date, heb, israel, events, community, fmt }) {
         "Al HaNissim in the Amidah and Grace After Meals."
       ],
       blessings: ["megillah", "chanukahMiracles"],
+      texts: [{ key: "alHanissim", opts: { occasion: "purim" } }],
       customs: { ashkenazi: "Shehecheyanu is said again before the morning reading.", sephardi: "Shehecheyanu is said only at the night reading.", chabad: "Shehecheyanu is said again before the morning reading." }
     });
   }
@@ -444,7 +538,8 @@ function getDailyGuide({ date, heb, israel, events, community, fmt }) {
       when: [begins && `from ${begins}`, ends && `until ${ends}`].filter(Boolean).join(" ") || (info.tishaBav ? "Until nightfall" : "From dawn until nightfall"),
       steps: info.tishaBav
         ? ["Also no washing for pleasure, lotions, leather shoes or marital relations.", "Sit on the floor or a low seat until midday (chatzot); Kinot are said in the morning.", "Tallit and tefillin are worn at Mincha, not in the morning."]
-        : ["Pregnant or nursing women, and anyone who is unwell, are generally exempt — ask your rabbi.", "Aneinu is added to the Amidah, and the Torah is read at Shacharit and Mincha."]
+        : ["Pregnant or nursing women, and anyone who is unwell, are generally exempt — ask your rabbi.", "Aneinu is added to the Amidah, and the Torah is read at Shacharit and Mincha."],
+      texts: [{ key: "aneinu" }]
     });
     if (has(evToday, /^Ta.anit Esther/)) {
       today.push({ id: "half-shekel", title: "Give the Half-Shekel (Machatzit HaShekel)", when: "Before Mincha", steps: ["Give three half-units of your currency (for example, three half-dollar coins) to charity, recalling the Temple's half-shekel."] });
