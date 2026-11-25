@@ -1403,6 +1403,15 @@ async function renderZmanimCard(container, date) {
     }
   }
 
+  // Fill in the Today summary's Zmanim row with the most useful times.
+  const summaryValue = document.querySelector("#ts-zmanim .ts-value");
+  if (summaryValue) {
+    const shortName = (g) => g.title.split(" (")[0];
+    summaryValue.textContent = nextRow
+      ? `Next: ${shortName(nextRow.group)} — ${nextRow.row.label.split(" (")[0]} ${fmtZman(nextRow.row.iso)}`
+      : `Latest Shema ${fmtZman(times.sofZmanShma)} · Mincha from ${fmtZman(times.minchaGedola)} · Sunset ${fmtZman(times.sunset)}`;
+  }
+
   groups.forEach(g => {
     card.appendChild(el("h4", "section-label", g.title));
     const dl = el("dl", "zm-list");
@@ -1563,6 +1572,16 @@ function renderTodaySummary({ date, events, occasions, changes, mitzvah, guide }
       onClick: () => goToSection("prayer-changes-container"), actionLabel: "Open prayer changes"
     }));
   }
+
+  // 2b. Zmanim shortcut — the Zmanim card fills in the next time once it loads.
+  const zmRow = summaryRow({
+    icon: "sunrise", label: currentSettings.location ? `Zmanim · ${currentSettings.location.name}` : "Zmanim",
+    value: currentSettings.location ? "Earliest and latest times for each prayer" : "Set your city for prayer times (tefillin, Shema, Mincha…)",
+    onClick: currentSettings.location ? () => goToSection("zmanim-container") : openSettings,
+    actionLabel: currentSettings.location ? "Open the prayer times" : "Open settings"
+  });
+  zmRow.id = "ts-zmanim";
+  list.appendChild(zmRow);
 
   // 3. Times (or a prompt to set the city on days that need them)
   const timed = timedEventsOn(events, date);
