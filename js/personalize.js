@@ -1229,5 +1229,17 @@ const PREP_EXTRAS = {
   },
   "yom-yerushalayim": {
     takingOn: "Reading Psalm 122 slowly, in English or Hebrew, is a simple way to connect with the day."
+  },
+  "tzom-tammuz": {
+    takingOn: "Before taking on a fast, talk to your rabbi. The Three Weeks' focus on kindness is something anyone can start right away."
+  },
+  "tisha-bav": {
+    takingOn: "Hearing Eichah read on Tisha B'Av night, sitting on the floor in a darkened synagogue, is one of the most powerful experiences of the Jewish year — and newcomers are welcome. Ask your rabbi about fasting before you take it on."
+  },
+  "tu-bav": {
+    takingOn: "Tu B'Av is a gentle, joyful day — bringing people together is the whole idea."
+  },
+  "tzom-gedaliah": {
+    takingOn: "Before taking on a fast, talk to your rabbi. Asking someone's forgiveness during the Ten Days is a meaningful step anyone can take."
   }
 };

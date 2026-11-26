@@ -388,6 +388,131 @@ const PREP_GUIDES = [
     ],
     expectNote: "A national day rather than a Yom Tov: work and phones are fine.",
     sources: ["Psalm 122", "Psalm 137:5–6", "Chief Rabbinate of Israel (1968)"]
+  },
+
+  // --- Batch 3: summer mourning, Tu B'Av and the fast after Rosh Hashanah ---------
+  {
+    key: "tzom-tammuz",
+    kind: "day",
+    matchTitle: (title) => /^Tzom Tammuz/.test(title),
+    when: (d, fmt) => `Fast day: ${fmt(d)}, from dawn to nightfall · it opens the Three Weeks`,
+    name: "The 17th of Tammuz and the Three Weeks",
+    icon: "broken-tablets",
+    leadDays: 7,
+    history: [
+      "The Mishnah lists five tragedies on the 17th of Tammuz. Among them: Moses broke the first Tablets of the Law when he saw the Golden Calf, the daily offering in the Temple stopped, and — in the year 70 CE — the Romans broke through the walls of Jerusalem.",
+      "Three weeks after the walls fell, on the 9th of Av, the Second Temple was destroyed. So this fast opens the Three Weeks (\"Bein HaMetzarim\", \"between the narrow straits\"), a period of growing mourning that ends on Tisha B'Av.",
+      "The prophet Zechariah already calls it \"the fast of the fourth month\" — Tammuz is the fourth month counting from Nisan."
+    ],
+    meaning: "The breach in the wall came weeks before the destruction. The Three Weeks ask us to notice the small cracks — in our communities and in ourselves — before they grow. The Sages say the Second Temple fell because of baseless hatred; the answer they teach is baseless love.",
+    practices: [
+      "Take on one extra act of kindness each day of the Three Weeks — \"baseless love\" in practice.",
+      "Learn a little each day about the Temple and why it matters.",
+      "Give tzedakah; a custom on fast days is to give the cost of the meals you skip.",
+      "Mend one relationship that has cracked."
+    ],
+    prep: [
+      "It's a minor fast: no eating or drinking from dawn until nightfall. Your city's exact times appear that day in \"What to do today\" and the Zmanim card.",
+      "Drink plenty the evening before (summer fasts are long and hot). If you want to eat before dawn, decide so before you go to sleep.",
+      "Pregnant or nursing women, anyone who is ill, and others are often exempt — and if you're in the conversion process, ask your rabbi what's right for you.",
+      "From the fast until Tisha B'Av, Ashkenazim don't hold weddings, get haircuts or listen to live music; many Sephardim start these customs later, from Rosh Chodesh Av or the week of Tisha B'Av. Ask your rabbi.",
+      "Many avoid saying Shehecheyanu during the Three Weeks — so wear that new outfit or taste that new fruit before the fast (or on Shabbat)."
+    ],
+    expectNote: "Work and phones are fine. Selichot and Avinu Malkeinu are added at Shacharit, Aneinu in the Amidah, and the Torah is read at Shacharit and Mincha.",
+    sources: ["Mishnah Ta'anit 4:6", "Zechariah 8:19", "Talmud, Yoma 9b", "Shulchan Aruch, Orach Chaim 549–551"]
+  },
+  {
+    key: "tisha-bav",
+    kind: "day",
+    matchTitle: (title) => /^Tish.a B.Av( \(observed\))?$/.test(title),
+    when: (d, fmt) => `The fast: from sunset on ${fmt(addDays(d, -1))} until nightfall on ${fmt(d)}`,
+    name: "Tisha B'Av and the Nine Days",
+    icon: "candle-memorial",
+    // Opens with the Nine Days, which begin on Rosh Chodesh Av, 8 days before
+    // (a day later in years when the fast is postponed from Shabbat to Sunday).
+    leadDays: 8,
+    history: [
+      "On the 9th of Av, both Temples in Jerusalem were destroyed: the First by the Babylonians in 586 BCE, the Second by the Romans in 70 CE. The Mishnah adds more: the spies' discouraging report in the desert, the fall of the fortress of Betar at the end of the Bar Kochba revolt (135 CE), and Jerusalem being plowed over.",
+      "Later tragedies became linked to the day too — the expulsion of the Jews from Spain in 1492 is traditionally connected to it, and the First World War, which led toward so much Jewish suffering, broke out on the 9th of Av, 1914.",
+      "It's the saddest day of the Jewish year: a full fast from sunset to nightfall, like Yom Kippur, closing the Three Weeks of mourning."
+    ],
+    meaning: "Tisha B'Av is about loss and exile, but not about despair. The Sages say the Messiah is born on Tisha B'Av, and by the afternoon the mood begins to lift. Mourning together keeps alive both the memory of what was lost and the hope of rebuilding.",
+    practices: [
+      "Read Eichah (Lamentations) in English before the fast, so you can follow it when it's chanted at night.",
+      "Learn the Talmud's story of Kamtza and Bar Kamtza — how one public humiliation helped bring down the Temple.",
+      "In the afternoon, many watch a film or lecture about Jewish history and loss.",
+      "Choose one way to bring more \"baseless love\" into your life after the fast."
+    ],
+    prep: [
+      "The Nine Days begin on Rosh Chodesh Av. Many don't eat meat or drink wine (except on Shabbat), don't do laundry or buy new clothes, and avoid swimming and pleasure trips. Customs vary — ask your rabbi.",
+      "The fast begins at sunset: no eating or drinking, washing for pleasure, lotions, leather shoes or marital relations, until nightfall the next day.",
+      "The last meal before the fast (seudah hamafseket) is simple — traditionally bread and a hard-boiled egg dipped in ashes, eaten sitting low. When Tisha B'Av falls on Shabbat, the fast moves to Sunday and Shabbat's meals stay festive.",
+      "Get non-leather shoes ready (canvas or rubber).",
+      "Find out where Eichah is read at night and Kinot (elegies) in the morning."
+    ],
+    shopping: [
+      "Non-leather shoes",
+      "Simple food for the meal before the fast, and something light to break it",
+      "A copy of Eichah and the Kinot with translation"
+    ],
+    expectNote: "Synagogues dim the lights, and people sit on the floor or low seats until midday. Many avoid work and greetings until midday. Tallit and tefillin are worn at Mincha instead of in the morning.",
+    sources: ["Mishnah Ta'anit 4:6", "Talmud, Gittin 55b–58a", "The Book of Eichah (Lamentations)", "Shulchan Aruch, Orach Chaim 549–559"]
+  },
+  {
+    key: "tu-bav",
+    kind: "day",
+    matchTitle: (title) => /^Tu B.Av$/.test(title),
+    when: (d, fmt) => `${fmt(d)} (it begins the evening before)`,
+    name: "Tu B'Av",
+    icon: "heart",
+    leadDays: 7,
+    history: [
+      "The Mishnah says there were no happier days for Israel than Yom Kippur and the 15th of Av. The young women of Jerusalem would go out in borrowed white clothes — so that no one would be embarrassed for not owning one — and dance in the vineyards, where young men came to find a match.",
+      "The Talmud gives several reasons for the joy: on this day the tribes of Israel were allowed to marry one another again, the tribe of Benjamin was welcomed back, and the generation in the desert stopped dying.",
+      "In modern Israel, Tu B'Av has become a day of love, popular for weddings."
+    ],
+    meaning: "Just six days after Tisha B'Av, Tu B'Av shows that after mourning comes joy. And the borrowed white clothes carry the deeper lesson: real celebration is when no one feels left out.",
+    practices: [
+      "Bring people together — host a meal, or introduce two people who should meet.",
+      "Lend or give something so someone else won't feel embarrassed.",
+      "Tell someone you love or appreciate them.",
+      "From Tu B'Av the nights grow longer; the Talmud says to use the extra hours for Torah study."
+    ],
+    prep: [
+      "Plan a date, a family celebration or a gathering with friends.",
+      "Wear white, recalling the borrowed dresses, if you like.",
+      "Weddings are common this week — the Three Weeks are over."
+    ],
+    expectNote: "A happy day with no restrictions; Tachanun is left out of the prayers.",
+    sources: ["Mishnah Ta'anit 4:8", "Talmud, Ta'anit 30b–31a"]
+  },
+  {
+    key: "tzom-gedaliah",
+    kind: "day",
+    matchTitle: (title) => /^Tzom Gedaliah/.test(title),
+    when: (d, fmt) => `Fast day: ${fmt(d)}, from dawn to nightfall`,
+    name: "Tzom Gedaliah (the Fast of Gedaliah)",
+    icon: "candle-memorial",
+    leadDays: 7,
+    history: [
+      "After the Babylonians destroyed the First Temple, they appointed Gedaliah ben Achikam, a Jew, as governor over the people who remained in the land. He was murdered by a fellow Jew, Yishmael ben Netaniah (Jeremiah 40–41).",
+      "Fearing Babylon's revenge, the remaining Jews fled to Egypt — ending Jewish life in the land for a time after the destruction.",
+      "It's Zechariah's \"fast of the seventh month\", kept on the 3rd of Tishrei, right after Rosh Hashanah (or on the 4th, when the 3rd is Shabbat)."
+    ],
+    meaning: "The Sages say the death of a righteous person is as great a loss as the burning of the Temple itself — and this tragedy came from Jews turning against Jews. Falling in the Ten Days of Repentance, it's a call to teshuvah, especially in how we treat each other.",
+    practices: [
+      "Continue the Ten Days' work: one honest look at something you'd like to change this year.",
+      "Ask someone's forgiveness, or offer yours.",
+      "Read Jeremiah 40–41, the story behind the fast.",
+      "Give tzedakah."
+    ],
+    prep: [
+      "It's a minor fast: no eating or drinking from dawn until nightfall. Your city's exact times appear that day in \"What to do today\" and the Zmanim card.",
+      "Because it comes right after Rosh Hashanah, eat and drink well at the last holiday meal. If you want to eat before dawn, decide so before you go to sleep.",
+      "Pregnant or nursing women, anyone who is ill, and others are often exempt — and if you're in the conversion process, ask your rabbi what's right for you."
+    ],
+    expectNote: "Work and phones are fine. Selichot, Avinu Malkeinu and Aneinu are added, the Torah is read at Shacharit and Mincha, and the Ten Days' changes to the Amidah continue.",
+    sources: ["Jeremiah 40–41", "Zechariah 8:19", "Talmud, Rosh Hashanah 18b"]
   }
 ];
 
