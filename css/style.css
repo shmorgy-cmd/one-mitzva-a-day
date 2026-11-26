@@ -261,7 +261,6 @@ button.ts-row:focus-visible {
 #timeline-container,
 #zmanim-container,
 #prep-section,
-#occasion-container,
 #torah-container,
 #mitzvot-section,
 #quiz-container { scroll-margin-top: 12px; }
@@ -2703,3 +2702,40 @@ body.has-he-voice .spk--tts { display: grid; }
 .about-back { margin: 22px 0 30px; }
 .about-back a { color: var(--flag-blue); font-weight: 600; text-decoration: none; }
 .about-teaser { margin-top: 10px; }
+
+/* ---------------------------------------------------------------- */
+/* Date card: what today is, a thought for today, more about today    */
+/* ---------------------------------------------------------------- */
+
+#today-line:empty, #today-more:empty { display: none; }
+.today-line { display: flex; align-items: center; gap: 10px; margin: 2px 0 10px; }
+.today-line .icon-badge { flex: none; }
+.today-line-text { margin: 0; font-weight: 600; font-size: 1.02rem; color: var(--flag-blue-deep); line-height: 1.35; }
+#today-line .tavshilin-banner { margin: 0 0 10px; padding: 10px 14px; }
+
+.today-thought { margin: 12px 0 4px; padding: 12px 14px; border-left: 3px solid var(--gold); background: #fbf6ea; border-radius: 0 10px 10px 0; }
+.today-thought-label { margin: 0 0 4px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8a5a00; }
+.today-thought-text {
+  margin: 0;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: 1.04rem;
+  line-height: 1.6;
+  color: var(--flag-blue-deep);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.today-thought-text.is-open { display: block; -webkit-line-clamp: unset; overflow: visible; }
+.today-thought-more { margin-top: 4px; border: 0; background: none; padding: 0; font: inherit; font-size: 0.88rem; font-weight: 600; color: var(--flag-blue); cursor: pointer; }
+
+details.today-more { margin: 10px 0 6px; }
+details.today-more > summary { cursor: pointer; list-style: none; font-weight: 600; color: var(--flag-blue); padding: 6px 0; }
+details.today-more > summary::-webkit-details-marker { display: none; }
+details.today-more > summary::after { content: " ▾"; }
+details.today-more[open] > summary::after { content: " ▴"; }
+.today-more-body { padding: 4px 0 6px; }
+.today-more-part + .today-more-part { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.today-more-title { font-family: "Fraunces", serif; font-size: 1.15rem; color: var(--flag-blue-deep); margin: 0 0 6px; }
+.today-more-body .intro { margin-top: 0; }

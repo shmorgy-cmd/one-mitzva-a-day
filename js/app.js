@@ -231,20 +231,91 @@ function sourcesEl(sources) {
   return p;
 }
 
-function renderOccasionCard(container, occ, ctx, index) {
+/** An occasion's intro, with the Omer day filled in. */
+function occasionIntro(occ, ctx) {
+  return resolve(occ.content.intro, ctx).replace("{{OMER_DAY}}", ctx.omerDay > 0 ? ctx.omerDay : "");
+}
+
+/**
+ * The top of the page, under the date: one line saying what today is, a thought
+ * for today (the occasion's reflection), and "More about today" — the halacha,
+ * customs, blessings and notes, closed until opened. On an ordinary weekday the
+ * timeline already covers the practice, so only the line and the thought show.
+ */
+function renderTodayContext(occasions, ctx) {
+  const lineBox = document.getElementById("today-line");
+  const moreBox = document.getElementById("today-more");
+  lineBox.innerHTML = "";
+  moreBox.innerHTML = "";
+  const isToday = daysBetween(realToday, ctx.today) === 0; // the real today, not just the viewed day
+  const special = occasions.filter(o => o.id !== "generic-weekday");
+  const top = occasions[0];
+
+  // 1. What today is
+  const line = el("div", "today-line");
+  line.appendChild(iconBadge(top.icon, "icon-badge--sm"));
+  const omer = (o) => o.id === "sefirat-haomer" && ctx.omerDay > 0 ? ` · day ${ctx.omerDay}` : "";
+  const names = special.map(o => o.title + omer(o));
+  // A holiday can also be Shabbat or Rosh Chodesh — say so on the same line.
+  if (names.length) {
+    const rc = ctx.findEvent(e => e.category === "roshchodesh" && ctx.isToday(e.date));
+    if (rc && !special.some(o => o.id === "rosh-chodesh")) names.push(rc.title);
+    if (ctx.today.getDay() === 6 && !special.some(o => o.id === "shabbat")) names.unshift("Shabbat");
+  }
+  line.appendChild(el("p", "today-line-text", names.length
+    ? names.join(" · ")
+    : (isToday ? "An ordinary weekday — where most of Jewish life happens" : "An ordinary weekday")));
+  lineBox.appendChild(line);
+
+  if (ctx.erevTavshilin && ctx.isToday(ctx.erevTavshilin)) {
+    lineBox.appendChild(el("div", "tavshilin-banner", "Reminder: prepare Eruv Tavshilin before the holiday begins tonight, since this Yom Tov runs directly into Shabbat."));
+  }
+
+  // 2. A thought for today
+  const used = new Set();
+  const thought = resolve(top.content.inspiration, ctx);
+  if (thought) {
+    const box = el("div", "today-thought");
+    box.appendChild(el("p", "today-thought-label", isToday ? "A thought for today" : "A thought for this day"));
+    const p = richEl("p", "today-thought-text", thought, ctx.profile, used);
+    box.appendChild(p);
+    moreBox.appendChild(box);
+    // "Read more" only when the thought is longer than its three lines.
+    requestAnimationFrame(() => {
+      if (p.scrollHeight <= p.clientHeight + 2) return;
+      const btn = el("button", "today-thought-more", "Read more");
+      btn.type = "button";
+      btn.addEventListener("click", () => {
+        const open = p.classList.toggle("is-open");
+        btn.textContent = open ? "Show less" : "Read more";
+      });
+      box.appendChild(btn);
+    });
+  }
+
+  // 3. More about today (holidays, fasts, seasons…)
+  if (special.length) {
+    const details = el("details", "today-more");
+    details.appendChild(el("summary", null, isToday ? "More about today" : "More about this day"));
+    const body = el("div", "today-more-body");
+    special.forEach((occ, i) => {
+      const part = el("section", "today-more-part");
+      if (special.length > 1) part.appendChild(el("h3", "today-more-title", occ.title));
+      appendOccasionDetail(part, occ, ctx, used, i > 0 || occ !== top);
+      body.appendChild(part);
+    });
+    details.appendChild(body);
+    moreBox.appendChild(details);
+  }
+}
+
+/** Everything about one occasion except its title: the intro, "why today",
+ *  halacha, blessings, customs, the visitor's minhag and notes, sources — and
+ *  its reflection when it isn't already shown as the thought for today. */
+function appendOccasionDetail(card, occ, ctx, used, withInspiration) {
   const profile = ctx.profile;
   const extras = OCCASION_EXTRAS[occ.id] || {};
-  const used = new Set();
-  const card = el("article", "occasion-card");
-  card.style.animationDelay = `${index * 90}ms`;
-
-  const headRow = el("div", "card-head");
-  headRow.appendChild(iconBadge(occ.icon));
-  headRow.appendChild(el("h3", null, occ.title));
-  card.appendChild(headRow);
-
-  const intro = resolve(occ.content.intro, ctx).replace("{{OMER_DAY}}", ctx.omerDay > 0 ? ctx.omerDay : "");
-  card.appendChild(richEl("p", "intro", intro, profile, used));
+  card.appendChild(richEl("p", "intro", occasionIntro(occ, ctx), profile, used));
 
   const whyBox = renderWhyBox(resolve(extras.why, ctx), profile, used, ctx.hebrewDateLabel);
   if (whyBox) card.appendChild(whyBox);
@@ -285,7 +356,7 @@ function renderOccasionCard(container, occ, ctx, index) {
   const convertBox = renderConvertNoteBox(occ.id, profile, used);
   if (convertBox) card.appendChild(convertBox);
 
-  const inspiration = resolve(occ.content.inspiration, ctx);
+  const inspiration = withInspiration && resolve(occ.content.inspiration, ctx);
   if (inspiration) {
     card.appendChild(el("h4", "section-label", "For Reflection"));
     card.appendChild(richEl("p", "inspiration", inspiration, profile, used));
@@ -294,8 +365,6 @@ function renderOccasionCard(container, occ, ctx, index) {
   const occSources = sourcesEl(occ.sources);
   if (occSources) card.appendChild(occSources);
   card.appendChild(reportLink(`occasion:${occ.id}`));
-  makeCollapsible(card, 2, index === 0);
-  container.appendChild(card);
 }
 
 /** Multi-day observances that Hebcal lists as one event per day. Each pattern maps
@@ -1246,15 +1315,7 @@ async function setViewingDate(date) {
   const ctx = buildContext(date, events, hebrewInfo, currentProfile);
   const occasions = pickOccasions(ctx);
 
-  const occContainer = document.getElementById("occasion-container");
-  occContainer.innerHTML = "";
-  occasions.forEach((o, i) => renderOccasionCard(occContainer, o, ctx, i));
-
-  if (ctx.erevTavshilin && ctx.isToday(ctx.erevTavshilin)) {
-    const notice = el("div", "tavshilin-banner");
-    notice.textContent = "Reminder: prepare Eruv Tavshilin before the holiday begins tonight, since this Yom Tov runs directly into Shabbat.";
-    occContainer.prepend(notice);
-  }
+  renderTodayContext(occasions, ctx);
 
   const prepContainer = document.getElementById("prep-container");
   prepContainer.innerHTML = "";
@@ -1385,7 +1446,7 @@ async function init() {
 
   } catch (err) {
     console.error(err);
-    document.getElementById("occasion-container").innerHTML =
+    document.getElementById("today-line").innerHTML =
       '<p class="error">Something went wrong loading today\'s calendar data. Please check your connection and refresh.</p>';
   }
 }
@@ -1401,7 +1462,7 @@ function initTabBar() {
   });
   // Sections that belong to each tab: everything above the Torah card counts as "Today".
   const extra = {
-    top: ["countdown-container", "timeline-container", "zmanim-container", "occasion-container"]
+    top: ["countdown-container", "timeline-container", "zmanim-container"]
   };
   const sections = [];
   links.forEach(a => {
