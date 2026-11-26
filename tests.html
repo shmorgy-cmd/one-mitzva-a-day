@@ -36,6 +36,7 @@
 <script src="js/prayer-changes.js"></script>
 <script src="js/daily-guide.js"></script>
 <script src="js/prayer-texts.js"></script>
+<script src="js/timeline.js"></script>
 <script>
 // Each case: date, calendar (israel), optional community, and the item ids that
 // must / must not appear in today / tonight / season.
@@ -131,6 +132,40 @@ const OMER_WORDS = {
   20: "עשרים יום, שהם שני שבועות וששה ימים", 21: "אחד ועשרים יום, שהם שלשה שבועות",
   49: "תשעה וארבעים יום, שהם שבעה שבועות"
 };
+
+// The day timeline (js/timeline.js) for New York: each item lands in the right
+// part of the day. `in`: [item id, part]; `out`: ids that must not appear.
+const TIMELINE_CASES = [
+  { date: "2026-11-26", name: "Thursday: Torah reading after Shacharit, Shema before Shacharit's deadline",
+    in: [["guide-weekday-torah", "morning"], ["tefillin", "morning"], ["shacharit", "morning"], ["mincha", "afternoon"], ["maariv", "evening"]],
+    out: ["no-tefillin", "fast-begins"],
+    check: d => tlItem(d, "shema").end < tlItem(d, "shacharit").end },
+  { date: "2026-11-27", name: "Friday: candles before sunset, then Kabbalat Shabbat and dinner",
+    in: [["guide-candles", "afternoon"], ["guide-kabbalat-shabbat", "evening"], ["guide-kiddush", "evening"]],
+    check: d => tlItem(d, "guide-candles").end <= d.z.sunset && tlItem(d, "maariv").title === "Maariv for Shabbat" },
+  { date: "2026-11-28", name: "Shabbat: no tefillin, Havdalah at nightfall, Shabbat all day",
+    in: [["no-tefillin", "morning"], ["guide-havdalah", "evening"]], out: ["tefillin"],
+    check: d => d.allDay.some(i => i.id === "guide-shabbat-day") && tlItem(d, "shacharit").title === "Shabbat morning prayers" },
+  { date: "2026-12-04", name: "Chanukah on Friday: the menorah before the Shabbat candles",
+    in: [["guide-chanukah-lights", "afternoon"], ["guide-candles", "afternoon"]],
+    check: d => tlItem(d, "guide-chanukah-lights").sortAt < tlItem(d, "guide-candles").sortAt },
+  { date: "2026-12-05", name: "Chanukah on Motzei Shabbat: the menorah after Havdalah",
+    in: [["guide-havdalah", "evening"], ["guide-chanukah-lights", "evening"]],
+    check: d => tlItem(d, "guide-chanukah-lights").start >= tlItem(d, "guide-havdalah").start &&
+      tlItem(d, "shacharit").changes.some(c => /Hallel/.test(c.title)) },
+  { date: "2026-12-20", name: "Asara B'Tevet: the fast begins at dawn and ends at nightfall",
+    in: [["fast-begins", "waking"], ["fast-ends", "evening"], ["shacharit", "morning"]],
+    check: d => d.allDay.some(i => i.id === "guide-fast") && tlItem(d, "fast-ends").start < tlItem(d, "maariv").start },
+  { date: "2027-08-12", name: "Tisha B'Av: tallit and tefillin move to Mincha",
+    in: [["tefillin", "afternoon"]], out: ["no-tefillin"] },
+  { date: "2026-11-26", name: "No city: the day is still in order, with no made-up times", noCity: true,
+    in: [["shacharit", "morning"], ["mincha", "afternoon"]],
+    check: d => d.approx && d.parts.every(p => !p.range && p.items.every(i => !/\d:\d\d/.test(i.timeLabel || ""))) }
+];
+
+function tlItem(day, id) {
+  return day.parts.flatMap(p => p.items).find(i => i.id === id);
+}
 
 function parseLocalDate(str) {
   const [y, m, d] = str.split("-").map(Number);
@@ -232,7 +267,43 @@ async function run() {
     tbody.appendChild(tr);
   }
 
-  const total = CASES.length + GUIDE_CASES.length + Object.keys(OMER_WORDS).length;
+  for (const c of TIMELINE_CASES) {
+    const tr = document.createElement("tr");
+    const date = parseLocalDate(c.date);
+    const problems = [];
+    let got = "";
+    try {
+      const start = iso(pcAddDays(date, -12)), end = iso(pcAddDays(date, 14));
+      const [cal, heb, hebTomorrow, zm] = await Promise.all([
+        getJSON(`https://www.hebcal.com/hebcal?v=1&cfg=json&start=${start}&end=${end}&maj=on&min=on&mod=on&nx=on&mf=on&ss=on&s=on&o=on&leyning=on&i=off&c=on&geonameid=5128581`),
+        loadHeb(date), loadHeb(pcAddDays(date, 1)),
+        getJSON(`https://www.hebcal.com/zmanim?cfg=json&date=${c.date}&geonameid=5128581`)
+      ]);
+      const events = cal.items.map(e => ({ ...e, at: e.date.length > 10 ? new Date(e.date) : null, date: parseLocalDate(e.date.slice(0, 10)) }));
+      const guide = getDailyGuide({ date, heb, israel: false, events, community: null });
+      const changes = getPrayerChanges({ date, heb, hebTomorrow, israel: false, events, community: null });
+      const times = c.noCity ? null : zm.times;
+      const day = buildDayTimeline({
+        date, times, community: null, info: pcDayInfo(events, date), guide, changes, fmt: tlCityFormatter(times),
+        timed: c.noCity ? [] : events.filter(e => e.at && pcSameDay(e.date, date))
+      });
+      const where = new Map(day.parts.flatMap(p => p.items.map(i => [i.id, p.key])));
+      (c.in || []).forEach(([id, part]) => { if (where.get(id) !== part) problems.push(`${id}: expected in ${part}, got ${where.get(id) || "nowhere"}`); });
+      (c.out || []).forEach(id => { if (where.has(id)) problems.push(`unexpected ${id}`); });
+      if (c.check && !problems.length && !c.check(day)) problems.push("detail check failed");
+      got = day.parts.map(p => `${p.key}: ${p.items.map(i => i.id).join(", ")}`).join(" | ") + (day.allDay.length ? ` | all day: ${day.allDay.map(i => i.id).join(", ")}` : "");
+    } catch (e) {
+      problems.push("error: " + e.message);
+    }
+    const ok = !problems.length;
+    ok ? pass++ : fail++;
+    tr.innerHTML = `<td class="${ok ? "pass" : "fail"}">${ok ? "PASS" : "FAIL"}</td><td>${c.date}</td><td></td><td><code></code></td>`;
+    tr.children[2].textContent = "Timeline: " + c.name;
+    tr.children[3].firstChild.textContent = ok ? got : problems.join("; ") + " — got: " + got;
+    tbody.appendChild(tr);
+  }
+
+  const total = CASES.length + GUIDE_CASES.length + Object.keys(OMER_WORDS).length + TIMELINE_CASES.length;
   document.getElementById("summary").textContent = `${pass} passed, ${fail} failed (of ${total})`;
   document.title = `${fail ? "FAIL" : "PASS"} — Prayer Changes Tests`;
 }

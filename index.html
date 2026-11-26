@@ -51,31 +51,21 @@
         <div id="hebrew-date" class="hebrew-date">—</div>
         <div id="gregorian-date" class="gregorian-date">—</div>
       </div>
-      <ul id="today-summary-rows" class="ts-rows" aria-live="polite"></ul>
+      <div id="now-container"></div>
     </section>
 
     <div id="date-nav-container" aria-label="Browse another day"></div>
 
     <div id="countdown-container" aria-label="Upcoming dates"></div>
 
-    <!-- The cards below follow the same order as the Today summary's rows. -->
+    <!-- The day, hour by hour: waking up, prayers, practices, built on the zmanim. -->
+    <section id="timeline-container" aria-label="The day, hour by hour"></section>
 
-    <!-- 1. Zmanim -->
-    <section id="zmanim-container" aria-label="Zmanim: prayer times for your city"></section>
-    <section id="prayer-container" aria-label="Right now: which prayer"></section>
-
-    <!-- 2. Today -->
-    <section id="guide-container" aria-label="What to do today"></section>
+    <section id="zmanim-container" aria-label="All of the day's times"></section>
     <section id="occasion-container" aria-label="Today's halacha and inspiration"></section>
-    <section id="morning-mitzvot-container" aria-label="Morning practices"></section>
 
-    <!-- 3. In prayer -->
-    <section id="prayer-changes-container" aria-label="What changes in prayer today"></section>
-
-    <!-- 4. Torah -->
     <section id="torah-container" aria-label="This week's Torah portion"></section>
 
-    <!-- 5. Mitzvah of the day -->
     <section id="mitzvot-section" aria-label="Mitzvot">
       <section class="section-heading">
         <h2>Mitzvot</h2>
@@ -85,7 +75,7 @@
       <section id="mitzvot-container" aria-label="Everyday mitzvot and blessings"></section>
     </section>
 
-    <!-- 6. Coming up -->
+    <!-- Coming up -->
     <section id="prep-section" aria-label="Coming up: getting ready">
       <section class="section-heading">
         <h2>Coming up</h2>
@@ -159,6 +149,7 @@
   <script src="js/prayer-changes.js"></script>
   <script src="js/daily-guide.js"></script>
   <script src="js/prayer-texts.js"></script>
+  <script src="js/timeline.js"></script>
   <script src="js/print.js"></script>
   <script src="js/prep.js"></script>
   <script src="js/content.js"></script>

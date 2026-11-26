@@ -47,13 +47,17 @@ The Settings panel ([`js/settings.js`](js/settings.js)) stores the visitor's cit
 
 [`js/prayer-texts.js`](js/prayer-texts.js) holds the actual words of the prayers the site mentions — Hebrew, transliteration and our own English — so the guide and the prayer-changes card can show them: HaNerot Halalu, Ma'oz Tzur, Al HaNissim (Chanukah/Purim), Ya'aleh v'Yavo (naming the day), Aneinu, Atah Chonantanu, the rain and dew phrases, the Ten Days additions, the Omer count (worded for each of the 49 days), Lecha Dodi, Shalom Aleichem, the Shabbat and festival Kiddush, Havdalah and the Torah blessings. Hallel (Psalms 113–118) loads live from Sefaria. `PRAYER_CHANGE_TEXTS` maps each prayer-change id to its texts. Wording follows the common Ashkenazi siddur and still needs review.
 
+## The day timeline
+
+The top of the page is the day as a timeline ([`js/timeline.js`](js/timeline.js)), built on the zmanim for the saved city: **Waking up** (Modeh Ani, hand-washing, morning blessings), **Morning** (tallit and tefillin, the Shema with its deadline, Shacharit), **Midday** (the mitzvah of the day, this week's Torah portion), **Afternoon** (Mincha), **Evening** (Maariv) and **Bedtime**. The daily guide's items slot in at their times — candles before sunset, Kabbalat Shabbat, Havdalah, the menorah, the Omer, fast start and end — and whole-day ones (Shabbat, a fast, a festival) sit in an "All day" box above. Each prayer shows the day's changes on its card and, behind "How to pray", the full changes with their words plus what the prayer is. A "Right now" card under the date says the one thing to do now, how long is left and what's next; the timeline updates every minute, finished parts of the day fold away, and items can be ticked off (saved for a week, in this browser only). Other dates show the plan without "now". Without a city the day keeps its order but shows no clock times. `buildDayTimeline` has no DOM, so `tests.html` checks it; adding `?now=2026-12-04T16:30-05:00` to the URL pretends it's that moment, for checking.
+
 ## Zmanim
 
-The Zmanim card shows the viewed day's times for the saved city from Hebcal's `/zmanim`, grouped by what you're doing, with earliest and latest: tallit and tefillin, Shacharit, the morning Shema (Magen Avraham and Gra), Mincha and Maariv. Chabad profiles get the Alter Rebbe's times. Without a city it asks for one instead of guessing.
+Below the timeline, the "All of the day's times" card shows the viewed day's times for the saved city from Hebcal's `/zmanim`, grouped by what you're doing, with earliest and latest: tallit and tefillin, Shacharit, the morning Shema (Magen Avraham and Gra), Mincha and Maariv. Chabad profiles get the Alter Rebbe's times. Without a city it asks for one instead of guessing.
 
 ## Printable Shabbat / Yom Tov sheet
 
-The "Print for…" button in the Today summary ([`js/print.js`](js/print.js)) builds a black-and-white sheet for the next Shabbat or Yom Tov stretch (every day until it ends, from Hebcal's data): times for the saved city, the parsha with Sefaria's summary or the holiday readings, prayer changes per day and night, Kiddush and Havdalah outlines, the week's mitzvah, and the quiz with an answer key. A link ending in `#print` opens it directly.
+The "Print for…" button under the timeline ([`js/print.js`](js/print.js)) builds a black-and-white sheet for the next Shabbat or Yom Tov stretch (every day until it ends, from Hebcal's data): times for the saved city, the parsha with Sefaria's summary or the holiday readings, prayer changes per day and night, Kiddush and Havdalah outlines, the week's mitzvah, and the quiz with an answer key. A link ending in `#print` opens it directly.
 
 ## Installable app, offline and reminders
 

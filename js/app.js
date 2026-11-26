@@ -640,57 +640,6 @@ function renderTorahPortion(container, portion) {
   container.appendChild(card);
 }
 
-function renderPrayerCard(container, prayerInfo) {
-  if (!prayerInfo || !prayerInfo.prayer) return;
-  const { prayer, precise } = prayerInfo;
-  const card = el("article", "occasion-card prayer-card");
-
-  const headRow = el("div", "card-head");
-  headRow.appendChild(iconBadge(prayer.icon, "icon-badge--gold"));
-  const titleWrap = el("div");
-  titleWrap.appendChild(el("h3", null, prayer.title));
-  const windowText = precise ? prayerWindowTimes(prayerInfo.key, prayerInfo.times) : null;
-  titleWrap.appendChild(el("p", "torah-meta", precise
-    ? `Right now in ${prayerInfo.placeName}${windowText ? ` · ${windowText}` : ""}`
-    : `Right now (${prayer.window}, approximate)`));
-  headRow.appendChild(titleWrap);
-  card.appendChild(headRow);
-
-  if (!precise) {
-    // Sits outside the collapsible header, so tapping it doesn't toggle the card.
-    const setCity = el("button", "settings-link-btn prayer-set-city", "Set your city for exact times");
-    setCity.type = "button";
-    setCity.addEventListener("click", openSettings);
-    card.appendChild(setCity);
-  }
-
-  const profile = currentProfile;
-  const extras = PRAYER_EXTRAS[prayerInfo.key] || {};
-  const used = new Set();
-
-  card.appendChild(richEl("p", "intro", prayer.content.intro, profile, used));
-
-  card.appendChild(el("h4", "section-label", "Halacha & Practice"));
-  const ul = el("ul", "halacha-list");
-  prayer.content.halacha.forEach(h => ul.appendChild(richEl("li", null, h, profile, used)));
-  card.appendChild(ul);
-
-  const minhagBox = renderMinhagBox(extras.minhagim, profile);
-  if (minhagBox) card.appendChild(minhagBox);
-  const takingOnBox = renderTakingOnBox(extras.takingOn, profile, used);
-  if (takingOnBox) card.appendChild(takingOnBox);
-
-  card.appendChild(el("h4", "section-label", "For Reflection"));
-  card.appendChild(richEl("p", "inspiration", prayer.content.inspiration, profile, used));
-  const prayerSources = sourcesEl(prayer.sources);
-  if (prayerSources) card.appendChild(prayerSources);
-  card.appendChild(reportLink(`prayer:${prayerInfo.key}`));
-
-  // Keep the header, the intro and (when shown) the "set your city" link visible.
-  makeCollapsible(card, precise ? 2 : 3, false);
-  container.appendChild(card);
-}
-
 function renderPrepCard(container, upcoming, isBrowsingAhead) {
   if (!upcoming) return;
   const { guide, daysUntil, offlineDays, date } = upcoming;
@@ -904,33 +853,6 @@ function renderMitzvotSection(container) {
   container.appendChild(card);
 }
 
-/** Morning-only practices (Modeh Ani, morning hand-washing, shoe order) — shown
- *  only while it's actually Shacharit time, right alongside the prayer card. */
-function renderMorningMitzvotCard(container) {
-  container.innerHTML = "";
-  const morningMitzvot = MITZVOT.filter(m => m.timeGate === "morning");
-  if (!morningMitzvot.length) return;
-
-  const card = el("article", "occasion-card mitzvot-card morning-mitzvot-card");
-
-  const headRow = el("div", "card-head");
-  headRow.appendChild(iconBadge("sunrise", "icon-badge--gold"));
-  const titleWrap = el("div");
-  titleWrap.appendChild(el("h3", null, "Morning Practices"));
-  titleWrap.appendChild(el("p", "torah-meta", "Since it's morning right now"));
-  headRow.appendChild(titleWrap);
-  card.appendChild(headRow);
-
-  card.appendChild(el("p", "intro", "A few things meant specifically for the start of the day."));
-
-  const list = el("div", "mitzvot-list");
-  morningMitzvot.forEach(m => list.appendChild(renderMitzvahRow(m)));
-  card.appendChild(list);
-
-  makeCollapsible(card, 2, true);
-  container.appendChild(card);
-}
-
 function shuffled(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
@@ -1035,10 +957,11 @@ function renderQuizCard(container, occasions, portion, mitzvah) {
 
 /** Fill in the Today summary's Torah row: the parsha and today's aliyah. */
 function updateTorahSummary(portion) {
-  const value = document.querySelector("#ts-torah .ts-value");
-  if (!value) return;
-  if (!portion) { value.textContent = "This week's Torah portion"; return; }
-  value.textContent = `${portion.parashaName}${portion.aliyaRef ? ` · today: ${ordinal(portion.aliyaNum)} aliyah (${portion.aliyaRef.replace(/(\d+):(\d+)-\1:/, "$1:$2–").replace(/-/g, "–")})` : ""}`;
+  const value = document.getElementById("tl-torah-why");
+  if (!value || !portion) return;
+  value.textContent = portion.aliyaRef
+    ? `${portion.parashaName} · today's part: the ${ordinal(portion.aliyaNum)} aliyah (${portion.aliyaRef.replace(/(\d+):(\d+)-\1:/, "$1:$2–").replace(/-/g, "–")})`
+    : `${portion.parashaName} — a few minutes with this week's portion.`;
 }
 
 function ordinal(n) {
@@ -1194,86 +1117,6 @@ function renderGuideItem(item, used) {
   return wrap;
 }
 
-/** Builds the guide for a date; returns it for the Today summary to reuse. */
-function renderDailyGuideCard(container, date, heb, events, changes, mitzvah) {
-  container.innerHTML = "";
-  if (!heb || !heb.hm) return null;
-  const guide = getDailyGuide({
-    date, heb, israel: isInIsrael(currentSettings), events,
-    community: currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null,
-    fmt: fmtClock
-  });
-  const used = new Set();
-  const isToday = daysBetween(realToday, date) === 0;
-
-  const card = el("article", "occasion-card guide-card");
-  const head = el("div", "card-head");
-  head.appendChild(iconBadge("star", "icon-badge--gold"));
-  const titleWrap = el("div");
-  titleWrap.appendChild(el("h3", null, isToday ? "What to do today" : "What to do this day"));
-  titleWrap.appendChild(el("p", "torah-meta", `${shortDate(date)} · ${heb.hd} ${heb.hm}${currentSettings.location ? " · " + currentSettings.location.name : ""}`));
-  head.appendChild(titleWrap);
-  card.appendChild(head);
-
-  const blessingsShown = [...guide.tonight, ...guide.today].some(i => i.blessings && i.blessings.length);
-  if (blessingsShown && isConverting(currentProfile)) {
-    card.appendChild(el("p", "dg-convert", "Blessings that say \"who has commanded us\": ask your rabbi whether to say them before your conversion — doing the practice itself is always welcome."));
-  }
-  if (!currentSettings.location && [...guide.tonight, ...guide.today].some(i => i.when)) {
-    const p = el("p", "dg-setcity");
-    p.appendChild(document.createTextNode("Times shown are general. "));
-    const btn = el("button", "settings-link-btn", "Set your city for exact times");
-    btn.type = "button";
-    btn.addEventListener("click", openSettings);
-    p.appendChild(btn);
-    card.appendChild(p);
-  }
-
-  function section(label, sub, items) {
-    if (!items.length) return;
-    const h = el("h4", "section-label", label);
-    card.appendChild(h);
-    if (sub) card.appendChild(el("p", "dg-sub", sub));
-    items.forEach(i => card.appendChild(renderGuideItem(i, used)));
-  }
-
-  if (!guide.tonight.length && !guide.today.length) {
-    card.appendChild(el("p", "dg-sub", "No special observances today — a regular day is still full of Jewish practice: the three daily prayers, blessings before and after eating, a little Torah learning, and one mitzvah to focus on."));
-  }
-  section("Tonight", "The Jewish day begins at nightfall, so this evening already belongs to tomorrow's date.", guide.tonight);
-  section("Today", null, guide.today);
-  section("Read", null, guide.read);
-
-  if (changes) {
-    card.appendChild(el("h4", "section-label", "Pray"));
-    const titles = changes.today.map(i => i.title);
-    const p = el("p", "dg-pray", titles.length ? titles.join(" · ") : "No changes — the regular service.");
-    card.appendChild(p);
-    const link = el("button", "settings-link-btn", "See where each change goes in the prayers");
-    link.type = "button";
-    link.addEventListener("click", () => goToSection("prayer-changes-container"));
-    card.appendChild(link);
-  }
-
-  if (mitzvah) {
-    card.appendChild(el("h4", "section-label", "Practice"));
-    const p = el("p", "dg-pray");
-    p.appendChild(el("strong", null, mitzvah.title));
-    p.appendChild(document.createTextNode(` — ${mitzvah.subtitle}`));
-    card.appendChild(p);
-    const link = el("button", "settings-link-btn", "How to do it");
-    link.type = "button";
-    link.addEventListener("click", () => goToSection("daily-mitzvah-container"));
-    card.appendChild(link);
-  }
-
-  card.appendChild(el("p", "pc-review", "A learning aid — customs differ, so check the details with your rabbi."));
-  card.appendChild(reportLink(`guide:${toISO(date)}`));
-  makeCollapsible(card, 1, true);
-  container.appendChild(card);
-  return guide;
-}
-
 // --- Prayer changes card ---------------------------------------------
 
 function renderPrayerChangeItem(item, used, textCtx) {
@@ -1294,65 +1137,6 @@ function renderPrayerChangeItem(item, used, textCtx) {
     li.appendChild(p);
   });
   return li;
-}
-
-/** Renders the full prayer-changes card (collapsed — the Today summary shows the
- *  headlines) and returns the engine's result for the summary to reuse. */
-function renderPrayerChangesCard(container, date, heb, hebTomorrow, events) {
-  container.innerHTML = "";
-  if (!heb || !heb.hm) return null;
-  const israel = isInIsrael(currentSettings);
-  const changes = getPrayerChanges({
-    date, heb, hebTomorrow, israel, events,
-    community: currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null
-  });
-  const used = new Set();
-  const textCtx = {
-    info: pcDayInfo(events, date),
-    next: pcDayInfo(events, addDays(date, 1)),
-    community: pcCommunityKey(currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null)
-  };
-
-  const card = el("article", "occasion-card prayer-changes-card");
-  const headRow = el("div", "card-head");
-  headRow.appendChild(iconBadge("book-star", "icon-badge--gold"));
-  const titleWrap = el("div");
-  const isToday = daysBetween(realToday, date) === 0;
-  titleWrap.appendChild(el("h3", null, isToday ? "Prayer changes today" : "Prayer changes this day"));
-  titleWrap.appendChild(el("p", "torah-meta", `${heb.hd} ${heb.hm} ${heb.hy} · ${israel ? "Israel" : "outside Israel"} calendar`));
-  headRow.appendChild(titleWrap);
-  card.appendChild(headRow);
-
-  card.appendChild(el("h4", "section-label", "Shacharit & Mincha"));
-  if (changes.today.length) {
-    const ul = el("ul", "pc-list");
-    changes.today.forEach(i => ul.appendChild(renderPrayerChangeItem(i, used, textCtx)));
-    card.appendChild(ul);
-  } else {
-    card.appendChild(el("p", "pc-nothing", "Nothing changes today — it's the regular weekday service."));
-  }
-
-  if (changes.tonight.length) {
-    card.appendChild(el("h4", "section-label", "Tonight at Maariv"));
-    const ul = el("ul", "pc-list");
-    changes.tonight.forEach(i => ul.appendChild(renderPrayerChangeItem(i, used, textCtx)));
-    card.appendChild(ul);
-  }
-
-  if (changes.season.length) {
-    const details = el("details", "pc-season");
-    details.appendChild(el("summary", null, "This season (said every day for now)"));
-    const ul = el("ul", "pc-list");
-    changes.season.forEach(i => ul.appendChild(renderPrayerChangeItem(i, used, textCtx)));
-    details.appendChild(ul);
-    card.appendChild(details);
-  }
-
-  card.appendChild(el("p", "pc-review", "A learning aid that still needs review by a rabbi. Customs differ between communities — check with your rabbi before relying on it."));
-  card.appendChild(reportLink(`prayer-changes:${heb.hd}-${heb.hm}`));
-  makeCollapsible(card, 1, false);
-  container.appendChild(card);
-  return changes;
 }
 
 // --- Zmanim card --------------------------------------------------------
@@ -1425,10 +1209,10 @@ async function renderZmanimCard(container, date) {
   const head = el("div", "card-head");
   head.appendChild(iconBadge("sunrise", "icon-badge--gold"));
   const titleWrap = el("div");
-  titleWrap.appendChild(el("h3", null, "Zmanim — prayer times"));
+  titleWrap.appendChild(el("h3", null, "All of the day's times (zmanim)"));
   const isToday = daysBetween(realToday, date) === 0;
   const loc = currentSettings.location;
-  titleWrap.appendChild(el("p", "torah-meta", loc ? `${shortDate(date)} · ${loc.name}` : "Earliest and latest times for each prayer"));
+  titleWrap.appendChild(el("p", "torah-meta", loc ? `Earliest and latest for each prayer · ${shortDate(date)} · ${loc.name}` : "Earliest and latest times for each prayer"));
   head.appendChild(titleWrap);
   card.appendChild(head);
 
@@ -1442,12 +1226,7 @@ async function renderZmanimCard(container, date) {
     return;
   }
 
-  let times = null;
-  try {
-    times = await fetchZmanim(loc, toISO(date));
-  } catch (e) {
-    console.warn("zmanim fetch failed", e);
-  }
+  const times = await getZmanimCached(date);
   if (!pcSameDay(viewingDate, date)) return; // the visitor moved to another day meanwhile
   if (!times) {
     card.appendChild(el("p", "dg-sub", "Couldn't load the times right now — try again in a moment."));
@@ -1468,15 +1247,6 @@ async function renderZmanimCard(container, date) {
     if (nextRow) {
       card.appendChild(el("p", "zm-next", `Coming up at ${fmtZman(nextRow.row.iso)} — ${nextRow.group.title}: ${nextRow.row.label}`));
     }
-  }
-
-  // Fill in the Today summary's Zmanim row with the most useful times.
-  const summaryValue = document.querySelector("#ts-zmanim .ts-value");
-  if (summaryValue) {
-    const shortName = (g) => g.title.split(" (")[0];
-    summaryValue.textContent = nextRow
-      ? `Next: ${shortName(nextRow.group)} — ${nextRow.row.label.split(" (")[0]} ${fmtZman(nextRow.row.iso)}`
-      : `Latest Shema ${fmtZman(times.sofZmanShma)} · Mincha from ${fmtZman(times.minchaGedola)} · Sunset ${fmtZman(times.sunset)}`;
   }
 
   groups.forEach(g => {
@@ -1505,14 +1275,6 @@ async function renderZmanimCard(container, date) {
 function fmtClock(hhmm) {
   const [h, m] = hhmm.split(":").map(Number);
   return new Date(2000, 0, 1, h, m).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-}
-
-/** Days when a times card is worth showing even before a city is set. */
-function isTimesDay(events, date) {
-  const dow = date.getDay();
-  if (dow === 5 || dow === 6) return true;
-  return events.some(e => daysBetween(e.date, date) === 0 &&
-    (e.yomtov || /^Erev /.test(e.title) || e.subcat === "fast"));
 }
 
 function timedEventLabel(e) {
@@ -1572,143 +1334,96 @@ function goToSection(containerId) {
   container.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function summaryRow({ icon, label, value, note, onClick, actionLabel }) {
-  const li = el("li", "ts-row-wrap");
-  const row = el(onClick ? "button" : "div", "ts-row");
-  if (onClick) {
-    row.type = "button";
-    row.addEventListener("click", onClick);
-    if (actionLabel) row.setAttribute("aria-label", `${label}: ${value}. ${actionLabel}`);
-  }
-  const badge = el("span", "ts-icon");
-  badge.innerHTML = getIcon(icon);
-  row.appendChild(badge);
-  const text = el("span", "ts-text");
-  text.appendChild(el("span", "ts-label", label));
-  text.appendChild(el("span", "ts-value", value));
-  if (note) text.appendChild(el("span", "ts-note", note));
-  row.appendChild(text);
-  if (onClick) row.appendChild(el("span", "ts-chevron", "›"));
-  li.appendChild(row);
-  return li;
+const PRINTER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M7 9V3h10v6M7 17H4v-7a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v7h-3M7 14h10v7H7z"/></svg>';
+
+// --- The day's data for the timeline --------------------------------------
+
+/** The visitor's community, when they've told us they're Jewish (else null). */
+function profileCommunity() {
+  return currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null;
 }
 
-function renderTodaySummary({ date, events, occasions, changes, mitzvah, guide }) {
-  const list = document.getElementById("today-summary-rows");
-  list.innerHTML = "";
-  const isToday = daysBetween(realToday, date) === 0;
+const zmanimCache = new Map();
+/** Zmanim for the saved city on `date` (null without a city or on failure);
+ *  shared by the timeline and the zmanim card so it's fetched once. */
+function getZmanimCached(date) {
+  const loc = currentSettings.location;
+  if (!loc) return Promise.resolve(null);
+  const key = `${toISO(date)}|${JSON.stringify(loc)}`;
+  if (!zmanimCache.has(key)) {
+    zmanimCache.set(key, fetchZmanim(loc, toISO(date)).catch(e => {
+      console.warn("zmanim fetch failed", e);
+      zmanimCache.delete(key);
+      return null;
+    }));
+  }
+  return zmanimCache.get(key);
+}
 
-  // The rows follow the same order as the cards below them:
-  // 1. Zmanim · 2. Today · 3. In prayer · 4. Torah · 5. Mitzvah · 6. Coming up
-
-  // 1. Zmanim — the Zmanim card fills in the next time once it loads.
-  const zmRow = summaryRow({
-    icon: "sunrise", label: currentSettings.location ? `Zmanim · ${currentSettings.location.name}` : "Zmanim",
-    value: currentSettings.location ? "Earliest and latest times for each prayer" : "Set your city for prayer times (tefillin, Shema, Mincha…)",
-    onClick: currentSettings.location ? () => goToSection("zmanim-container") : openSettings,
-    actionLabel: currentSettings.location ? "Open the prayer times" : "Open settings"
+/** What changes in prayer this day, plus what the prayer-text boxes need. */
+function computePrayerChanges(date, heb, hebTomorrow, events) {
+  if (!heb || !heb.hm) return { changes: null, textCtx: null };
+  const changes = getPrayerChanges({
+    date, heb, hebTomorrow, israel: isInIsrael(currentSettings), events, community: profileCommunity()
   });
-  zmRow.id = "ts-zmanim";
-  list.appendChild(zmRow);
+  const textCtx = {
+    info: pcDayInfo(events, date),
+    next: pcDayInfo(events, addDays(date, 1)),
+    community: pcCommunityKey(profileCommunity())
+  };
+  return { changes, textCtx };
+}
 
-  // 1b. Candle-lighting, Havdalah and fast times (or a prompt to set the city on days that need them)
-  const timed = timedEventsOn(events, date);
-  if (timed.length) {
-    list.appendChild(summaryRow({
-      icon: "candles-shabbat", label: `Times · ${currentSettings.location.name}`,
-      value: timed.map(e => `${timedEventLabel(e)} ${fmtClock(e.time)}`).join(" · ")
-    }));
-  } else if (!currentSettings.location && isTimesDay(events, date)) {
-    list.appendChild(summaryRow({
-      icon: "candles-shabbat", label: "Times", value: "Set your city for candle-lighting and other times",
-      onClick: openSettings, actionLabel: "Open settings"
-    }));
-  }
-
-  // 2. Today: the occasion, plus the most concrete things to do
-  const [top, season] = occasions;
-  const occLine = top.id === "generic-weekday"
-    ? (season ? season.title : "No holiday — an ordinary day in the Jewish calendar")
-    : [top.title, season && season.title].filter(Boolean).join(" · ");
-  let toDo = null;
-  if (guide) {
-    // Short form: the title up to its first " — ", plus the clock time if there is one.
-    const short = (i) => {
-      const t = (i.when || "").match(/\d{1,2}:\d{2}(\s?[AP]M)?/i);
-      return `${i.title.split(" — ")[0].replace(/ tonight$/i, "")}${t ? ` · ${t[0]}` : ""}`;
-    };
-    const actions = [
-      ...guide.tonight.map((i, k) => (k === 0 ? "Tonight: " : "") + short(i)),
-      ...guide.today.map(short)
-    ];
-    if (actions.length) toDo = "To do: " + actions.slice(0, 2).join(" · ") + (actions.length > 2 ? ` · +${actions.length - 2} more` : "");
-  }
-  list.appendChild(summaryRow({
-    icon: top.icon, label: isToday ? "Today" : "This day", value: occLine, note: toDo,
-    onClick: () => goToSection("guide-container"), actionLabel: "Open what to do today"
-  }));
-
-  // 3. Prayer changes (headlines only)
-  if (changes) {
-    const tonightTitle = (t) => `Tonight: ${t.replace(/\s*(from )?tonight$/i, "")}`;
-    const titles = [...changes.today.map(i => i.title), ...changes.tonight.map(i => tonightTitle(i.title))];
-    const shown = titles.slice(0, 3).join(" · ");
-    const value = titles.length ? shown + (titles.length > 3 ? ` · +${titles.length - 3} more` : "") : "No changes — the regular service";
-    list.appendChild(summaryRow({
-      icon: "book-star", label: "In prayer", value,
-      note: "A learning aid — check with your rabbi",
-      onClick: () => goToSection("prayer-changes-container"), actionLabel: "Open prayer changes"
-    }));
-  }
-
-  // 4. Torah — filled in by updateTorahSummary() once the portion loads.
-  const torahRow = summaryRow({
-    icon: "tablets", label: "Torah", value: "This week's portion and today's aliyah",
-    onClick: () => goToSection("torah-container"), actionLabel: "Open the Torah portion"
+function computeDailyGuide(date, heb, events) {
+  if (!heb || !heb.hm) return null;
+  return getDailyGuide({
+    date, heb, israel: isInIsrael(currentSettings), events, community: profileCommunity(), fmt: fmtClock
   });
-  torahRow.id = "ts-torah";
-  list.appendChild(torahRow);
+}
 
-  // 5. Mitzvah of the day
-  list.appendChild(summaryRow({
-    icon: mitzvah.icon, label: "Mitzvah of the day", value: mitzvah.title,
-    onClick: () => goToSection("daily-mitzvah-container"), actionLabel: "Open the mitzvah"
-  }));
-
-  // 6. Coming up: the next holiday or fast, and its get-ready guide
+/** Under the timeline: what's coming up next, and the printable Shabbat sheet. */
+function renderDayFooter(container, date, events) {
   const prep = nextPrepInfo(events, date);
   const next = nextHoliday(events, date);
-  let comingValue = null;
+  let line = null;
+  let days = null;
   if (prep && prep.ready) {
-    comingValue = `${prep.name} ${inDays(prep.daysUntil)} · get-ready guide is open`;
+    days = prep.daysUntil;
+    line = { title: `Coming up: ${prep.name}`, sub: "Its get-ready guide is open — the story, what it means and how to prepare." };
   } else if (next) {
-    comingValue = `${next.name} ${inDays(daysBetween(date, next.start))}`;
-    if (prep && prep.name === next.name && prep.opensIn > 0) comingValue += ` · get-ready guide opens ${inDays(prep.opensIn)}`;
+    days = daysBetween(date, next.start);
+    const opens = prep && prep.name === next.name && prep.opensIn > 0 ? ` Its get-ready guide opens ${inDays(prep.opensIn)}.` : "";
+    line = { title: `Coming up: ${next.name}`, sub: `${inDays(days).replace(/^./, c => c.toUpperCase())}.${opens}` };
   }
-  if (comingValue) {
-    list.appendChild(summaryRow({
-      icon: "star", label: "Coming up", value: comingValue,
-      onClick: () => goToSection("prep-section"), actionLabel: "Open what's coming up"
-    }));
+  if (line) {
+    const btn = el("button", "tl-coming");
+    btn.type = "button";
+    const big = el("span", "tl-coming-days", String(days));
+    big.appendChild(el("small", null, days === 1 ? "day" : "days"));
+    btn.appendChild(big);
+    const text = el("span", "tl-coming-text");
+    text.appendChild(el("strong", null, line.title));
+    text.appendChild(el("span", null, line.sub));
+    btn.appendChild(text);
+    btn.appendChild(el("span", "ts-chevron", "›"));
+    btn.addEventListener("click", () => goToSection("prep-section"));
+    container.appendChild(btn);
   }
 
-  // 7. Printable sheet for the next Shabbat / Yom Tov
   const block = findRestBlock(events, date);
   if (block) {
     const holidays = blockHolidayNames(events, block);
     const name = holidays.length ? holidays.join(" & ") : "Shabbat";
-    const li = el("li", "ts-print-wrap");
     const btn = el("button", "ts-print");
     btn.type = "button";
     btn.innerHTML = PRINTER_SVG;
     btn.appendChild(el("span", null, `Print for ${name} · ${shortDate(block.days[0])}`));
     btn.addEventListener("click", () => openPrintPreview(date));
-    li.appendChild(btn);
-    list.appendChild(li);
+    const wrap = el("div", "tl-print");
+    wrap.appendChild(btn);
+    container.appendChild(wrap);
   }
 }
-
-const PRINTER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M7 9V3h10v6M7 17H4v-7a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v7h-3M7 14h10v7H7z"/></svg>';
 
 // --- Browsing state -------------------------------------------------
 // `realToday` never changes once the page loads; it's what the countdown
@@ -1773,8 +1488,12 @@ async function setViewingDate(date) {
   document.getElementById("hebrew-date").textContent = hebrewInfo ? hebrewInfo.hebrew || "" : "";
   document.getElementById("gregorian-date").textContent = fmtDate(date);
   renderViewingBanner(date);
-  const hebTomorrow = await getHebrewDateCached(addDays(date, 1));
-  const changes = renderPrayerChangesCard(document.getElementById("prayer-changes-container"), date, hebrewInfo, hebTomorrow, events);
+  const [hebTomorrow, times] = await Promise.all([
+    getHebrewDateCached(addDays(date, 1)),
+    getZmanimCached(date)
+  ]);
+  if (!pcSameDay(viewingDate, date)) return; // the visitor moved to another day meanwhile
+  const { changes, textCtx } = computePrayerChanges(date, hebrewInfo, hebTomorrow, events);
 
   const ctx = buildContext(date, events, hebrewInfo, currentProfile);
   const occasions = pickOccasions(ctx);
@@ -1811,8 +1530,16 @@ async function setViewingDate(date) {
 
   const todaysMitzvah = getMitzvahForDate(date);
   renderDailyMitzvahCard(document.getElementById("daily-mitzvah-container"), todaysMitzvah);
-  const guide = renderDailyGuideCard(document.getElementById("guide-container"), date, hebrewInfo, events, changes, todaysMitzvah);
-  renderTodaySummary({ date, events, occasions, changes, mitzvah: todaysMitzvah, guide });
+  const guide = computeDailyGuide(date, hebrewInfo, events);
+  const timelineContainer = document.getElementById("timeline-container");
+  renderTimeline({
+    container: timelineContainer,
+    nowContainer: document.getElementById("now-container"),
+    date, isToday: daysBetween(realToday, date) === 0, times, events,
+    guide, changes: changes || { today: [], tonight: [], season: [] }, textCtx, mitzvah: todaysMitzvah,
+    community: pcCommunityKey(profileCommunity()), info: pcDayInfo(events, date)
+  });
+  renderDayFooter(timelineContainer, date, events);
   renderZmanimCard(document.getElementById("zmanim-container"), date).catch(e => console.error(e));
 
   const torahContainer = document.getElementById("torah-container");
@@ -1824,18 +1551,6 @@ async function setViewingDate(date) {
   renderMitzvotSection(document.getElementById("mitzvot-container"));
 
   renderQuizCard(document.getElementById("quiz-container"), occasions, portion, todaysMitzvah);
-
-  const prayerContainer = document.getElementById("prayer-container");
-  const morningContainer = document.getElementById("morning-mitzvot-container");
-  prayerContainer.innerHTML = "";
-  morningContainer.innerHTML = "";
-  if (daysBetween(realToday, date) === 0) {
-    const prayerInfo = await loadPrayerCard(date, currentSettings.location).catch(e => { console.error(e); return null; });
-    renderPrayerCard(prayerContainer, prayerInfo);
-    if (prayerInfo && prayerInfo.key === "shacharit") {
-      renderMorningMitzvotCard(morningContainer);
-    }
-  }
 }
 
 function renderDateNav(container) {
@@ -1933,7 +1648,7 @@ function initTabBar() {
   });
   // Sections that belong to each tab: everything above the Torah card counts as "Today".
   const extra = {
-    top: ["countdown-container", "zmanim-container", "prayer-container", "guide-container", "occasion-container", "morning-mitzvot-container", "prayer-changes-container"]
+    top: ["countdown-container", "timeline-container", "zmanim-container", "occasion-container"]
   };
   const sections = [];
   links.forEach(a => {
