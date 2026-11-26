@@ -675,13 +675,36 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       li.appendChild(nowMark);
       placed = true;
     }
-    partEls.forEach(({ part, sec, ul }) => {
+    // Every item back in its own part, in its own order…
+    const homeIdx = new Map();
+    partEls.forEach(({ part, ul }, idx) => part.items.forEach(item => {
+      homeIdx.set(item, idx);
+      ul.appendChild(itemEls.get(item));
+    }));
+    // …then "anytime" practices not yet done follow the day: once their part is
+    // over they move to the top of the part of the day you're in now. Done, they
+    // stay home, folded away with the rest of "Earlier today".
+    let nowIdx = -1;
+    if (isToday) {
+      nowIdx = partEls.findIndex(({ part }) => part.items.some(i => !i.anytime && tlStatus(i, now) !== "past"));
+      if (nowIdx === -1) nowIdx = partEls.length - 1;
+      const movers = all.filter(i => i.anytime && !done[i.id] && tlStatus(i, now) !== "past" && homeIdx.get(i) < nowIdx);
+      const target = partEls[nowIdx].ul;
+      movers.slice().reverse().forEach(i => target.insertBefore(itemEls.get(i), target.firstChild));
+    }
+    const itemOf = new Map([...itemEls].map(([item, li]) => [li, item]));
+
+    partEls.forEach(({ sec, ul }, idx) => {
       let allPast = isToday;
-      part.items.forEach(item => {
+      const here = [...ul.children].map(li => itemOf.get(li)).filter(Boolean);
+      sec.style.display = here.length ? "" : "none";
+      here.forEach(item => {
         const li = itemEls.get(item);
         let st = isToday ? tlStatus(item, now) : "plain";
         if (st === "current" && item !== focus) st = "open";
-        if (st !== "past") allPast = false;
+        // A done anytime practice whose part of the day is over counts as finished.
+        const finished = st === "past" || (item.anytime && done[item.id] && idx < nowIdx);
+        if (!finished) allPast = false;
         li.className = `tl-item tl-item--${st}${done[item.id] ? " is-done" : ""}${item.anytime ? " tl-item--any" : ""}`;
         const chk = li.querySelector(".tl-check");
         if (chk) {
