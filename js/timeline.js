@@ -541,7 +541,6 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
   const nowMark = el("div", "tl-now-mark");
   nowMark.setAttribute("aria-hidden", "true");
   const markLabel = el("span", "tl-now-mark-label");
-  markLabel.appendChild(el("small", null, "Now"));
   markLabel.appendChild(el("span", "tl-now-mark-time"));
   markLabel.appendChild(el("span", "tl-now-mark-left"));
   nowMark.appendChild(markLabel);
@@ -549,9 +548,6 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
   nowMark.appendChild(el("b"));
   const nowFill = el("div", "tl-now-fill");
   nowFill.setAttribute("aria-hidden", "true");
-  // The bottom of that track: the latest time for it.
-  const nowEnd = el("div", "tl-now-end");
-  nowEnd.setAttribute("aria-hidden", "true");
 
   const partEls = [];
   day.parts.forEach(p => {
@@ -652,7 +648,6 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     nowLine.remove();
     nowMark.remove();
     nowFill.remove();
-    nowEnd.remove();
     // Put back any time label swapped for the "Right now" track on the last paint.
     itemEls.forEach((li) => {
       if (li.dataset.timeHtml !== undefined) {
@@ -663,7 +658,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     let placed = false;
     if (focus && !day.approx) {
       const li = itemEls.get(focus);
-      // The track runs from when the window opened (top) to its latest time (bottom).
+      // The marker moves down the card from when the window opened (the label on top).
       const timeEl = li.querySelector(".tl-time");
       li.dataset.timeHtml = timeEl.innerHTML;
       timeEl.innerHTML = "";
@@ -675,12 +670,8 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       nowMark.querySelector(".tl-now-mark-time").textContent = fmt(now);
       nowMark.querySelector(".tl-now-mark-left").textContent = `${tlLeft(left)} left`;
       nowMark.classList.toggle("is-urgent", left <= 30 * TL_MIN);
-      nowEnd.innerHTML = "";
-      nowEnd.appendChild(el("small", null, "Until"));
-      nowEnd.appendChild(document.createTextNode(fmt(focus.end)));
       li.style.setProperty("--tl-now", share.toFixed(3));
       li.appendChild(nowFill);
-      li.appendChild(nowEnd);
       li.appendChild(nowMark);
       placed = true;
     }
