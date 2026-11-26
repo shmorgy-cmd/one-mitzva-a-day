@@ -12,7 +12,7 @@
  * Bump CACHE_VERSION whenever app files change so visitors get the update.
  */
 
-const CACHE_VERSION = "v30";
+const CACHE_VERSION = "v31";
 
 // For visitors who opted in to OneSignal messages, OneSignal registers this same
 // file with its own query parameters (appId, sdkVersion…) — only then is its
@@ -31,6 +31,7 @@ const APP_FILES = [
   "./",
   "index.html",
   "mitzvot.html",
+  "about.html",
   "manifest.json",
   "css/style.css",
   "js/config.js",

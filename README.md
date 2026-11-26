@@ -59,6 +59,9 @@ The top of the page is the day as a timeline ([`js/timeline.js`](js/timeline.js)
 
 [`mitzvot.html`](mitzvot.html) ([`js/mitzvot-page.js`](js/mitzvot-page.js)) is the library of everyday mitzvot, linked from the top menu, the Mitzvot tab and a card on the home page. It opens with today's mitzvah and a "Start here" row of first steps chosen by the visitor's profile, then shows each theme (`MITZVA_CATEGORIES` in [`js/mitzvot.js`](js/mitzvot.js)) with a few mitzvot and "See all". A search box and theme chips narrow the list. Each mitzvah opens at `mitzvot.html#<id>` (shareable, and Back works) with why it matters, numbered steps, the words (blessings with transliteration and the speaker), the visitor's community custom, a thought to take along, sources, related mitzvot and previous/next. "I'm learning this" / "I do this" are saved only in the browser and add a "My mitzvot" filter. Display helpers shared with the home page live in [`js/ui.js`](js/ui.js).
 
+## About page
+
+[`about.html`](about.html) tells why the site exists (a convert's story: knowing what to do each day, learning something new, a spiritual thought — without always being able to get to a shiur or ask), who it's for, the "learn with a rabbi" note, and the privacy summary. The home page links to it with a small card, and "About" in the top menu opens it.
 ## Zmanim
 
 Below the timeline, the "All of the day's times" card shows the viewed day's times for the saved city from Hebcal's `/zmanim`, grouped by what you're doing, with earliest and latest: tallit and tefillin, Shacharit, the morning Shema (Magen Avraham and Gra), Mincha and Maariv. Chabad profiles get the Alter Rebbe's times. Without a city it asks for one instead of guessing.

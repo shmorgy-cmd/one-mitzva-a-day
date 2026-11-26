@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>About — One Mitzva a Day</title>
+  <meta name="description" content="Why One Mitzva a Day exists: a convert's daily guide to what each Jewish day asks of us, something new to learn, and a thought to carry with you." />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1747a6" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="One Mitzva" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Frank+Ruhl+Libre:wght@400;500;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="about-page">
+  <header class="site-header">
+    <div class="header-stars" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="brand brand-link" href="./">
+        <span class="brand-mark">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="32,10 51.05,43 12.95,43" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+            <polygon points="32,54 12.95,21 51.05,21" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="brand-name">One Mitzva a Day</span>
+      </a>
+      <p class="tagline">A daily companion for learning, living, and loving Jewish tradition — one day at a time.</p>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="./#top">Today</a>
+        <a href="./#torah-container">Torah</a>
+        <a href="mitzvot.html">Everyday Mitzvot</a>
+        <a href="./#prep-section">Coming Up</a>
+        <a href="./#quiz-container">Quiz</a>
+        <a href="about.html" aria-current="page">About</a>
+      </nav>
+    </div>
+    <div class="tallit-bar" aria-hidden="true"></div>
+  </header>
+
+  <main class="wrap about-main">
+    <section class="mz-top">
+      <h1 class="mz-title">About One Mitzva a Day</h1>
+      <p class="mz-sub">Why this site exists, who it's for, and how it treats your privacy.</p>
+    </section>
+
+    <section class="about-story" aria-labelledby="story-title">
+      <h2 id="story-title">Why I made this</h2>
+      <p>
+        I converted to Judaism. One of my biggest struggles afterwards was simply knowing
+        <strong>what to do each day</strong> — which prayers, which blessings, what the day on the
+        Jewish calendar was asking of me — and still finding a moment to <strong>learn something
+        new</strong> and to sit with a spiritual thought.
+      </p>
+      <p>
+        Shiurim (Torah classes) aren't always easy to get to. And it isn't always comfortable to
+        keep asking questions, again and again.
+      </p>
+      <p>
+        So I created this guide: one place that shows what today holds, explains it gently, and
+        gives you something to reflect on. My hope is that it helps all of us grow in our journey in
+        Judaism, one mitzvah at a time — and bring a little more light into the world.
+      </p>
+    </section>
+
+    <section class="mz-sec">
+      <h2>Who it's for</h2>
+      <p>
+        Anyone curious about Judaism — people exploring conversion, people raised without much
+        Jewish education, Jews reconnecting, or anyone who wants their day anchored to the rhythm of
+        the Jewish calendar. It draws on Hebcal for accurate Hebrew dates, holidays and times, and on
+        Sefaria for Torah text.
+      </p>
+    </section>
+
+    <section class="mz-sec">
+      <h2>Learn with a rabbi</h2>
+      <p>
+        Everything here is meant as an introduction and a source of inspiration, not a final halachic
+        ruling — Jewish law has real nuance and depends on personal circumstances and community
+        custom. For anything you plan to actually put into practice, please find a rabbi or teacher
+        to learn with. If you spot something that looks wrong, every card has a "Report an error"
+        link.
+      </p>
+    </section>
+
+    <section class="mz-sec">
+      <h2>Your privacy</h2>
+      <p>
+        There are no accounts and no cookies. Your settings (city, calendar, profile, reminders, and
+        the mitzvot you mark as learning or doing) are saved only in this browser. To show dates,
+        times and texts, the page asks Hebcal and Sefaria for data — your saved city goes to Hebcal
+        to calculate times — and city searches go to Open-Meteo. If you turn on weekly &amp; holiday
+        messages, OneSignal stores a subscription ID for this device (no name or email). If you sign
+        up for the weekly email, your email address (and first name, if you give it) is stored by
+        Kit, our email provider, only to send that newsletter. We may count visits with GoatCounter,
+        which uses no cookies and collects no personal data.
+      </p>
+    </section>
+
+    <p class="about-back"><a href="./">← Back to today</a></p>
+  </main>
+
+  <nav class="tab-bar" id="tab-bar" aria-label="Sections">
+    <a href="./#top" data-icon="star">Today</a>
+    <a href="./#torah-container" data-icon="tablets">Torah</a>
+    <a href="mitzvot.html" data-icon="hand">Mitzvot</a>
+    <a href="./#prep-section" data-icon="candles-shabbat">Coming up</a>
+    <a href="./#quiz-container" data-icon="trophy">Quiz</a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Built with data from <a href="https://www.hebcal.com" target="_blank" rel="noopener">Hebcal</a> and <a href="https://www.sefaria.org" target="_blank" rel="noopener">Sefaria</a>.</p>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/integrations.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/offline.js"></script>
+  <script>
+    // Icons for the phone tab bar, as on the other pages.
+    document.querySelectorAll("#tab-bar a").forEach(a => {
+      const label = a.textContent;
+      a.innerHTML = `<span class="tab-icon" aria-hidden="true">${getIcon(a.dataset.icon)}</span><span>${label}</span>`;
+    });
+  </script>
+</body>
+</html>

@@ -2685,3 +2685,21 @@ body.has-he-voice .spk--tts { display: grid; }
   .mz-teaser { flex-wrap: wrap; }
   .mz-teaser-go { width: 100%; padding-left: 58px; }
 }
+
+/* About page (about.html) */
+.about-main { max-width: 720px; }
+.about-story {
+  margin-top: 14px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #fdf6e9, var(--paper));
+  border: 1px solid var(--gold-light);
+  border-left: 5px solid var(--gold);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+.about-story h2 { font-family: "Fraunces", serif; font-size: 1.35rem; color: var(--flag-blue-deep); margin: 0 0 8px; }
+.about-story p { font-family: "Fraunces", serif; font-size: 1.08rem; line-height: 1.7; margin: 0 0 10px; color: var(--ink); }
+.about-story p:last-child { margin-bottom: 0; }
+.about-back { margin: 22px 0 30px; }
+.about-back a { color: var(--flag-blue); font-weight: 600; text-decoration: none; }
+.about-teaser { margin-top: 10px; }

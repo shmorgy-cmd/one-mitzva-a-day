@@ -1346,12 +1346,8 @@ async function init() {
 
   renderDateNav(document.getElementById("date-nav-container"));
 
-  const aboutCard = document.querySelector(".about-card");
-  if (aboutCard) makeCollapsible(aboutCard, 1, false);
-
-  // The way into the Everyday Mitzvot page.
-  const teaserIcon = document.querySelector(".mz-teaser-icon");
-  if (teaserIcon) teaserIcon.innerHTML = getIcon("hand");
+  // The ways into the Everyday Mitzvot and About pages.
+  document.querySelectorAll(".mz-teaser-icon").forEach(s => { s.innerHTML = getIcon(s.dataset.icon); });
   const mitzvotCount = document.getElementById("mitzvot-count");
   if (mitzvotCount) mitzvotCount.textContent = `all ${MITZVOT.length}`;
 
