@@ -394,6 +394,9 @@ function tlBody(item, ctx, used) {
   if (item.kind === "daily-mitzvah" && ctx.mitzvah) {
     const box = el("div", "tl-body");
     appendMitzvahDetail(box, ctx.mitzvah);
+    const more = el("a", "tl-mz-link", "More everyday mitzvot →");
+    more.href = `mitzvot.html#${ctx.mitzvah.id}`;
+    box.appendChild(more);
     return box;
   }
   if (item.kind === "guide") {

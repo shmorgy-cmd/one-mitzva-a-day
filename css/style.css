@@ -2571,3 +2571,117 @@ body.show-tr .hb-tr { display: block; }
 .spk--tts { display: none; }
 body.has-he-voice .spk--tts { display: grid; }
 @media print { .spk { display: none !important; } }
+
+/* ---------------------------------------------------------------- */
+/* Everyday Mitzvot page (mitzvot.html) and the way in from home      */
+/* ---------------------------------------------------------------- */
+
+.brand-link { color: inherit; text-decoration: none; }
+
+.mz-teaser {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 18px 0 8px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, #fdf6e9, var(--paper));
+  border: 1px solid var(--gold-light);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+.mz-teaser:hover, .mz-teaser:focus-visible { box-shadow: var(--shadow-hover); outline: none; }
+.mz-teaser-icon { flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--flag-blue); color: #fff; display: grid; place-items: center; }
+.mz-teaser-icon svg { width: 24px; height: 24px; }
+.mz-teaser-text { flex: 1; display: flex; flex-direction: column; gap: 2px; color: var(--ink-soft); font-size: 0.92rem; }
+.mz-teaser-text strong { font-family: "Fraunces", serif; font-size: 1.25rem; color: var(--flag-blue-deep); }
+.mz-teaser-go { flex: none; font-weight: 600; color: var(--flag-blue); white-space: nowrap; }
+.tl-mz-link { display: inline-block; margin-top: 10px; font-weight: 600; color: var(--flag-blue); }
+
+.mz-top { padding: 22px 0 4px; }
+.mz-title { font-family: "Fraunces", serif; font-size: 2rem; color: var(--flag-blue-deep); margin: 0 0 2px; }
+.mz-sub { color: var(--ink-soft); margin: 0; }
+.mz-progress { display: inline-flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.mz-pill { font: inherit; font-size: 0.85rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #eef2fc; color: var(--flag-blue); border: 0; cursor: pointer; }
+.mz-pill--doing { background: #e8f4ed; color: #1f7a5c; }
+
+.mz-search { position: sticky; top: 0; z-index: 5; background: var(--cream); padding: 12px 0 8px; }
+.mz-search input {
+  width: 100%;
+  font: inherit;
+  font-size: 1rem;
+  padding: 11px 14px 11px 40px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='6.5' fill='none' stroke='%23545b6b' stroke-width='2'/%3E%3Cpath d='M16 16l4.5 4.5' stroke='%23545b6b' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat 12px center / 18px;
+}
+.mz-search input:focus { outline: 2px solid var(--flag-blue-bright); outline-offset: 1px; }
+.mz-chips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0 2px; scrollbar-width: none; }
+.mz-chips::-webkit-scrollbar { display: none; }
+.mz-chip { flex: none; border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 0.9rem; cursor: pointer; white-space: nowrap; }
+.mz-chip[aria-pressed="true"] { background: var(--flag-blue); color: #fff; border-color: var(--flag-blue); }
+.mz-chip small { opacity: 0.7; margin-left: 4px; }
+
+.mz-h2 { font-family: "Fraunces", serif; font-size: 1.2rem; color: var(--flag-blue-deep); margin: 22px 0 8px; display: flex; align-items: baseline; gap: 8px; }
+.mz-h2 small { font-family: "Source Sans 3", sans-serif; font-size: 0.85rem; color: var(--ink-soft); font-weight: 400; }
+
+.mz-today { display: flex; gap: 14px; align-items: center; background: linear-gradient(135deg, #fdf6e9, var(--paper)); border: 1px solid var(--gold-light); border-radius: 14px; padding: 14px 16px; margin-top: 8px; color: inherit; text-decoration: none; }
+.mz-today:hover, .mz-today:focus-visible { box-shadow: 0 6px 18px rgba(23, 71, 166, 0.10); outline: none; }
+.mz-kicker { display: block; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: #8a5a00; font-weight: 700; }
+.mz-today strong { display: block; font-family: "Fraunces", serif; font-size: 1.2rem; color: var(--flag-blue-deep); }
+
+.mz-start { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
+.mz-start .mz-card { flex: 0 0 210px; scroll-snap-align: start; }
+
+.mz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.mz-card { position: relative; display: flex; gap: 12px; align-items: flex-start; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px; color: inherit; text-decoration: none; }
+.mz-card:hover, .mz-card:focus-visible { border-color: var(--flag-blue-bright); box-shadow: 0 6px 18px rgba(23, 71, 166, 0.10); outline: none; }
+.mz-card .icon-badge, .mz-today .icon-badge { flex: none; }
+.mz-card-text { min-width: 0; }
+.mz-card-title { font-weight: 600; line-height: 1.3; display: block; }
+.mz-card:has(.mz-mark) .mz-card-title { padding-right: 58px; }
+.mz-card-sub { font-size: 0.86rem; color: var(--ink-soft); line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.mz-mark { position: absolute; top: 8px; right: 10px; font-size: 0.7rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+.mz-mark--learning { background: #eef2fc; color: var(--flag-blue); }
+.mz-mark--doing { background: #e8f4ed; color: #1f7a5c; }
+.mz-more { margin-top: 8px; border: 0; background: none; color: var(--flag-blue); font: inherit; font-weight: 600; cursor: pointer; padding: 4px 0; }
+.mz-empty { color: var(--ink-soft); padding: 20px 0; }
+
+.mz-detail { max-width: 680px; margin: 0 auto 40px; }
+.mz-back { display: inline-block; margin: 18px 0 8px; color: var(--flag-blue); font-weight: 600; text-decoration: none; }
+.mz-d-theme { font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: #8a5a00; font-weight: 700; }
+.mz-d-head { display: flex; gap: 14px; align-items: center; margin: 6px 0 4px; }
+.mz-d-head h1 { font-family: "Fraunces", serif; font-size: 1.8rem; line-height: 1.15; color: var(--flag-blue-deep); margin: 0; }
+.mz-d-sub { color: var(--ink-soft); font-size: 1.05rem; margin: 4px 0 12px; }
+.mz-track { display: flex; gap: 8px; flex-wrap: wrap; }
+.mz-track button { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 7px 14px; font: inherit; font-weight: 600; cursor: pointer; color: var(--ink); }
+.mz-track button[aria-pressed="true"].learn { background: var(--flag-blue); border-color: var(--flag-blue); color: #fff; }
+.mz-track button[aria-pressed="true"].do { background: #1f7a5c; border-color: #1f7a5c; color: #fff; }
+.mz-track-note { font-size: 0.8rem; color: var(--ink-soft); margin: 6px 0 0; }
+.mz-sec { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-top: 12px; }
+.mz-sec > h2 { font-family: "Source Sans 3", sans-serif; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: #8a5a00; margin: 0 0 6px; }
+.mz-sec > p { margin: 0; line-height: 1.65; }
+.mz-steps { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+.mz-steps li { counter-increment: s; position: relative; padding: 6px 0 6px 36px; line-height: 1.55; }
+.mz-steps li + li { border-top: 1px dashed var(--line); }
+.mz-steps li::before { content: counter(s); position: absolute; left: 0; top: 6px; width: 24px; height: 24px; border-radius: 50%; background: #eef2fc; color: var(--flag-blue); font-weight: 700; font-size: 0.85rem; display: grid; place-items: center; }
+.mz-reflect { font-family: "Fraunces", serif; font-style: italic; font-size: 1.08rem; line-height: 1.6; }
+.mz-sec .minhag-box, .mz-sec .takingon-box { margin: 0; }
+.mz-sec .minhag-box + .takingon-box { margin-top: 10px; }
+.mz-sources { margin-top: 10px; }
+.mz-sources summary { cursor: pointer; color: var(--ink-soft); font-size: 0.9rem; }
+.mz-nav { display: flex; justify-content: space-between; gap: 10px; margin: 18px 0 0; }
+.mz-nav a { flex: 1; border: 1px solid var(--line); background: var(--paper); border-radius: 12px; padding: 10px 12px; color: inherit; text-decoration: none; }
+.mz-nav a.next { text-align: right; }
+.mz-nav small { display: block; color: var(--ink-soft); font-size: 0.8rem; }
+.mz-nav span { flex: 1; }
+
+@media (max-width: 520px) {
+  .mz-title { font-size: 1.6rem; }
+  .mz-d-head h1 { font-size: 1.45rem; }
+  .mz-grid { grid-template-columns: 1fr; }
+  .mz-sec { padding: 12px; }
+  .mz-teaser { flex-wrap: wrap; }
+  .mz-teaser-go { width: 100%; padding-left: 58px; }
+}

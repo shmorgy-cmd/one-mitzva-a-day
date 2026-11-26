@@ -353,6 +353,19 @@ async function run() {
     if (tr !== "Baruch atah Adoshem, Elokeinu melech ha'olam … Elokai … vEilokei … Elokim") bad.push("transliteration: " + tr);
     return bad.join("; ");
   }]);
+  // Everyday Mitzvot page: every mitzvah in exactly one theme; first steps exist.
+  wordChecks.push(["Everyday Mitzvot: each mitzvah in exactly one theme", () => {
+    const seen = new Map();
+    MITZVA_CATEGORIES.forEach(c => c.ids.forEach(id => seen.set(id, (seen.get(id) || 0) + 1)));
+    const missing = MITZVOT.filter(m => !seen.has(m.id)).map(m => m.id);
+    const twice = [...seen].filter(([, n]) => n > 1).map(([id]) => id);
+    const unknown = [...seen.keys()].filter(id => !MITZVOT.some(m => m.id === id));
+    return [missing.length && "not in a theme: " + missing.join(", "), twice.length && "in two themes: " + twice.join(", "), unknown.length && "unknown: " + unknown.join(", ")].filter(Boolean).join("; ");
+  }]);
+  wordChecks.push(["Everyday Mitzvot: 'Start here' picks exist for every profile", () => {
+    const bad = Object.entries(MITZVA_START_HERE).flatMap(([reason, ids]) => ids.filter(id => !MITZVOT.some(m => m.id === id)).map(id => `${reason}: ${id}`));
+    return ["curious", "converting", "jewish"].filter(r => !MITZVA_START_HERE[r]).map(r => "no list for " + r).concat(bad).join("; ");
+  }]);
   wordChecks.forEach(([name, fn]) => {
     let problem;
     try { problem = fn(); } catch (e) { problem = "error: " + e.message; }

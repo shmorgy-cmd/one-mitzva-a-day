@@ -12,7 +12,7 @@
  * Bump CACHE_VERSION whenever app files change so visitors get the update.
  */
 
-const CACHE_VERSION = "v29";
+const CACHE_VERSION = "v30";
 
 // For visitors who opted in to OneSignal messages, OneSignal registers this same
 // file with its own query parameters (appId, sdkVersion…) — only then is its
@@ -30,6 +30,7 @@ const AUDIO_CACHE = "omad-audio";
 const APP_FILES = [
   "./",
   "index.html",
+  "mitzvot.html",
   "manifest.json",
   "css/style.css",
   "js/config.js",
@@ -43,6 +44,7 @@ const APP_FILES = [
   "js/daily-guide.js",
   "js/prayer-texts.js",
   "js/audio.js",
+  "js/ui.js",
   "js/timeline.js",
   "js/print.js",
   "js/prep.js",
@@ -51,6 +53,7 @@ const APP_FILES = [
   "js/quiz.js",
   "js/offline.js",
   "js/app.js",
+  "js/mitzvot-page.js",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/icon-maskable-512.png",

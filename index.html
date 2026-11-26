@@ -35,7 +35,7 @@
       <nav class="site-nav" aria-label="Section navigation">
         <a href="#top">Today</a>
         <a href="#torah-container">Torah</a>
-        <a href="#mitzvot-section">Mitzvot</a>
+        <a href="mitzvot.html">Everyday Mitzvot</a>
         <a href="#prep-section">Coming Up</a>
         <a href="#quiz-container">Quiz</a>
         <a href="#about">About</a>
@@ -66,12 +66,16 @@
 
     <section id="torah-container" aria-label="This week's Torah portion"></section>
 
-    <section id="mitzvot-section" aria-label="Mitzvot">
-      <section class="section-heading">
-        <h2>Mitzvot</h2>
-        <p>Everyday practices to explore, any time. Today's mitzvah is in your timeline, at midday.</p>
-      </section>
-      <section id="mitzvot-container" aria-label="Everyday mitzvot and blessings"></section>
+    <!-- Everyday Mitzvot has its own page (mitzvot.html); this is the way in. -->
+    <section id="mitzvot-section" aria-label="Everyday Mitzvot">
+      <a class="mz-teaser" href="mitzvot.html">
+        <span class="mz-teaser-icon" aria-hidden="true" data-icon="hand"></span>
+        <span class="mz-teaser-text">
+          <strong>Everyday Mitzvot</strong>
+          <span>Small practices for every day — prayer, food, home, kindness, speech and learning. Pick one, learn it, try it.</span>
+        </span>
+        <span class="mz-teaser-go">Explore <span id="mitzvot-count"></span> →</span>
+      </a>
     </section>
 
     <!-- Coming up -->
@@ -127,7 +131,7 @@
   <nav class="tab-bar" id="tab-bar" aria-label="Sections">
     <a href="#top" data-icon="star">Today</a>
     <a href="#torah-container" data-icon="tablets">Torah</a>
-    <a href="#mitzvot-section" data-icon="hand">Mitzvot</a>
+    <a href="mitzvot.html" data-icon="hand">Mitzvot</a>
     <a href="#prep-section" data-icon="candles-shabbat">Coming up</a>
     <a href="#quiz-container" data-icon="trophy">Quiz</a>
   </nav>
@@ -149,6 +153,7 @@
   <script src="js/daily-guide.js"></script>
   <script src="js/prayer-texts.js"></script>
   <script src="js/audio.js"></script>
+  <script src="js/ui.js"></script>
   <script src="js/timeline.js"></script>
   <script src="js/print.js"></script>
   <script src="js/prep.js"></script>

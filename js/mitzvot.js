@@ -999,3 +999,43 @@ const ORIGINAL_MITZVA_SOURCES = {
 };
 
 MITZVOT.forEach(m => { if (!m.sources) m.sources = ORIGINAL_MITZVA_SOURCES[m.id] || []; });
+
+// --- Browsing: themes, first steps, and today's mitzvah ------------------------
+
+/** Every mitzvah belongs to exactly one theme on the Everyday Mitzvot page
+ *  (tests.html checks that none is missing or listed twice). */
+const MITZVA_CATEGORIES = [
+  { key: "prayer", name: "Waking & prayer", ids: ["modeh-ani", "netilat-yadayim", "shoes", "asher-yatzar", "shema", "tefillin", "tzitzit", "head-covering", "praying-with-a-minyan", "saying-amen", "praying-for-others", "tehillim", "tefillat-haderech", "kiddush-levana"] },
+  { key: "food", name: "Food & blessings", ids: ["food-blessings", "washing-for-bread", "birkat-hamazon", "after-blessings", "meat-and-milk", "kosher-animals", "separating-challah", "tevilat-kelim", "shehecheyanu", "blessings-of-wonder", "blessings-for-news", "gratitude"] },
+  { key: "home", name: "Home & family", ids: ["mezuzah", "jewish-home-first-things", "honoring-parents", "blessing-children", "respecting-elders", "tzniut", "shaatnez", "mikveh"] },
+  { key: "shabbat", name: "Shabbat & the calendar", ids: ["shabbat-candles", "honoring-shabbat", "havdalah", "remembering-exodus", "love-of-the-land"] },
+  { key: "kindness", name: "Kindness to others", ids: ["tzedakah-daily", "giving-with-dignity", "free-loans", "hachnasat-orchim", "bikur-cholim", "comforting-mourners", "hashavat-aveidah", "ahavat-hager", "honest-business", "kindness-to-animals", "bal-tashchit", "pikuach-nefesh", "tikkun-olam"] },
+  { key: "speech", name: "Speech & character", ids: ["lashon-hara", "onaat-devarim", "benefit-of-the-doubt", "no-grudges", "asking-forgiveness", "making-peace"] },
+  { key: "learning", name: "Torah & learning", ids: ["torah-study", "sacred-texts", "learning-hebrew"] },
+  { key: "life", name: "Life moments", ids: ["simchat-chatan-kallah", "yahrzeit-kaddish"] }
+];
+
+/** Gentle first steps, by why the visitor is here (profile.js reasons). */
+const MITZVA_START_HERE = {
+  curious: ["modeh-ani", "food-blessings", "tzedakah-daily", "shabbat-candles", "gratitude"],
+  converting: ["modeh-ani", "food-blessings", "shabbat-candles", "torah-study", "learning-hebrew"],
+  jewish: ["modeh-ani", "tefillin", "tzedakah-daily", "honoring-shabbat", "lashon-hara"]
+};
+
+/** Mitzvot with no `timeGate` apply any time of day — those are the ones eligible
+ *  to be "today's mitzvah". Time-gated ones (Modeh Ani, morning hand-washing,
+ *  shoe order) have their own place in the morning of the timeline. */
+function anytimeMitzvot() {
+  return MITZVOT.filter(m => !m.timeGate);
+}
+
+/** Deterministic "today's mitzvah" — advances daily, wraps around the list,
+ *  and moves with whatever date is being browsed (true to the site's name). */
+function getMitzvahForDate(date) {
+  const pool = anytimeMitzvot();
+  // Count whole days from a fixed local date (not the day of the year, which restarts
+  // on January 1 and would repeat recent mitzvot within days of New Year).
+  const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const days = Math.round((day - new Date(2024, 0, 1)) / 86400000);
+  return pool[((days % pool.length) + pool.length) % pool.length];
+}
