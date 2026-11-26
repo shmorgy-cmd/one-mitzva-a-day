@@ -133,10 +133,11 @@ function buildDayTimeline(opts) {
   add({ id: "modeh-ani", part: "waking", kind: "mitzvah", mitzvah: "modeh-ani", soft: true, start: z.alot, end: z.tfilla, timeLabel: "on waking",
     title: "Modeh Ani", why: "Your first words of the day: thank you for waking up." });
   add({ id: "netilat-yadayim", part: "waking", kind: "mitzvah", mitzvah: "netilat-yadayim", soft: true, start: z.alot, end: z.tfilla,
-    title: "Wash your hands (netilat yadayim)", why: "A fresh, clean start: water over each hand, three times, then a short blessing." });
+    texts: [{ key: "asherYatzar" }],
+    title: "Wash your hands (netilat yadayim)", why: "A fresh, clean start: water over each hand, three times, then the blessing al netilat yadayim — and Asher Yatzar." });
   add({ id: "shoes", part: "waking", kind: "mitzvah", mitzvah: "shoes", soft: true, start: z.alot, end: z.tfilla,
     title: "Getting dressed", why: "Even putting on shoes has a gentle order — right first, then left." });
-  add({ id: "birchot", part: "waking", kind: "simple", soft: true, start: z.alot, end: z.tfilla,
+  add({ id: "birchot", part: "waking", kind: "texts", texts: [{ key: "elokaiNeshama" }, { key: "morningTorahBlessings" }, { key: "morningBlessings" }], soft: true, start: z.alot, end: z.tfilla,
     title: "Morning blessings (Birchot HaShachar)", why: "Short thank-yous for everyday gifts — seeing, standing, getting dressed. They open Shacharit in the siddur." });
 
   // 2. Morning
@@ -147,12 +148,12 @@ function buildDayTimeline(opts) {
   } else if (info.tishaBav) {
     add({ id: "tefillin", part: "afternoon", kind: "mitzvah", mitzvah: "tefillin", soft: true, start: z.minchaG, end: z.sunset, sortAt: minus(z.minchaG, 1),
       timeLabel: fmt(z.minchaG), timeSmall: approx ? "" : "from", title: "Tallit and tefillin — at Mincha today", tag: "Tisha B'Av",
-      why: "On Tisha B'Av they're worn at Mincha instead of the morning. Traditionally a men's mitzvah; customs vary." });
+      why: `On Tisha B'Av they're worn at Mincha instead of the morning${approx ? "" : ` — latest: sunset (${fmt(z.sunset)})`}. Traditionally a men's mitzvah; customs vary.` });
   } else {
     add({ id: "tefillin", part: "morning", kind: "mitzvah", mitzvah: "tefillin", soft: true, start: z.misheyakir, end: z.chatzot,
       timeLabel: fmt(z.misheyakir), timeSmall: approx ? "" : "from", title: "Tallit and tefillin", tag: info.cholHamoed ? "Chol HaMoed" : null,
       why: (info.cholHamoed ? "Customs differ about tefillin on Chol HaMoed — follow your community. " : "") +
-        `Worn during Shacharit${approx ? "" : `, from ${fmt(z.misheyakir)}`}. Traditionally a men's mitzvah; customs vary — learn with your rabbi.` });
+        (approx ? "Worn during Shacharit; the latest is sunset." : `From ${fmt(z.misheyakir)}, ideally during Shacharit — latest: sunset (${fmt(z.sunset)}).`) + " Traditionally a men's mitzvah; customs vary — learn with your rabbi." });
   }
   add({ id: "shema", part: "morning", kind: "mitzvah", mitzvah: "shema", start: z.alot, end: z.shma, sortAt: new Date(z.misheyakir.getTime() + 1),
     timeLabel: fmt(z.shma), timeSmall: approx ? "" : "by", title: "Say the morning Shema",
@@ -185,7 +186,7 @@ function buildDayTimeline(opts) {
     changes: changes.tonight, changesLabel: "Changes tonight" });
 
   // 6. Bedtime
-  add({ id: "bedtime-shema", part: "bedtime", kind: "simple", soft: true, start: z.tzeit, end: new Date(z.midnight.getTime() + 2 * TL_HOUR),
+  add({ id: "bedtime-shema", part: "bedtime", kind: "texts", texts: [{ key: "bedtimeShema" }], soft: true, start: z.tzeit, end: new Date(z.midnight.getTime() + 2 * TL_HOUR),
     timeLabel: "before sleep", title: "Shema before sleep",
     why: "End the day as it began: the first paragraph of the Shema, and letting go of the day's hurts." });
 
@@ -376,11 +377,18 @@ function tlGuideBody(guideItem, used, keepTitle) {
 /** The expandable part of an item, or null when it has nothing more to show. */
 function tlBody(item, ctx, used) {
   if (item.kind === "prayer") return tlPrayerBody(item, ctx, used);
+  if (item.kind === "texts") {
+    const box = el("div", "tl-body");
+    renderWords(box, item.blessings, item.texts, null);
+    return box;
+  }
   if (item.kind === "mitzvah") {
     const m = MITZVOT.find(x => x.id === item.mitzvah);
     if (!m) return null;
     const box = el("div", "tl-body");
     appendMitzvahDetail(box, m);
+    // Extra words for this moment of the day (e.g. Asher Yatzar after washing).
+    if (item.texts || item.blessings) renderWords(box, item.blessings, item.texts, "Also said now");
     return box;
   }
   if (item.kind === "daily-mitzvah" && ctx.mitzvah) {
@@ -413,6 +421,8 @@ function tlBody(item, ctx, used) {
 function tlHowLabel(item) {
   if (item.kind === "prayer") return item.changes && item.changes.length ? "What changes today · how to pray" : "How to pray";
   if (item.kind === "torah") return "Read it";
+  if (item.kind === "texts") return "The words";
+  if (item.kind === "mitzvah" && MITZVOT.some(m => m.id === item.mitzvah && (m.blessings || m.texts))) return "How to do it · the words";
   const g = item.guide;
   if (g && ((g.blessings && g.blessings.length) || (g.texts && g.texts.length))) return "How to do it · the words";
   return "How to do it";
@@ -448,13 +458,6 @@ function tlRenderItem(item, ctx, used) {
   if (changeTitles.length) main.appendChild(el("p", "tl-changes", `${item.id === "maariv" ? "Tonight" : "Today"}: ${changeTitles.map(shortChange).join(" · ")}`));
   if (item.sameAs && item.sameAs.length) main.appendChild(el("p", "tl-changes", `Today's prayer changes (explained under Shacharit): ${item.sameAs.join(" · ")}`));
 
-  const body = tlBody(item, ctx, used);
-  if (body) {
-    const d = el("details", "tl-how");
-    d.appendChild(el("summary", null, tlHowLabel(item)));
-    d.appendChild(body);
-    main.appendChild(d);
-  }
   row.appendChild(main);
 
   if (ctx.isToday) {
@@ -468,6 +471,16 @@ function tlRenderItem(item, ctx, used) {
     row.appendChild(chk);
   }
   card.appendChild(row);
+
+  // The drop-down spans the card's full width (under the tick button too),
+  // so the Hebrew has room on a phone.
+  const body = tlBody(item, ctx, used);
+  if (body) {
+    const d = el("details", "tl-how");
+    d.appendChild(el("summary", null, tlHowLabel(item)));
+    d.appendChild(body);
+    card.appendChild(d);
+  }
   li.appendChild(card);
   return li;
 }

@@ -284,6 +284,7 @@ function renderOccasionCard(container, occ, ctx, index) {
     halacha.forEach(h => ul.appendChild(richEl("li", null, h, profile, used)));
     card.appendChild(ul);
   }
+  renderWords(card, resolve(occ.content.blessings, ctx), resolve(occ.content.texts, ctx), "The blessings");
 
   const customs = resolve(occ.content.customs, ctx);
   if (customs && customs.length) {
@@ -722,6 +723,7 @@ function renderDayPrepCard(container, upcoming, isBrowsingAhead) {
   list("Getting Ready", guide.prep);
   list("Shopping List", guide.shopping);
   list("Preparing Yourself", guide.practices);
+  renderWords(card, guide.blessings, guide.texts, "The blessings to learn");
 
   const minhagBox = renderMinhagBox(extras.minhagim, profile);
   if (minhagBox) card.appendChild(minhagBox);
@@ -773,6 +775,7 @@ function appendMitzvahDetail(container, m) {
   const ul = el("ul", "halacha-list");
   m.steps.forEach(s => ul.appendChild(richEl("li", null, s, profile, used)));
   container.appendChild(ul);
+  renderWords(container, m.blessings, resolveMitzvahTexts(m.texts), "The words");
   const minhagBox = renderMinhagBox(extras.minhagim, profile);
   if (minhagBox) container.appendChild(minhagBox);
   const takingOnBox = renderTakingOnBox(extras.takingOn, profile, used);
@@ -1011,20 +1014,94 @@ async function refreshAll() {
   await setViewingDate(viewingDate);
 }
 
-// --- "What to do today" card -------------------------------------------
+// --- Blessings and prayers: Hebrew, transliteration on hover, English -------
 
+const SHOW_TR_KEY = "omad_show_transliteration";
+
+function showAllTransliteration() {
+  try { return localStorage.getItem(SHOW_TR_KEY) === "1"; } catch (e) { return false; }
+}
+
+/** The "always show transliteration" choice applies to the whole page. */
+function applyTransliterationPref() {
+  const on = showAllTransliteration();
+  document.body.classList.toggle("show-tr", on);
+  document.querySelectorAll(".hb-toggle").forEach(b => {
+    b.textContent = on ? "Hide all transliterations" : "Always show transliteration";
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+
+/** "Hover (or tap) the Hebrew…" plus the switch to always show transliteration. */
+function transliterationHint() {
+  const p = el("p", "hb-hint");
+  const canHover = window.matchMedia && window.matchMedia("(hover: hover)").matches;
+  p.appendChild(document.createTextNode(canHover ? "Hover over the Hebrew to see it in English letters. " : "Tap the Hebrew to see it in English letters. "));
+  const btn = el("button", "hb-toggle");
+  btn.type = "button";
+  btn.addEventListener("click", () => {
+    try { localStorage.setItem(SHOW_TR_KEY, showAllTransliteration() ? "0" : "1"); } catch (e) { /* ignore */ }
+    applyTransliterationPref();
+  });
+  p.appendChild(btn);
+  const on = showAllTransliteration();
+  btn.textContent = on ? "Hide all transliterations" : "Always show transliteration";
+  btn.setAttribute("aria-pressed", on ? "true" : "false");
+  return p;
+}
+
+/** One line of a blessing or prayer: the Hebrew first; its transliteration shows
+ *  on hover (computers) or when the Hebrew is tapped (phones); then the English. */
+function renderHebrewLine(line) {
+  const wrap = el("div", "hb");
+  const he = el("p", "hb-he", line.he);
+  he.lang = "he";
+  he.dir = "rtl";
+  wrap.appendChild(he);
+  if (line.tr) {
+    const tr = el("p", "hb-tr", line.tr);
+    tr.lang = "en";
+    he.tabIndex = 0;
+    he.setAttribute("role", "button");
+    he.setAttribute("aria-expanded", "false");
+    he.setAttribute("aria-label", `${line.he} — show the transliteration`);
+    const toggle = () => {
+      const on = wrap.classList.toggle("is-tr");
+      he.setAttribute("aria-expanded", on ? "true" : "false");
+    };
+    he.addEventListener("click", toggle);
+    he.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    });
+    wrap.appendChild(tr);
+  }
+  if (line.en) wrap.appendChild(el("p", "hb-en", line.en));
+  return wrap;
+}
+
+/** A single blessing by its BLESSINGS key (name, then the line). */
 function renderBlessing(key) {
   const b = blessingText(key);
   if (!b) return null;
   const box = el("div", "dg-blessing");
   box.appendChild(el("p", "dg-blessing-name", b.name));
-  const he = el("p", "dg-blessing-he", b.he);
-  he.lang = "he";
-  he.dir = "rtl";
-  box.appendChild(he);
-  box.appendChild(el("p", "dg-blessing-tr", b.tr));
-  box.appendChild(el("p", "dg-blessing-en", b.en));
+  box.appendChild(renderHebrewLine(b));
   return box;
+}
+
+/** Several blessings under one hint line. */
+function renderBlessingGroup(keys) {
+  const items = (keys || []).map(renderBlessing).filter(Boolean);
+  if (!items.length) return null;
+  const group = el("div", "bl-group");
+  group.appendChild(transliterationHint());
+  items.forEach(b => group.appendChild(b));
+  return group;
+}
+
+/** Sefaria's Hebrew without its cantillation marks (the vowels stay). */
+function sefariaHebrew(s) {
+  return stripHtml(s).replace(/[֑-ֽ֯׀]/g, "").replace(/\s+/g, " ").trim();
 }
 
 /** One prayer in Hebrew, transliteration and English. Short ones are shown open;
@@ -1036,53 +1113,63 @@ function renderPrayerText(ref, collapsed) {
   if (!t.long && !collapsed) box.open = true;
   const summary = el("summary", "pt-summary");
   summary.appendChild(el("span", "pt-name", t.name));
-  summary.appendChild(el("span", "pt-hint", "Show the words — Hebrew, transliteration, English"));
+  summary.appendChild(el("span", "pt-hint", "Show the words — Hebrew and English"));
   box.appendChild(summary);
   if (t.note) box.appendChild(el("p", "pt-note", t.note));
+  if (t.lines.some(l => l && l.tr)) box.appendChild(transliterationHint());
   t.lines.forEach(line => {
     const part = el("div", "pt-line");
     if (line.label) part.appendChild(el("p", "pt-label", line.label));
-    const he = el("p", "dg-blessing-he", line.he);
-    he.lang = "he";
-    he.dir = "rtl";
-    part.appendChild(he);
-    part.appendChild(el("p", "dg-blessing-tr", line.tr));
-    part.appendChild(el("p", "dg-blessing-en", line.en));
+    part.appendChild(renderHebrewLine(line));
     box.appendChild(part);
   });
   if (t.sefaria) {
     const holder = el("div", "pt-sefaria");
-    holder.appendChild(el("p", "pt-note", "Loading the psalms from Sefaria…"));
+    holder.appendChild(el("p", "pt-note", "Loading the text from Sefaria…"));
     box.appendChild(holder);
     let loaded = false;
     const load = async () => {
       if (loaded) return;
       loaded = true;
       try {
-        const parts = await Promise.all(t.sefaria.map(ref => fetchJSON(`${SEFARIA_BASE}/${ref}?context=0&commentary=0`)));
+        const parts = await Promise.all(t.sefaria.map(r => fetchJSON(`${SEFARIA_BASE}/${r}?context=0&commentary=0`)));
         holder.innerHTML = "";
         parts.forEach((data, i) => {
           const part = el("div", "pt-line");
-          part.appendChild(el("p", "pt-label", t.sefaria[i].replace(/^Psalms\./, "Psalm ").replace(/\.(\d)/, ":$1")));
-          const he = el("p", "dg-blessing-he", flattenSefaria(data.he).map(v => stripHtml(v).replace(/[֑-ֽ֯׀]/g, "").replace(/\s+/g, " ").trim()).join(" "));
-          he.lang = "he";
-          he.dir = "rtl";
-          part.appendChild(he);
-          const notes = [];
-          const en = el("p", "dg-blessing-en");
-          renderVerses(en, flattenSefaria(data.text).map(v => cleanSefariaVerse(v, notes)));
-          part.appendChild(en);
+          const label = t.sefariaLabels ? t.sefariaLabels[i] : t.sefaria[i].replace(/^Psalms\./, "Psalm ").replace(/\.(\d)/, ":$1");
+          if (label) part.appendChild(el("p", "pt-label", label));
+          const heParts = flattenSefaria(data.he);
+          const enParts = flattenSefaria(data.text);
+          if (t.sefariaParagraphs) {
+            // Paragraph by paragraph: each Hebrew paragraph, then its English.
+            heParts.forEach((h, k) => {
+              const notes = [];
+              const en = enParts[k] ? cleanSefariaVerse(enParts[k], notes).filter(x => typeof x === "string").join("").replace(/\s+/g, " ").trim() : "";
+              const line = renderHebrewLine({ he: sefariaHebrew(h), en });
+              line.classList.add("hb--para");
+              part.appendChild(line);
+            });
+          } else {
+            const he = el("p", "hb-he", heParts.map(sefariaHebrew).join(" "));
+            he.lang = "he";
+            he.dir = "rtl";
+            part.appendChild(he);
+            const notes = [];
+            const en = el("p", "hb-en");
+            renderVerses(en, enParts.map(v => cleanSefariaVerse(v, notes)));
+            part.appendChild(en);
+          }
           holder.appendChild(part);
         });
         const link = el("a", "pt-source", "Text and translation from Sefaria");
-        link.href = "https://www.sefaria.org/Psalms.113";
+        link.href = t.sefariaLink || "https://www.sefaria.org/Psalms.113";
         link.target = "_blank";
         link.rel = "noopener";
         holder.appendChild(link);
       } catch (e) {
         loaded = false;
         holder.innerHTML = "";
-        holder.appendChild(el("p", "pt-note", "Couldn't load the psalms right now — they're Psalms 113–118 in any siddur or Bible."));
+        holder.appendChild(el("p", "pt-note", t.sefariaFail || "Couldn't load the psalms right now — they're Psalms 113–118 in any siddur or Bible."));
       }
     };
     box.addEventListener("toggle", () => { if (box.open) load(); });
@@ -1090,6 +1177,18 @@ function renderPrayerText(ref, collapsed) {
   }
   return box;
 }
+
+/** A blessing list and prayer texts, for any card (mitzvot, holidays, guides). */
+function renderWords(container, blessings, texts, heading) {
+  const group = renderBlessingGroup(blessings);
+  const textEls = (texts || []).map(ref => renderPrayerText(ref, false)).filter(Boolean);
+  if (!group && !textEls.length) return;
+  if (heading) container.appendChild(el("h4", "section-label", heading));
+  if (group) container.appendChild(group);
+  textEls.forEach(t => container.appendChild(t));
+}
+
+// --- "What to do today" card -------------------------------------------
 
 function renderGuideItem(item, used) {
   const wrap = el("div", "dg-item");
@@ -1100,10 +1199,8 @@ function renderGuideItem(item, used) {
     item.steps.forEach(s => ol.appendChild(richEl("li", null, s, currentProfile, used)));
     wrap.appendChild(ol);
   }
-  (item.blessings || []).forEach(k => {
-    const b = renderBlessing(k);
-    if (b) wrap.appendChild(b);
-  });
+  const group = renderBlessingGroup(item.blessings);
+  if (group) wrap.appendChild(group);
   (item.texts || []).forEach(ref => {
     const t = renderPrayerText(ref, false);
     if (t) wrap.appendChild(t);
@@ -1586,7 +1683,14 @@ function renderDateNav(container) {
   container.appendChild(nav);
 }
 
+/** Mitzvah texts can depend on the visitor's community (e.g. the tefillin blessings). */
+function resolveMitzvahTexts(texts) {
+  const community = pcCommunityKey(profileCommunity());
+  return (texts || []).map(ref => ({ key: ref.key, opts: Object.assign({ community }, ref.opts || {}) }));
+}
+
 async function init() {
+  applyTransliterationPref();
   realToday = startOfDay(new Date());
   viewingDate = realToday;
   document.getElementById("gregorian-date").textContent = fmtDate(realToday);

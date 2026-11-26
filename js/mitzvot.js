@@ -8,13 +8,14 @@
 const MITZVOT = [
   {
     id: "modeh-ani",
+    texts: [{ key: "modehAni" }],
     icon: "sunrise",
     timeGate: "morning",
     title: "Modeh Ani",
     subtitle: "The first words of the day, said the moment you open your eyes",
     intro: "Before your feet hit the floor, before you've washed up or even fully woken — Modeh Ani is meant to be the very first thing out of your mouth. It doesn't contain God's name, which is exactly why it can be said immediately, even with unwashed hands, before anything else.",
     steps: [
-      "Traditional text: \"Modeh ani lefanecha, melech chai v'kayam, shehechezarta bi nishmati b'chemla, rabah emunatecha\" — \"I gratefully thank You, living and eternal King, for You have returned my soul within me with compassion; great is Your faithfulness.\"",
+      "The words are below, in Hebrew with the English — hover over or tap the Hebrew to see it in English letters.",
       "Said lying in bed, right upon waking, before getting up.",
       "No specific posture or preparation needed — it's meant to be immediate and unguarded."
     ],
@@ -22,6 +23,7 @@ const MITZVOT = [
   },
   {
     id: "netilat-yadayim",
+    blessings: ["netilatYadayim"],
     icon: "wash-cup",
     timeGate: "morning",
     title: "Netilat Yadayim (Morning Hand-Washing)",
@@ -51,6 +53,7 @@ const MITZVOT = [
   },
   {
     id: "food-blessings",
+    blessings: ["hamotzi", "mezonot", "hagafen", "haetz", "haadama", "shehakol"],
     icon: "bread",
     title: "Blessings Before Eating",
     subtitle: "A different short blessing depending on what's actually on your plate",
@@ -68,6 +71,7 @@ const MITZVOT = [
   },
   {
     id: "asher-yatzar",
+    texts: [{ key: "asherYatzar" }],
     icon: "droplet",
     title: "Asher Yatzar",
     subtitle: "A blessing said after using the bathroom, thanking God for a body that works",
@@ -81,6 +85,7 @@ const MITZVOT = [
   },
   {
     id: "birkat-hamazon",
+    texts: [{ key: "birkatHamazon" }],
     icon: "goblet",
     title: "Birkat Hamazon (Grace After Meals)",
     subtitle: "A fuller thank-you after any meal that included bread",
@@ -94,6 +99,7 @@ const MITZVOT = [
   },
   {
     id: "mezuzah",
+    blessings: ["mezuzah"],
     icon: "mezuzah",
     title: "The Mezuzah",
     subtitle: "A small scroll on the doorpost, carrying a big idea about the home",
@@ -107,6 +113,7 @@ const MITZVOT = [
   },
   {
     id: "tzitzit",
+    blessings: ["tallit", "tzitzit"],
     icon: "tzitzit",
     title: "Tzitzit",
     subtitle: "Fringes tied with intention, worn to remember",
@@ -150,6 +157,7 @@ const MITZVOT = [
   // ---------------------------------------------------------------
   {
     id: "shema",
+    texts: [{ key: "shema" }],
     icon: "star",
     title: "The Shema",
     subtitle: "Six words at the heart of Jewish belief, said morning and night",
@@ -255,6 +263,7 @@ const MITZVOT = [
   },
   {
     id: "shehecheyanu",
+    blessings: ["shehecheyanu"],
     icon: "sunrise",
     title: "Shehecheyanu",
     subtitle: "A blessing for firsts and for new seasons",
@@ -285,6 +294,7 @@ const MITZVOT = [
   },
   {
     id: "tefillat-haderech",
+    texts: [{ key: "tefillatHaderech" }],
     icon: "star",
     title: "The Traveler's Prayer",
     subtitle: "Tefillat HaDerech — a short prayer for a safe journey",
@@ -304,6 +314,7 @@ const MITZVOT = [
   // ---------------------------------------------------------------
   {
     id: "tefillin",
+    texts: [{ key: "tallitTefillin" }],
     icon: "tzitzit",
     title: "Tefillin",
     subtitle: "Binding words of Torah on the arm and head each weekday morning",
@@ -319,6 +330,7 @@ const MITZVOT = [
   },
   {
     id: "shabbat-candles",
+    blessings: ["shabbatCandles"],
     icon: "candles-shabbat",
     title: "Lighting Shabbat Candles",
     subtitle: "Two flames that turn Friday evening into Shabbat",
@@ -334,6 +346,7 @@ const MITZVOT = [
   },
   {
     id: "havdalah",
+    texts: [{ key: "havdalah", opts: { afterShabbat: true } }],
     icon: "goblet",
     title: "Havdalah",
     subtitle: "Saying goodbye to Shabbat with wine, spices and flame",
@@ -349,6 +362,7 @@ const MITZVOT = [
   },
   {
     id: "blessings-for-news",
+    blessings: ["hatovVehametiv", "dayanHaemet"],
     icon: "book-star",
     title: "Blessings for Good and Hard News",
     subtitle: "Short blessings for the moments that change a day",
@@ -409,6 +423,7 @@ const MITZVOT = [
   },
   {
     id: "torah-study",
+    texts: [{ key: "morningTorahBlessings" }],
     icon: "book-star",
     title: "Learning Torah Every Day",
     subtitle: "Even a few minutes, at a set time, counts",
@@ -458,6 +473,7 @@ const MITZVOT = [
   // ---------------------------------------------------------------
   {
     id: "blessings-of-wonder",
+    blessings: ["osehMaaseh", "thunder", "rainbow", "ocean", "ilanot", "atzeiBesamim", "isveiBesamim", "besamim", "fruitScent"],
     icon: "sunrise",
     title: "Blessings for Sights and Smells",
     subtitle: "A rainbow, thunder, the ocean, a sweet fragrance — each has a blessing",
@@ -612,6 +628,7 @@ const MITZVOT = [
   // ---------------------------------------------------------------
   {
     id: "washing-for-bread",
+    blessings: ["netilatYadayim", "hamotzi"],
     icon: "wash-cup",
     title: "Washing Before Bread",
     subtitle: "A ritual hand-washing that turns a meal into something special",
@@ -627,6 +644,7 @@ const MITZVOT = [
   },
   {
     id: "separating-challah",
+    blessings: ["challah"],
     icon: "bread",
     title: "Separating Challah",
     subtitle: "Setting aside a piece of dough when baking bread",
@@ -642,6 +660,8 @@ const MITZVOT = [
   },
   {
     id: "after-blessings",
+    blessings: ["boreiNefashot"],
+    texts: [{ key: "alHamichya" }],
     icon: "goblet",
     title: "Blessings After Snacks",
     subtitle: "Al HaMichya and Borei Nefashot — a short thank-you after eating",
@@ -732,6 +752,7 @@ const MITZVOT = [
   },
   {
     id: "blessing-children",
+    texts: [{ key: "blessingChildren" }],
     icon: "hand",
     title: "Blessing Your Children",
     subtitle: "A Friday-night blessing with hands on their heads",
@@ -781,6 +802,7 @@ const MITZVOT = [
   },
   {
     id: "tevilat-kelim",
+    blessings: ["tevilatKeli", "tevilatKelim"],
     icon: "wash-cup",
     title: "Immersing New Dishes",
     subtitle: "Tevilat kelim — dipping new kitchenware in a mikveh",
@@ -886,6 +908,7 @@ const MITZVOT = [
   },
   {
     id: "kiddush-levana",
+    texts: [{ key: "kiddushLevana" }],
     icon: "moon",
     title: "Blessing the New Moon",
     subtitle: "Kiddush Levana — a monthly blessing under the night sky",

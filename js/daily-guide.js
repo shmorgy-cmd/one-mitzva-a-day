@@ -23,13 +23,14 @@
 
 // --- Blessings ---------------------------------------------------------------
 
+// Blessings are written with vowels (nikud), with ה׳ for God's name.
 const BLESSING_OPEN = {
-  he: "ברוך אתה ה׳ אלהינו מלך העולם",
+  he: "בָּרוּךְ אַתָּה ה׳ אֱלֹהֵינוּ מֶלֶךְ הָעוֹלָם",
   tr: "Baruch atah Adonai, Eloheinu melech ha'olam,",
   en: "Blessed are You, Lord our God, King of the universe,"
 };
 const MITZVAH_OPEN = {
-  he: "אשר קדשנו במצותיו וצונו",
+  he: "אֲשֶׁר קִדְּשָׁנוּ בְּמִצְוֹתָיו וְצִוָּנוּ",
   tr: "asher kid'shanu b'mitzvotav v'tzivanu",
   en: "who has made us holy with His commandments and commanded us"
 };
@@ -37,28 +38,58 @@ const MITZVAH_OPEN = {
 /** Each blessing: the ending after the standard opening. `mitzvah` adds
  *  "who has made us holy… and commanded us". */
 const BLESSINGS = {
-  chanukahLight: { name: "Lighting the Chanukah lights", mitzvah: true, he: "להדליק נר חנוכה", tr: "l'hadlik ner Chanukah.", en: "to light the Chanukah light." },
-  chanukahMiracles: { name: "For the miracles", he: "שעשה נסים לאבותינו בימים ההם בזמן הזה", tr: "she'asah nisim la'avoteinu bayamim hahem bazman hazeh.", en: "who performed miracles for our ancestors in those days, at this season." },
-  shehecheyanu: { name: "Shehecheyanu", he: "שהחיינו וקימנו והגיענו לזמן הזה", tr: "shehecheyanu v'kiy'manu v'higianu lazman hazeh.", en: "who has kept us alive, sustained us, and brought us to this season." },
-  shabbatCandles: { name: "Shabbat candles", mitzvah: true, he: "להדליק נר של שבת", tr: "l'hadlik ner shel Shabbat.", en: "to light the Shabbat light." },
-  yomTovCandles: { name: "Yom Tov candles", mitzvah: true, he: "להדליק נר של יום טוב", tr: "l'hadlik ner shel Yom Tov.", en: "to light the festival light." },
-  shabbatYomTovCandles: { name: "Shabbat and Yom Tov candles", mitzvah: true, he: "להדליק נר של שבת ושל יום טוב", tr: "l'hadlik ner shel Shabbat v'shel Yom Tov.", en: "to light the Shabbat and festival light." },
-  yomKippurCandles: { name: "Yom Kippur candles", mitzvah: true, he: "להדליק נר של יום הכפורים", tr: "l'hadlik ner shel Yom HaKippurim.", en: "to light the Yom Kippur light." },
-  shabbatYomKippurCandles: { name: "Shabbat and Yom Kippur candles", mitzvah: true, he: "להדליק נר של שבת ושל יום הכפורים", tr: "l'hadlik ner shel Shabbat v'shel Yom HaKippurim.", en: "to light the Shabbat and Yom Kippur light." },
-  sukkah: { name: "Sitting in the sukkah", mitzvah: true, he: "לישב בסכה", tr: "leishev basukkah.", en: "to dwell in the sukkah." },
-  lulav: { name: "Taking the lulav", mitzvah: true, he: "על נטילת לולב", tr: "al netilat lulav.", en: "concerning taking the lulav." },
-  shofar: { name: "Hearing the shofar (said by the one blowing)", mitzvah: true, he: "לשמוע קול שופר", tr: "lishmoa kol shofar.", en: "to hear the sound of the shofar." },
-  megillah: { name: "Reading the Megillah", mitzvah: true, he: "על מקרא מגלה", tr: "al mikra Megillah.", en: "concerning reading the Megillah." },
-  bedikah: { name: "Searching for chametz", mitzvah: true, he: "על ביעור חמץ", tr: "al bi'ur chametz.", en: "concerning removing chametz." },
-  eruv: { name: "Eruv Tavshilin", mitzvah: true, he: "על מצות ערוב", tr: "al mitzvat eruv.", en: "concerning the mitzvah of eruv." },
-  omer: { name: "Counting the Omer", mitzvah: true, he: "על ספירת העמר", tr: "al sefirat ha'omer.", en: "concerning counting the Omer." },
-  haetz: { name: "Fruit from a tree", he: "בורא פרי העץ", tr: "borei p'ri ha'etz.", en: "who creates the fruit of the tree." },
-  hagafen: { name: "Over wine or grape juice", he: "בורא פרי הגפן", tr: "borei p'ri hagafen.", en: "who creates the fruit of the vine." },
-  netilatYadayim: { name: "Washing hands before bread", mitzvah: true, he: "על נטילת ידים", tr: "al n'tilat yadayim.", en: "concerning washing the hands." },
-  hamotzi: { name: "HaMotzi — over the challah", he: "המוציא לחם מן הארץ", tr: "hamotzi lechem min ha'aretz.", en: "who brings forth bread from the earth." },
-  besamim: { name: "Over the spices", he: "בורא מיני בשמים", tr: "borei minei v'samim.", en: "who creates the different kinds of spices." },
-  fire: { name: "Over the flame", he: "בורא מאורי האש", tr: "borei m'orei ha'eish.", en: "who creates the lights of fire." },
-  hallel: { name: "Before Hallel", mitzvah: true, he: "לגמור את ההלל", tr: "lig'mor et haHallel.", en: "to complete the Hallel." }
+  chanukahLight: { name: "Lighting the Chanukah lights", mitzvah: true, he: "לְהַדְלִיק נֵר חֲנֻכָּה.", tr: "l'hadlik ner Chanukah.", en: "to light the Chanukah light." },
+  chanukahMiracles: { name: "For the miracles", he: "שֶׁעָשָׂה נִסִּים לַאֲבוֹתֵינוּ בַּיָּמִים הָהֵם בַּזְּמַן הַזֶּה.", tr: "she'asah nisim la'avoteinu bayamim hahem bazman hazeh.", en: "who performed miracles for our ancestors in those days, at this season." },
+  shehecheyanu: { name: "Shehecheyanu", he: "שֶׁהֶחֱיָנוּ וְקִיְּמָנוּ וְהִגִּיעָנוּ לַזְּמַן הַזֶּה.", tr: "shehecheyanu v'kiy'manu v'higianu lazman hazeh.", en: "who has kept us alive, sustained us, and brought us to this season." },
+  shabbatCandles: { name: "Shabbat candles", mitzvah: true, he: "לְהַדְלִיק נֵר שֶׁל שַׁבָּת.", tr: "l'hadlik ner shel Shabbat.", en: "to light the Shabbat light." },
+  yomTovCandles: { name: "Yom Tov candles", mitzvah: true, he: "לְהַדְלִיק נֵר שֶׁל יוֹם טוֹב.", tr: "l'hadlik ner shel Yom Tov.", en: "to light the festival light." },
+  shabbatYomTovCandles: { name: "Shabbat and Yom Tov candles", mitzvah: true, he: "לְהַדְלִיק נֵר שֶׁל שַׁבָּת וְשֶׁל יוֹם טוֹב.", tr: "l'hadlik ner shel Shabbat v'shel Yom Tov.", en: "to light the Shabbat and festival light." },
+  yomKippurCandles: { name: "Yom Kippur candles", mitzvah: true, he: "לְהַדְלִיק נֵר שֶׁל יוֹם הַכִּפּוּרִים.", tr: "l'hadlik ner shel Yom HaKippurim.", en: "to light the Yom Kippur light." },
+  shabbatYomKippurCandles: { name: "Shabbat and Yom Kippur candles", mitzvah: true, he: "לְהַדְלִיק נֵר שֶׁל שַׁבָּת וְשֶׁל יוֹם הַכִּפּוּרִים.", tr: "l'hadlik ner shel Shabbat v'shel Yom HaKippurim.", en: "to light the Shabbat and Yom Kippur light." },
+  sukkah: { name: "Sitting in the sukkah", mitzvah: true, he: "לֵישֵׁב בַּסֻּכָּה.", tr: "leishev basukkah.", en: "to dwell in the sukkah." },
+  lulav: { name: "Taking the lulav", mitzvah: true, he: "עַל נְטִילַת לוּלָב.", tr: "al netilat lulav.", en: "concerning taking the lulav." },
+  shofar: { name: "Hearing the shofar (said by the one blowing)", mitzvah: true, he: "לִשְׁמֹעַ קוֹל שׁוֹפָר.", tr: "lishmoa kol shofar.", en: "to hear the sound of the shofar." },
+  megillah: { name: "Reading the Megillah", mitzvah: true, he: "עַל מִקְרָא מְגִלָּה.", tr: "al mikra Megillah.", en: "concerning reading the Megillah." },
+  bedikah: { name: "Searching for chametz", mitzvah: true, he: "עַל בִּעוּר חָמֵץ.", tr: "al bi'ur chametz.", en: "concerning removing chametz." },
+  eruv: { name: "Eruv Tavshilin", mitzvah: true, he: "עַל מִצְוַת עֵרוּב.", tr: "al mitzvat eruv.", en: "concerning the mitzvah of eruv." },
+  omer: { name: "Counting the Omer", mitzvah: true, he: "עַל סְפִירַת הָעֹמֶר.", tr: "al sefirat ha'omer.", en: "concerning counting the Omer." },
+  hallel: { name: "Before Hallel", mitzvah: true, he: "לִגְמֹר אֶת הַהַלֵּל.", tr: "lig'mor et haHallel.", en: "to complete the Hallel." },
+
+  // Washing, tallit, tefillin and the home
+  netilatYadayim: { name: "Washing the hands (al netilat yadayim)", mitzvah: true, he: "עַל נְטִילַת יָדָיִם.", tr: "al n'tilat yadayim.", en: "concerning washing the hands." },
+  tallit: { name: "Putting on the tallit", mitzvah: true, he: "לְהִתְעַטֵּף בַּצִּיצִית.", tr: "l'hitateif batzitzit.", en: "to wrap ourselves in tzitzit." },
+  tzitzit: { name: "Putting on a tallit katan (small tallit)", mitzvah: true, he: "עַל מִצְוַת צִיצִית.", tr: "al mitzvat tzitzit.", en: "concerning the mitzvah of tzitzit." },
+  tefillinHand: { name: "Hand tefillin", mitzvah: true, he: "לְהָנִיחַ תְּפִלִּין.", tr: "l'hani'ach t'filin.", en: "to put on tefillin." },
+  tefillinHead: { name: "Head tefillin (Ashkenazi custom)", mitzvah: true, he: "עַל מִצְוַת תְּפִלִּין.", tr: "al mitzvat t'filin.", en: "concerning the mitzvah of tefillin." },
+  mezuzah: { name: "Putting up a mezuzah", mitzvah: true, he: "לִקְבֹּעַ מְזוּזָה.", tr: "likbo'a m'zuzah.", en: "to affix a mezuzah." },
+  challah: { name: "Separating challah", mitzvah: true, he: "לְהַפְרִישׁ חַלָּה.", tr: "l'hafrish challah.", en: "to separate challah." },
+  tevilatKeli: { name: "Immersing one new vessel", mitzvah: true, he: "עַל טְבִילַת כְּלִי.", tr: "al t'vilat k'li.", en: "concerning immersing a vessel." },
+  tevilatKelim: { name: "Immersing several new vessels", mitzvah: true, he: "עַל טְבִילַת כֵּלִים.", tr: "al t'vilat keilim.", en: "concerning immersing vessels." },
+
+  // Food: before and after
+  hamotzi: { name: "HaMotzi — over bread", he: "הַמּוֹצִיא לֶחֶם מִן הָאָרֶץ.", tr: "hamotzi lechem min ha'aretz.", en: "who brings forth bread from the earth." },
+  mezonot: { name: "Mezonot — cake, crackers, pasta, cereal", he: "בּוֹרֵא מִינֵי מְזוֹנוֹת.", tr: "borei minei m'zonot.", en: "who creates the different kinds of nourishment." },
+  hagafen: { name: "HaGafen — over wine or grape juice", he: "בּוֹרֵא פְּרִי הַגָּפֶן.", tr: "borei p'ri hagafen.", en: "who creates the fruit of the vine." },
+  haetz: { name: "HaEtz — fruit from a tree", he: "בּוֹרֵא פְּרִי הָעֵץ.", tr: "borei p'ri ha'etz.", en: "who creates the fruit of the tree." },
+  haadama: { name: "HaAdamah — vegetables and fruit from the ground", he: "בּוֹרֵא פְּרִי הָאֲדָמָה.", tr: "borei p'ri ha'adamah.", en: "who creates the fruit of the ground." },
+  shehakol: { name: "Shehakol — everything else (drinks, meat, eggs, sweets)", he: "שֶׁהַכֹּל נִהְיֶה בִּדְבָרוֹ.", tr: "shehakol nih'yeh bidvaro.", en: "by whose word everything came to be." },
+  boreiNefashot: { name: "Borei Nefashot — after most foods and drinks", he: "בּוֹרֵא נְפָשׁוֹת רַבּוֹת וְחֶסְרוֹנָן, עַל כָּל מַה שֶּׁבָּרָאתָ לְהַחֲיוֹת בָּהֶם נֶפֶשׁ כָּל חָי. בָּרוּךְ חֵי הָעוֹלָמִים.", tr: "borei n'fashot rabot v'chesronan, al kol mah shebarata l'hachayot bahem nefesh kol chai. Baruch chei ha'olamim.", en: "who creates many living beings and what they lack, for all that You created to keep every living thing alive. Blessed is the Life of the worlds." },
+
+  // Havdalah and scents
+  besamim: { name: "Over spices (mixed, as at Havdalah)", he: "בּוֹרֵא מִינֵי בְשָׂמִים.", tr: "borei minei v'samim.", en: "who creates the different kinds of spices." },
+  atzeiBesamim: { name: "Over fragrant wood or bark (like cinnamon or cedar)", he: "בּוֹרֵא עֲצֵי בְשָׂמִים.", tr: "borei atzei v'samim.", en: "who creates fragrant trees." },
+  isveiBesamim: { name: "Over fragrant herbs and plants (like mint or rosemary)", he: "בּוֹרֵא עִשְׂבֵי בְשָׂמִים.", tr: "borei isvei v'samim.", en: "who creates fragrant herbs." },
+  fruitScent: { name: "Over a fragrant fruit (like an etrog or a fresh lemon)", he: "הַנּוֹתֵן רֵיחַ טוֹב בַּפֵּרוֹת.", tr: "hanotein rei'ach tov bapeirot.", en: "who gives a good fragrance to fruits." },
+  fire: { name: "Over the flame", he: "בּוֹרֵא מְאוֹרֵי הָאֵשׁ.", tr: "borei m'orei ha'eish.", en: "who creates the lights of fire." },
+
+  // News, sights and sounds
+  hatovVehametiv: { name: "Good news shared with others", he: "הַטּוֹב וְהַמֵּטִיב.", tr: "hatov v'hameitiv.", en: "who is good and does good." },
+  dayanHaemet: { name: "Painful news, or hearing of a death", he: "דַּיַּן הָאֱמֶת.", tr: "dayan ha'emet.", en: "the true Judge." },
+  osehMaaseh: { name: "Lightning, great mountains, a vast desert, a sunrise over the sea", he: "עוֹשֶׂה מַעֲשֵׂה בְרֵאשִׁית.", tr: "oseh ma'aseh v'reishit.", en: "who makes the work of creation." },
+  thunder: { name: "Thunder", he: "שֶׁכֹּחוֹ וּגְבוּרָתוֹ מָלֵא עוֹלָם.", tr: "shekocho ug'vurato malei olam.", en: "whose strength and might fill the world." },
+  rainbow: { name: "A rainbow", he: "זוֹכֵר הַבְּרִית וְנֶאֱמָן בִּבְרִיתוֹ וְקַיָּם בְּמַאֲמָרוֹ.", tr: "zocheir hab'rit v'ne'eman bivrito v'kayam b'ma'amaro.", en: "who remembers the covenant, is faithful to His covenant and keeps His word." },
+  ocean: { name: "Seeing the ocean (after 30 days or more)", he: "שֶׁעָשָׂה אֶת הַיָּם הַגָּדוֹל.", tr: "she'asah et hayam hagadol.", en: "who made the great sea." },
+  ilanot: { name: "Fruit trees in bloom (once a year, in spring)", he: "שֶׁלֹּא חִסַּר בְּעוֹלָמוֹ דָּבָר, וּבָרָא בוֹ בְּרִיּוֹת טוֹבוֹת וְאִילָנוֹת טוֹבוֹת לְהַנּוֹת בָּהֶם בְּנֵי אָדָם.", tr: "shelo chisar b'olamo davar, uvara vo b'riyot tovot v'ilanot tovot l'hanot bahem b'nei adam.", en: "who left nothing lacking in His world, and created in it good creatures and good trees for people to enjoy." }
 };
 
 // The Torah reading on each day of Chanukah: the gifts of that day's tribal

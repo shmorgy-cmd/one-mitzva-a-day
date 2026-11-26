@@ -37,6 +37,7 @@
 <script src="js/daily-guide.js"></script>
 <script src="js/prayer-texts.js"></script>
 <script src="js/timeline.js"></script>
+<script src="js/mitzvot.js"></script>
 <script>
 // Each case: date, calendar (israel), optional community, and the item ids that
 // must / must not appear in today / tonight / season.
@@ -117,7 +118,7 @@ const GUIDE_CASES = [
   { date: "2027-10-15", name: "Erev Sukkot on Friday: festival Kiddush for Sukkot with Shabbat note, sukkah blessing, Shehecheyanu", tonight: ["kiddush"], check: g => {
       const ref = g.tonight.find(i => i.id === "kiddush").texts[0];
       const t = getPrayerText(ref.key, ref.opts);
-      return ref.key === "kiddushYomTov" && t.lines[1].he.includes("חג הסכות הזה") && /also Shabbat/.test(t.note) && t.lines.some(l => /sukkah/i.test(l.label)) && t.lines.some(l => l.label === "Shehecheyanu");
+      return ref.key === "kiddushYomTov" && t.lines[1].he.includes("חַג הַסֻּכּוֹת הַזֶּה") && /also Shabbat/.test(t.note) && t.lines.some(l => /sukkah/i.test(l.label)) && t.lines.some(l => l.label === "Shehecheyanu");
     } },
   { date: "2027-05-24", name: "Omer: count day 33 tonight, with the words", tonight: ["count-omer"], check: g => {
       const ref = g.tonight.find(i => i.id === "count-omer").texts[0];
@@ -303,7 +304,42 @@ async function run() {
     tbody.appendChild(tr);
   }
 
-  const total = CASES.length + GUIDE_CASES.length + Object.keys(OMER_WORDS).length + TIMELINE_CASES.length;
+  // Every blessing and text the app shows: Hebrew (blessings with vowels),
+  // transliteration and English all present; every key a mitzvah uses exists.
+  const NIKUD = /[ְ-ׇ]/;
+  const wordChecks = [];
+  Object.keys(BLESSINGS).forEach(k => wordChecks.push([`Blessing "${k}"`, () => {
+    const b = blessingText(k);
+    return b.he && b.tr && b.en && NIKUD.test(BLESSINGS[k].he) ? "" : "missing words or vowels";
+  }]));
+  Object.keys(PRAYER_TEXTS).forEach(k => wordChecks.push([`Text "${k}"`, () => {
+    const opts = { key: "hamotzi", day: 12, festival: "pesach", occasion: "chanukah", afterShabbat: true };
+    const t = getPrayerText(k, opts);
+    if (!t) return "no text";
+    if (!t.lines.length && !t.sefaria) return "empty";
+    const bad = t.lines.find(l => !l || !l.he || !l.tr || !l.en);
+    return bad ? "a line is missing Hebrew, transliteration or English" : "";
+  }]));
+  MITZVOT.forEach(m => {
+    if (!m.blessings && !m.texts) return;
+    wordChecks.push([`Mitzvah "${m.id}" words`, () => {
+      const missing = [...(m.blessings || []).filter(k => !BLESSINGS[k]), ...(m.texts || []).filter(r => !PRAYER_TEXTS[r.key]).map(r => r.key)];
+      return missing.length ? "unknown: " + missing.join(", ") : "";
+    }]);
+  });
+  wordChecks.forEach(([name, fn]) => {
+    let problem;
+    try { problem = fn(); } catch (e) { problem = "error: " + e.message; }
+    const ok = !problem;
+    ok ? pass++ : fail++;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="${ok ? "pass" : "fail"}">${ok ? "PASS" : "FAIL"}</td><td>—</td><td></td><td><code></code></td>`;
+    tr.children[2].textContent = "Words: " + name;
+    tr.children[3].firstChild.textContent = problem || "ok";
+    tbody.appendChild(tr);
+  });
+
+  const total = CASES.length + GUIDE_CASES.length + Object.keys(OMER_WORDS).length + TIMELINE_CASES.length + wordChecks.length;
   document.getElementById("summary").textContent = `${pass} passed, ${fail} failed (of ${total})`;
   document.title = `${fail ? "FAIL" : "PASS"} — Prayer Changes Tests`;
 }

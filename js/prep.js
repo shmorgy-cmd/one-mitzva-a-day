@@ -128,6 +128,8 @@ const PREP_GUIDES = [
 
   {
     key: "chanukah",
+    blessings: ["chanukahLight", "chanukahMiracles", "shehecheyanu"],
+    texts: [{ key: "haneirotHalalu" }],
     kind: "day",
     matchTitle: (title) => title === "Chanukah: 1 Candle",
     // Hebcal's "Chanukah: 1 Candle" is dated the day whose evening has the first lighting.
@@ -143,7 +145,7 @@ const PREP_GUIDES = [
     meaning: "Chanukah celebrates light that refuses to go out: a small group that kept its identity when the surrounding culture pushed it to blend in, and a little oil that lasted far longer than expected. The lights go in a window, to \"publicize the miracle\" — Judaism lived in the open. And we add one more light each night, because in holiness we always go up.",
     practices: [
       "Pick one small way to add light each night — a kind call, a few minutes of learning, a coin in the tzedakah box — growing night by night like the candles.",
-      "Learn the blessings now, so the first night feels natural (they appear each night in \"What to do today\", in Hebrew, transliteration and English).",
+      "Learn the blessings now, so the first night feels natural — they're below, and each night's timeline shows them too.",
       "Read the story — or Al HaNissim, the prayer added during Chanukah — and tell it in your own words to someone else.",
       "Invite someone to light with you, especially someone who'd otherwise be alone."
     ],
@@ -195,6 +197,7 @@ const PREP_GUIDES = [
   },
   {
     key: "tu-bishvat",
+    blessings: ["haetz", "shehecheyanu", "boreiNefashot"],
     kind: "day",
     matchTitle: (title) => title === "Tu BiShvat",
     when: (d, fmt) => `${fmt(d)} (it begins the evening before)`,

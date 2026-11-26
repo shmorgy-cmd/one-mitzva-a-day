@@ -117,6 +117,7 @@ const OCCASIONS = [
     priority: 100,
     match: (ctx) => ctx.findEvent(e => /^Rosh Hashana( \d{3,4}| II)$/.test(e.title) && ctx.isToday(e.date)),
     content: {
+      texts: [{ key: "yehiRatzonApple" }],
       intro: "Today is Rosh Hashanah, the Jewish New Year — the anniversary of the creation of humanity, and the day tradition calls Yom HaDin, the Day of Judgment, as well as Yom Hazikaron, the Day of Remembrance. It is celebrated for two days, even in Israel.",
       halacha: [
         "The central mitzvah of the day is hearing the shofar (ram's horn) blown — a set of 100 blasts is customary over the course of the service. (The shofar is not blown when the first day falls on Shabbat.)",
@@ -175,6 +176,7 @@ const OCCASIONS = [
     priority: 85,
     match: (ctx) => ctx.findEvent(e => /^Erev Yom Kippur$/.test(e.title) && ctx.isToday(e.date)),
     content: {
+      texts: [{ key: "blessingChildren" }],
       intro: "Today is Erev Yom Kippur — the final preparations before the holiest day of the Jewish year begins at sundown.",
       halacha: [
         "It is a mitzvah to eat well today — in fact, eating on Erev Yom Kippur is considered by the Sages as praiseworthy as fasting on Yom Kippur itself, since the meal is preparation to serve God through the fast.",
@@ -236,6 +238,7 @@ const OCCASIONS = [
     priority: 90,
     match: (ctx) => ctx.findEvent(e => /^Sukkot/.test(e.title) && !/Shmini|Simchat/.test(e.title) && ctx.isToday(e.date)),
     content: {
+      blessings: ["sukkah", "lulav"],
       intro: "Today is Sukkot, the Festival of Booths, commemorating the clouds of glory that sheltered the Israelites in the desert — and, more broadly, the fragility and trust of that journey.",
       halacha: [
         "Meals are eaten in the sukkah for the full seven days (weather-permitting exemptions apply — this is a genuinely case-by-case halacha worth asking a rabbi about if conditions are rough).",
@@ -308,6 +311,7 @@ const OCCASIONS = [
     priority: 85,
     match: (ctx) => ctx.findEvent(e => /^Chanukah/.test(e.title) && ctx.isToday(e.date)),
     content: {
+      blessings: (ctx) => ctx.chanukahCandlesTonight === 1 ? ["chanukahLight", "chanukahMiracles", "shehecheyanu"] : ["chanukahLight", "chanukahMiracles"],
       intro: (ctx) => {
         const n = ctx.chanukahCandlesTonight;
         const lead = n === 1
@@ -340,6 +344,7 @@ const OCCASIONS = [
     priority: 60,
     match: (ctx) => ctx.findEvent(e => /Tu BiShvat/.test(e.title) && ctx.isToday(e.date)),
     content: {
+      blessings: ["haetz", "shehecheyanu", "boreiNefashot"],
       intro: "Today is Tu BiShvat, the 15th of Shevat, the 'New Year for Trees' — a date used halachically to mark the age of fruit trees for tithing purposes, and celebrated today as a kind of Jewish Earth Day with deep spiritual layers.",
       halacha: [
         "Historically significant for calculating orlah (the prohibition on fruit from a tree's first three years) and tithes — mostly relevant in the Land of Israel with produce grown there.",
@@ -373,6 +378,7 @@ const OCCASIONS = [
     priority: 95,
     match: (ctx) => ctx.findEvent(e => /^Purim$/.test(e.title) && ctx.isToday(e.date)),
     content: {
+      blessings: ["megillah", "chanukahMiracles", "shehecheyanu"],
       intro: "Today is Purim, celebrating the salvation of the Jews of the Persian Empire from Haman's plot to destroy them, as told in the Scroll (Megillat) of Esther — the only biblical book where God's name never appears, and a whole holiday built to notice Him anyway.",
       halacha: [
         "The Megillah (Book of Esther) is read publicly, once at night and again the next morning, and it's a mitzvah to hear every word.",
@@ -467,6 +473,7 @@ const OCCASIONS = [
     priority: 15,
     match: (ctx) => ctx.omerDay > 0 && ctx.omerDay < 49 && ctx.omerDay !== 33,
     content: {
+      blessings: ["omer"],
       intro: `Today is day ${'{{OMER_DAY}}'} of the Omer — the 49-day count linking Pesach (freedom from slavery) to Shavuot (receiving the Torah), a nightly count that turns the calendar itself into a countdown of anticipation.`,
       halacha: [
         "The Omer is counted each night after nightfall, with a blessing, stating both the day number and the number of complete weeks (e.g., 'today is twelve days, which is one week and five days, of the Omer').",
@@ -675,6 +682,8 @@ const OCCASIONS = [
     priority: 40,
     match: (ctx) => ctx.dow === 5,
     content: {
+      blessings: ["shabbatCandles"],
+      texts: [{ key: "blessingChildren" }],
       intro: "Today is Erev Shabbat — the sixth day, and the run-up to Shabbat, the weekly Day of Rest that Judaism treats as the single most distinctive practice of the entire tradition.",
       halacha: [
         "Candle lighting marks the start of Shabbat before sunset — check local candle-lighting times, since Shabbat begins earlier than sunset itself, not at it.",
