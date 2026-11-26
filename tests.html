@@ -328,6 +328,18 @@ async function run() {
       return missing.length ? "unknown: " + missing.join(", ") : "";
     }]);
   });
+  // The Shema before sleep: no countdown, and the Hamapil note follows the community.
+  wordChecks.push(["Bedtime Shema: Hamapil note by community", () => {
+    const bad = [];
+    const a = tlBedtimeNotes("ashkenazi", "11:43 PM").join(" ");
+    const s = tlBedtimeNotes("sephardi", "11:43 PM").join(" ");
+    const u = tlBedtimeNotes(null, "").join(" ");
+    if (!/until dawn/.test(a) || /without Hashem/.test(a)) bad.push("ashkenazi: " + a);
+    if (!/after halachic midnight \(11:43 PM\)/.test(s) || !/without Hashem's name/.test(s)) bad.push("sephardi: " + s);
+    if (!/Ashkenazim/.test(u) || !/Sephardim/.test(u) || /\(\)/.test(u)) bad.push("unknown: " + u);
+    if (![a, s, u].every(t => /Ask your rabbi/.test(t))) bad.push("missing 'Ask your rabbi'");
+    return bad.join("; ");
+  }]);
   // Audio: every listed recording belongs to a real line; God's name is read as "Adoshem".
   wordChecks.push(["Audio: recordings match real lines", () => {
     const ids = new Set(Object.keys(BLESSINGS).map(k => `b-${k}`));

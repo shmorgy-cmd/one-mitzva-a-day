@@ -2809,3 +2809,9 @@ details.today-more[open] > summary::after { content: " ▴"; }
 @media (max-width: 420px) {
   .tl-now-mark-left { font-size: 0.6rem; }
 }
+/* Short halachic notes on a timeline card (e.g. when Hamapil is said). */
+.tl-note { margin: 8px 0 2px; padding: 8px 10px; background: #f4f6fb; border-left: 3px solid var(--flag-blue-bright); border-radius: 0 8px 8px 0; font-size: 0.84rem; line-height: 1.45; color: var(--ink-soft); }
+.tl-note p { margin: 0; }
+.tl-note p + p { margin-top: 4px; }
+.tl-note p:last-child { font-style: italic; }
+.tl-item--past .tl-note { display: none; }

@@ -91,6 +91,23 @@ function tlCityFormatter(times) {
   };
 }
 
+/** Short notes for the Shema before sleep: when its closing blessing, Hamapil, is
+ *  said, by community (community key from pcCommunityKey, or null = show both). The
+ *  Shema itself has no clock deadline. `midnight` is halachic midnight ("11:43 PM"),
+ *  or "" when the city isn't set. */
+function tlBedtimeNotes(community, midnight) {
+  const mid = midnight ? `halachic midnight (${midnight})` : "halachic midnight";
+  const ashk = "Hamapil, the closing blessing, is said with Hashem's name at any hour of the night, until dawn.";
+  const seph = `Going to sleep after ${mid}? Many Sephardim say Hamapil without Hashem's name.`;
+  const notes = [];
+  if (community === "ashkenazi") notes.push(ashk + " After dawn, it isn't said.");
+  else if (community === "sephardi") notes.push(seph + " After dawn, Hamapil isn't said.");
+  else notes.push(`Hamapil, the closing blessing: Ashkenazim say it with Hashem's name at any hour of the night, until dawn. After ${mid}, many Sephardim say it without Hashem's name. After dawn, it isn't said.`);
+  notes.push(`Missed the evening Shema at Maariv? Have it in mind with the first paragraph — ideally before ${mid}.`);
+  notes.push("Ask your rabbi which applies to you.");
+  return notes;
+}
+
 /**
  * Builds the day.
  *  opts: { date, times, community, info (pcDayInfo), guide ({tonight,today,read}),
@@ -185,12 +202,14 @@ function buildDayTimeline(opts) {
     why: approx ? "After nightfall, with the evening Shema." : `After nightfall (${fmt(z.tzeit)}), with the evening Shema — ideally before ${fmt(z.midnight)}.`,
     changes: changes.tonight, changesLabel: "Changes tonight" });
 
-  // 6. Bedtime. The Shema before sleep has no latest time: it is said whenever you go
-  // to sleep, so it shows no countdown (noDeadline) and stays open until dawn.
+  // 6. Bedtime. The Shema itself has no clock deadline: it is said whenever you go
+  // to sleep, so it shows no countdown (noDeadline) and stays open until dawn. Its
+  // closing blessing, Hamapil, does depend on the time, by community (see the note).
   add({ id: "bedtime-shema", part: "bedtime", kind: "texts", texts: [{ key: "bedtimeShema" }], soft: true, noDeadline: true,
     start: z.tzeit, end: new Date(z.alot.getTime() + 24 * TL_HOUR),
     timeLabel: "before sleep", title: "Shema before sleep",
-    why: "End the day as it began: the first paragraph of the Shema, and letting go of the day's hurts." });
+    why: "End the day as it began: the first paragraph of the Shema, and letting go of the day's hurts.",
+    notes: tlBedtimeNotes(community, approx ? "" : fmt(z.midnight)) });
 
   // The daily guide's items, each at its time.
   const candleAt = candleEvt ? candleEvt.at : minus(z.sunset, 18);
@@ -455,6 +474,12 @@ function tlRenderItem(item, ctx, used) {
   const whyEl = el("p", "tl-why", why || "");
   if (item.kind === "torah") whyEl.id = "tl-torah-why";
   if (why || item.kind === "torah") main.appendChild(whyEl);
+  // Short halachic notes (e.g. when Hamapil is said), shown on the card itself.
+  if (item.notes && item.notes.length) {
+    const note = el("div", "tl-note");
+    item.notes.forEach(n => note.appendChild(el("p", null, n)));
+    main.appendChild(note);
+  }
 
   // Prayer changes stay visible on the card itself, not hidden in the drop-down.
   const changeTitles = item.kind === "prayer" ? (item.changes || []).map(c => c.title) : [];
