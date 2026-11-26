@@ -3,7 +3,7 @@
 A daily companion site for learning Judaism, keyed to the Jewish calendar. Each day it shows:
 
 - Today's Hebrew and Gregorian date
-- Upcoming holidays (countdown strip)
+- Coming up: the next dates on the calendar (with their dates), a "next up" note, and the get-ready guide when one is open — all in one section after the timeline
 - Halacha, customs, and a spiritual reflection for whatever the day actually is (Selichot, Rosh Hashanah, Erev Tavshilin, Sukkot, Chanukah, Purim, Pesach, the Omer, Tisha B'Av, an ordinary Tuesday, etc.) — content lives in [`js/content.js`](js/content.js)
 - This week's Torah portion, showing the specific one-seventh "daily aliyah" for today (Sunday = 1st aliyah ... Shabbat = 7th), with the actual text pulled live from Sefaria
 

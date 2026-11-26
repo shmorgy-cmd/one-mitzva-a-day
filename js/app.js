@@ -446,6 +446,10 @@ function renderCountdownStrip(container, today, events, onSelect) {
     if (isFast) chip.classList.add("countdown-chip--fast");
     chip.appendChild(el("span", "countdown-days", ongoing ? (label === "today" ? "Today" : label) : label));
     chip.appendChild(el("span", "countdown-title", g.name));
+    const fmtShort = (d) => d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    const dateText = !ongoing ? fmtShort(g.start)
+      : daysBetween(today, g.end) > 0 ? `until ${fmtShort(g.end)}` : "";
+    if (dateText) chip.appendChild(el("span", "countdown-date", dateText));
     if (isFast) chip.appendChild(el("span", "countdown-tag", "Fast day"));
     chip.title = `${g.name} · ${label} — see the details`;
     chip.setAttribute("aria-label", `${g.name}, ${label}`);
@@ -1200,33 +1204,7 @@ function computeDailyGuide(date, heb, events) {
 
 /** Under the timeline: what's coming up next, and the printable Shabbat sheet. */
 function renderDayFooter(container, date, events) {
-  const prep = nextPrepInfo(events, date);
-  const next = nextHoliday(events, date);
-  let line = null;
-  let days = null;
-  if (prep && prep.ready) {
-    days = prep.daysUntil;
-    line = { title: `Coming up: ${prep.name}`, sub: "Its get-ready guide is open — the story, what it means and how to prepare." };
-  } else if (next) {
-    days = daysBetween(date, next.start);
-    const opens = prep && prep.name === next.name && prep.opensIn > 0 ? ` Its get-ready guide opens ${inDays(prep.opensIn)}.` : "";
-    line = { title: `Coming up: ${next.name}`, sub: `${inDays(days).replace(/^./, c => c.toUpperCase())}.${opens}` };
-  }
-  if (line) {
-    const btn = el("button", "tl-coming");
-    btn.type = "button";
-    const big = el("span", "tl-coming-days", String(days));
-    big.appendChild(el("small", null, days === 1 ? "day" : "days"));
-    btn.appendChild(big);
-    const text = el("span", "tl-coming-text");
-    text.appendChild(el("strong", null, line.title));
-    text.appendChild(el("span", null, line.sub));
-    btn.appendChild(text);
-    btn.appendChild(el("span", "ts-chevron", "›"));
-    btn.addEventListener("click", () => goToSection("prep-section"));
-    container.appendChild(btn);
-  }
-
+  // What's coming up lives in its own section right below; here, only the print sheet.
   const block = findRestBlock(events, date);
   if (block) {
     const holidays = blockHolidayNames(events, block);
@@ -1326,15 +1304,27 @@ async function setViewingDate(date) {
     const info = nextPrepInfo(events, date);
     const next = nextHoliday(events, date);
     const fmtDay = (d) => d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
-    const parts = [];
+    // A small, tidy note under the date cards.
+    const note = el("div", "prep-note");
+    note.appendChild(iconBadge("candles-shabbat", "icon-badge--gold"));
+    const body = el("div", "prep-note-body");
+    const line = (label, text) => {
+      const p = el("p", "prep-note-line");
+      if (label) p.appendChild(el("strong", null, `${label}: `));
+      p.appendChild(document.createTextNode(text));
+      body.appendChild(p);
+    };
     if (next && (!info || daysBetween(date, next.start) < info.daysUntil) && (!info || next.name !== info.name)) {
-      parts.push(`Next on the calendar: ${next.name}, ${inDays(daysBetween(date, next.start))}.`);
+      line("Next on the calendar", `${next.name}, ${inDays(daysBetween(date, next.start))}.`);
     }
     if (info) {
-      parts.push(`${parts.length ? "Then" : "Next up"}: ${info.name}, ${inDays(info.daysUntil)}. Its get-ready guide — the story, what it means and how to prepare — opens on ${fmtDay(addDays(date, Math.max(info.opensIn, 0)))}.`);
+      line(body.childElementCount ? "Then" : "Next up", `${info.name}, ${inDays(info.daysUntil)}.`);
+      body.appendChild(el("p", "prep-note-sub",
+        `Its get-ready guide — the story, what it means and how to prepare — opens here on ${fmtDay(addDays(date, Math.max(info.opensIn, 0)))}.`));
     }
-    if (!parts.length) parts.push("Nothing special on the calendar in the next few weeks — a good time to settle into the daily practices.");
-    prepContainer.appendChild(el("p", "prep-empty", parts.join(" ")));
+    if (!body.childElementCount) line(null, "Nothing special on the calendar in the next few weeks — a good time to settle into the daily practices.");
+    note.appendChild(body);
+    prepContainer.appendChild(note);
   }
 
   const todaysMitzvah = getMitzvahForDate(date);
@@ -1462,7 +1452,7 @@ function initTabBar() {
   });
   // Sections that belong to each tab: everything above the Torah card counts as "Today".
   const extra = {
-    top: ["countdown-container", "timeline-container", "zmanim-container"]
+    top: ["timeline-container", "zmanim-container"]
   };
   const sections = [];
   links.forEach(a => {
