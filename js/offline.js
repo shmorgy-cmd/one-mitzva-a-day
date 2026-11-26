@@ -72,6 +72,10 @@ async function prefetchUpcoming(events) {
     if (i <= PREFETCH_DAYS) await quiet(loadTorahPortion(events, d));
     if (d.getDay() === 6) await quiet(loadParshaSummary(d, isInIsrael(settings)));
   }
+  // The blessing recordings, so the speaker buttons work offline too.
+  if (typeof allAudioRecordings === "function") {
+    for (const src of allAudioRecordings()) await quiet(fetch(src));
+  }
   try { localStorage.setItem(PREFETCH_KEY, stamp); } catch (e) { /* ignore */ }
 }
 

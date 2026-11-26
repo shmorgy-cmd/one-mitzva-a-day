@@ -1052,12 +1052,17 @@ function transliterationHint() {
 
 /** One line of a blessing or prayer: the Hebrew first; its transliteration shows
  *  on hover (computers) or when the Hebrew is tapped (phones); then the English. */
-function renderHebrewLine(line) {
+function renderHebrewLine(line, audioId) {
   const wrap = el("div", "hb");
   const he = el("p", "hb-he", line.he);
   he.lang = "he";
   he.dir = "rtl";
-  wrap.appendChild(he);
+  // The Hebrew with its speaker button (audio.js); the transliteration follows
+  // the row so hovering the Hebrew still reveals it.
+  const row = el("div", "hb-row");
+  row.appendChild(he);
+  row.appendChild(speakerButton(audioId, line.he));
+  wrap.appendChild(row);
   if (line.tr) {
     const tr = el("p", "hb-tr", line.tr);
     tr.lang = "en";
@@ -1085,7 +1090,7 @@ function renderBlessing(key) {
   if (!b) return null;
   const box = el("div", "dg-blessing");
   box.appendChild(el("p", "dg-blessing-name", b.name));
-  box.appendChild(renderHebrewLine(b));
+  box.appendChild(renderHebrewLine(b, `b-${key}`));
   return box;
 }
 
@@ -1097,6 +1102,14 @@ function renderBlessingGroup(keys) {
   group.appendChild(transliterationHint());
   items.forEach(b => group.appendChild(b));
   return group;
+}
+
+/** A prayer-text line's recording id (see audio.js): its blessing's id when it's
+ *  one of the BLESSINGS, "t-<key>-<n>" in a fixed text, none in texts that change
+ *  with the day (those use the device's voice). */
+function prayerLineAudioId(key, line, i) {
+  if (line.audio) return line.audio;
+  return typeof PRAYER_TEXTS[key] === "function" ? null : `t-${key}-${i}`;
 }
 
 /** Sefaria's Hebrew without its cantillation marks (the vowels stay). */
@@ -1117,10 +1130,10 @@ function renderPrayerText(ref, collapsed) {
   box.appendChild(summary);
   if (t.note) box.appendChild(el("p", "pt-note", t.note));
   if (t.lines.some(l => l && l.tr)) box.appendChild(transliterationHint());
-  t.lines.forEach(line => {
+  t.lines.forEach((line, i) => {
     const part = el("div", "pt-line");
     if (line.label) part.appendChild(el("p", "pt-label", line.label));
-    part.appendChild(renderHebrewLine(line));
+    part.appendChild(renderHebrewLine(line, prayerLineAudioId(ref.key, line, i)));
     box.appendChild(part);
   });
   if (t.sefaria) {
@@ -1150,10 +1163,14 @@ function renderPrayerText(ref, collapsed) {
               part.appendChild(line);
             });
           } else {
-            const he = el("p", "hb-he", heParts.map(sefariaHebrew).join(" "));
+            const heText = heParts.map(sefariaHebrew).join(" ");
+            const he = el("p", "hb-he", heText);
             he.lang = "he";
             he.dir = "rtl";
-            part.appendChild(he);
+            const row = el("div", "hb-row");
+            row.appendChild(he);
+            row.appendChild(speakerButton(null, heText));
+            part.appendChild(row);
             const notes = [];
             const en = el("p", "hb-en");
             renderVerses(en, enParts.map(v => cleanSefariaVerse(v, notes)));
@@ -1691,6 +1708,7 @@ function resolveMitzvahTexts(texts) {
 
 async function init() {
   applyTransliterationPref();
+  initHebrewVoice();
   realToday = startOfDay(new Date());
   viewingDate = realToday;
   document.getElementById("gregorian-date").textContent = fmtDate(realToday);

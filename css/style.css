@@ -2521,7 +2521,7 @@ details.tl-about > summary { cursor: pointer; font-weight: 600; color: var(--fla
 }
 /* Shown while hovering the Hebrew (or the transliteration itself), once the
    Hebrew is tapped, or always when the visitor chose that. */
-.hb-he:hover + .hb-tr,
+.hb-row:has(.hb-he:hover) + .hb-tr,
 .hb-tr:hover,
 .hb.is-tr .hb-tr,
 body.show-tr .hb-tr { display: block; }
@@ -2551,3 +2551,29 @@ body.show-tr .hb-tr { display: block; }
   .tl-body .pt-summary { padding-left: 8px; padding-right: 8px; }
   .hb-he { font-size: 1.22rem; }
 }
+
+/* Speaker button next to each line of Hebrew (audio.js) */
+.hb-row { display: flex; align-items: flex-start; gap: 8px; }
+.hb-row .hb-he { flex: 1; min-width: 0; }
+.spk {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  margin-top: 4px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--flag-blue);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+.spk svg { width: 18px; height: 18px; }
+.spk:hover, .spk:focus-visible { background: #eef2fc; outline: none; border-color: var(--flag-blue-bright); }
+.spk.is-playing { background: var(--flag-blue); color: #fff; border-color: var(--flag-blue); }
+/* Without a recording, the speaker uses the device's Hebrew voice — hidden when
+   the device has none. */
+.spk--tts { display: none; }
+body.has-he-voice .spk--tts { display: grid; }
+@media print { .spk { display: none !important; } }

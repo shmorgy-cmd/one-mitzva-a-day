@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Blessing Recordings Checklist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --blue: #1747a6; --ink: #1c2230; --soft: #545b6b; --line: #dfe3f0; --ok: #1f7a3a; --gold: #b98a2f; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px 16px 60px; background: #f6f7fb; color: var(--ink); font: 16px/1.5 "Source Sans 3", system-ui, sans-serif; }
+    main { max-width: 860px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin: 0 0 4px; }
+    h2 { font-size: 1.15rem; margin: 28px 0 8px; color: var(--blue); }
+    .note { color: var(--soft); margin: 0 0 12px; }
+    .how { background: #fff; border: 1px solid var(--line); border-left: 5px solid var(--gold); border-radius: 10px; padding: 12px 16px; }
+    .how ol { margin: 6px 0 0; padding-left: 20px; }
+    .how li { margin: 4px 0; }
+    #progress { font-weight: 700; margin: 16px 0 4px; }
+    .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+    .bar i { display: block; height: 100%; background: var(--ok); width: 0; }
+    .filter { margin: 14px 0 0; display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.95rem; }
+    .item { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin-top: 8px; }
+    .item.done { border-color: #bfe0c9; background: #f5fbf7; }
+    .top { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+    .num { font-weight: 700; color: var(--soft); min-width: 2.2em; }
+    .label { font-weight: 600; }
+    .file { font-family: ui-monospace, Consolas, monospace; font-size: 0.88rem; background: #eef2fc; color: var(--blue); padding: 1px 6px; border-radius: 5px; }
+    .status { margin-left: auto; font-size: 0.85rem; font-weight: 700; color: var(--soft); }
+    .done .status { color: var(--ok); }
+    .he { font-family: "Frank Ruhl Libre", serif; font-size: 1.3rem; line-height: 1.75; direction: rtl; text-align: right; margin: 6px 0 2px; }
+    .tr { font-style: italic; color: var(--soft); margin: 0; }
+    button { font: inherit; font-size: 0.85rem; border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 2px 10px; cursor: pointer; color: var(--blue); }
+    .hide-done .item.done { display: none; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Blessing recordings — checklist</h1>
+  <p class="note">Every line of Hebrew in the app that can have a recording, with the file name it needs. Until a line has its recording, the app's speaker button reads it with the visitor's device voice (when the device has a Hebrew voice).</p>
+
+  <div class="how">
+    <strong>How to record</strong>
+    <ol>
+      <li>Record each line on its own — a phone's voice-memo app is fine. A quiet room, phone about a hand's width away, a calm and clear pace.</li>
+      <li>Say God's name (written ה׳) as <strong>"Adoshem"</strong>, as in practice recordings.</li>
+      <li>Name each file exactly as shown (for example <span class="file">b-hamotzi.m4a</span>). <strong>.m4a</strong> or <strong>.mp3</strong> both work.</li>
+      <li>Send the files to Claude in this project (or put them in the <span class="file">audio/</span> folder and list them in <span class="file">js/audio.js</span>). Each one shows up in the app as soon as it's added.</li>
+    </ol>
+  </div>
+
+  <p id="progress"></p>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="filter"><label><input type="checkbox" id="hide-done"> Hide the ones already recorded</label></div>
+
+  <div id="list"></div>
+</main>
+
+<script src="js/prayer-changes.js"></script>
+<script src="js/daily-guide.js"></script>
+<script src="js/prayer-texts.js"></script>
+<script src="js/audio.js"></script>
+<script>
+// Each recordable line: the short blessings, then every line of the fixed texts
+// (the same ids the app uses — see prayerLineAudioId in app.js).
+function recordableLines() {
+  const groups = [];
+  groups.push({
+    title: "Short blessings",
+    lines: Object.keys(BLESSINGS).map(k => Object.assign({ id: `b-${k}`, label: BLESSINGS[k].name }, blessingText(k)))
+  });
+  Object.keys(PRAYER_TEXTS).forEach(key => {
+    const t = PRAYER_TEXTS[key];
+    if (typeof t === "function") return; // changes with the day: device voice only
+    const lines = t.lines
+      .map((l, i) => l && !l.audio ? Object.assign({ id: `t-${key}-${i}`, label: l.label || "" }, l) : null)
+      .filter(Boolean);
+    if (lines.length) groups.push({ title: t.name, lines });
+  });
+  return groups;
+}
+
+function render() {
+  const list = document.getElementById("list");
+  const groups = recordableLines();
+  let total = 0, done = 0, n = 0;
+  groups.forEach(g => {
+    list.appendChild(Object.assign(document.createElement("h2"), { textContent: g.title }));
+    g.lines.forEach(line => {
+      n++;
+      total++;
+      const rec = audioRecording(line.id);
+      if (rec) done++;
+      const item = document.createElement("div");
+      item.className = "item" + (rec ? " done" : "");
+      const top = document.createElement("div");
+      top.className = "top";
+      top.innerHTML = `<span class="num"></span><span class="label"></span><span class="file"></span><span class="status"></span>`;
+      top.querySelector(".num").textContent = n + ".";
+      top.querySelector(".label").textContent = line.label;
+      top.querySelector(".file").textContent = `${line.id}.m4a`;
+      top.querySelector(".status").textContent = rec ? "✓ Recorded" : "Not yet";
+      if (rec) {
+        const play = document.createElement("button");
+        play.type = "button";
+        play.textContent = "▶ Play";
+        play.addEventListener("click", () => new Audio(rec).play());
+        top.appendChild(play);
+      }
+      item.appendChild(top);
+      const he = document.createElement("p");
+      he.className = "he";
+      he.lang = "he";
+      he.textContent = line.he;
+      item.appendChild(he);
+      const tr = document.createElement("p");
+      tr.className = "tr";
+      tr.textContent = line.tr.replace(/\bAdonai\b/g, "Adoshem");
+      item.appendChild(tr);
+      list.appendChild(item);
+    });
+  });
+  document.getElementById("progress").textContent = `${done} of ${total} recorded`;
+  document.getElementById("bar").style.width = `${total ? (done / total) * 100 : 0}%`;
+}
+
+document.getElementById("hide-done").addEventListener("change", e => document.body.classList.toggle("hide-done", e.target.checked));
+render();
+</script>
+</body>
+</html>

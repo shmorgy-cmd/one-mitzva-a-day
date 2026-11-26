@@ -50,7 +50,7 @@ function ptFestivalKey(info) {
 /** A blessing line from the short endings in BLESSINGS (daily-guide.js). */
 function ptBlessingLine(key, label) {
   const b = blessingText(key);
-  return b ? { label: label || b.name, he: b.he, tr: b.tr, en: b.en } : null;
+  return b ? { label: label || b.name, he: b.he, tr: b.tr, en: b.en, audio: `b-${key}` } : null;
 }
 
 // --- The Omer count ------------------------------------------------------------
@@ -95,7 +95,7 @@ const PRAYER_TEXTS = {
   // Any single blessing from BLESSINGS, so it can sit in order among other texts.
   blessing: (opts = {}) => {
     const line = ptBlessingLine(opts.key);
-    return line ? { name: line.label, lines: [{ he: line.he, tr: line.tr, en: line.en }] } : null;
+    return line ? { name: line.label, lines: [{ he: line.he, tr: line.tr, en: line.en, audio: line.audio }] } : null;
   },
 
   haneirotHalalu: {

@@ -7,12 +7,12 @@
  *    Hebcal's calendar is requested with a date window that shifts every day,
  *    so it's also saved under a "loose" key without the dates — offline, the
  *    most recent calendar for the same city/settings is used instead.
- *  • Google Fonts: saved copy first.
+ *  • Google Fonts and blessing recordings: saved copy first.
  *
  * Bump CACHE_VERSION whenever app files change so visitors get the update.
  */
 
-const CACHE_VERSION = "v26";
+const CACHE_VERSION = "v27";
 
 // For visitors who opted in to OneSignal messages, OneSignal registers this same
 // file with its own query parameters (appId, sdkVersion…) — only then is its
@@ -23,6 +23,9 @@ if (/[?&]appId=/.test(self.location.search)) {
 const APP_CACHE = `omad-app-${CACHE_VERSION}`;
 const DATA_CACHE = "omad-data";
 const FONT_CACHE = "omad-fonts";
+// Blessing recordings (audio/…): kept across app updates; a new version of a
+// recording has a new ?v= in its address, so it is fetched fresh.
+const AUDIO_CACHE = "omad-audio";
 
 const APP_FILES = [
   "./",
@@ -39,6 +42,7 @@ const APP_FILES = [
   "js/prayer-changes.js",
   "js/daily-guide.js",
   "js/prayer-texts.js",
+  "js/audio.js",
   "js/timeline.js",
   "js/print.js",
   "js/prep.js",
@@ -134,6 +138,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(cacheFirst(request, FONT_CACHE));
   } else if (url.origin === self.location.origin) {
     if (url.pathname.endsWith("/tests.html")) return; // tests always hit the network
+    if (url.pathname.includes("/audio/")) { event.respondWith(cacheFirst(request, AUDIO_CACHE)); return; }
     event.respondWith(staleWhileRevalidate(request));
   }
 });

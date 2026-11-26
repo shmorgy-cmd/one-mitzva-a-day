@@ -38,6 +38,7 @@
 <script src="js/prayer-texts.js"></script>
 <script src="js/timeline.js"></script>
 <script src="js/mitzvot.js"></script>
+<script src="js/audio.js"></script>
 <script>
 // Each case: date, calendar (israel), optional community, and the item ids that
 // must / must not appear in today / tonight / season.
@@ -327,6 +328,20 @@ async function run() {
       return missing.length ? "unknown: " + missing.join(", ") : "";
     }]);
   });
+  // Audio: every listed recording belongs to a real line; God's name is read as "Adoshem".
+  wordChecks.push(["Audio: recordings match real lines", () => {
+    const ids = new Set(Object.keys(BLESSINGS).map(k => `b-${k}`));
+    Object.keys(PRAYER_TEXTS).forEach(k => {
+      const t = PRAYER_TEXTS[k];
+      if (typeof t !== "function") t.lines.forEach((l, i) => ids.add(`t-${k}-${i}`));
+    });
+    const unknown = Object.keys(AUDIO_RECORDINGS).filter(id => !ids.has(id));
+    return unknown.length ? "unknown ids: " + unknown.join(", ") : "";
+  }]);
+  wordChecks.push(["Audio: the device voice says Adoshem for ה׳", () => {
+    const s = textForSpeech(blessingText("hamotzi").he);
+    return !s.includes("ה׳") && s.includes(AUDIO_NAME_SPOKEN) ? "" : "got: " + s;
+  }]);
   wordChecks.forEach(([name, fn]) => {
     let problem;
     try { problem = fn(); } catch (e) { problem = "error: " + e.message; }
