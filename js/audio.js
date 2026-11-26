@@ -8,7 +8,7 @@
  * Pressing the speaker plays the real recording when there is one; otherwise it
  * reads the Hebrew with the device's own Hebrew voice, if the device has one.
  * With neither, no speaker is shown. Either way God's name (ה׳) is spoken as
- * "Adoshem", as in practice recordings.
+ * "Adoshem" and "Eloheinu" as "Elokeinu", as in practice recordings.
  */
 
 /**
@@ -60,12 +60,26 @@ function initHebrewVoice() {
   else speechSynthesis.onvoiceschanged = update;
 }
 
-/** The Hebrew as it should be read aloud: God's name as "Adoshem". */
+/** The Hebrew as it should be read aloud, as in practice recordings: God's name
+ *  as "Adoshem", and "Elohim" and its forms (Eloheinu, Elohai, v'Elohei…) with
+ *  a kuf — "Elokim", "Elokeinu". Only the word with a holam on the lamed
+ *  (אֱלֹהִים) changes, never "eileh" (אֵלֶּה, "these"). */
 function textForSpeech(he) {
   return he
     .replace(/ה׳/g, AUDIO_NAME_SPOKEN)
     .replace(/יְהֹוָה|יְהוָה|יהוה/g, AUDIO_NAME_SPOKEN)
+    // With vowels: alef … lamed-holam … hei  →  … kuf
+    .replace(/(א[֑-ׇ]*ל[֑-ׇ]*ֹ[֑-ׇ]*)ה/g, "$1ק")
+    // Without vowels (the longer prayers): אלהינו, אלהי, אלהים, אלהיך…
+    .replace(/אלה(?=ינו|ים|יך|יכם|י[\s,.;:]|י$)/g, "אלק")
     .replace(/[()]/g, "");
+}
+
+/** The same change for transliterations (the recording checklist). */
+function transliterationForSpeech(tr) {
+  return tr
+    .replace(/\bAdonai\b/g, "Adoshem")
+    .replace(/(Ei?lo)h(?=ei|ai|i|e)/gi, "$1k");
 }
 
 // --- Playing --------------------------------------------------------------------

@@ -46,7 +46,7 @@
     <strong>How to record</strong>
     <ol>
       <li>Record each line on its own — a phone's voice-memo app is fine. A quiet room, phone about a hand's width away, a calm and clear pace.</li>
-      <li>Say God's name (written ה׳) as <strong>"Adoshem"</strong>, as in practice recordings.</li>
+      <li>Say God's name (written ה׳) as <strong>"Adoshem"</strong>, and "Eloheinu" as <strong>"Elokeinu"</strong> (also "Elokim", "Elokai", "v'Elokei"), as in practice recordings. The transliteration below is already written that way.</li>
       <li>Name each file exactly as shown (for example <span class="file">b-hamotzi.m4a</span>). <strong>.m4a</strong> or <strong>.mp3</strong> both work.</li>
       <li>Send the files to Claude in this project (or put them in the <span class="file">audio/</span> folder and list them in <span class="file">js/audio.js</span>). Each one shows up in the app as soon as it's added.</li>
     </ol>
@@ -118,7 +118,7 @@ function render() {
       item.appendChild(he);
       const tr = document.createElement("p");
       tr.className = "tr";
-      tr.textContent = line.tr.replace(/\bAdonai\b/g, "Adoshem");
+      tr.textContent = transliterationForSpeech(line.tr);
       item.appendChild(tr);
       list.appendChild(item);
     });

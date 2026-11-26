@@ -342,6 +342,17 @@ async function run() {
     const s = textForSpeech(blessingText("hamotzi").he);
     return !s.includes("ה׳") && s.includes(AUDIO_NAME_SPOKEN) ? "" : "got: " + s;
   }]);
+  wordChecks.push(["Audio: Eloheinu → Elokeinu, but 'eileh' (these) unchanged", () => {
+    const cases = [
+      ["אֱלֹהֵינוּ", "אֱלֹקֵינוּ"], ["וֵאלֹהֵי אֲבוֹתֵינוּ", "וֵאלֹקֵי אֲבוֹתֵינוּ"], ["אֱלֹהַי", "אֱלֹקַי"],
+      ["אֱלֹהִים", "אֱלֹקִים"], ["אלהינו ואלהי אבותינו", "אלקינו ואלקי אבותינו"],
+      ["הַדְּבָרִים הָאֵלֶּה", "הַדְּבָרִים הָאֵלֶּה"], ["ימי חנכה אלו", "ימי חנכה אלו"]
+    ];
+    const bad = cases.filter(([from, to]) => textForSpeech(from) !== to).map(([from]) => `${from} → ${textForSpeech(from)}`);
+    const tr = transliterationForSpeech("Baruch atah Adonai, Eloheinu melech ha'olam … Elohai … vEilohei … Elohim");
+    if (tr !== "Baruch atah Adoshem, Elokeinu melech ha'olam … Elokai … vEilokei … Elokim") bad.push("transliteration: " + tr);
+    return bad.join("; ");
+  }]);
   wordChecks.forEach(([name, fn]) => {
     let problem;
     try { problem = fn(); } catch (e) { problem = "error: " + e.message; }
