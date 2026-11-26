@@ -185,8 +185,10 @@ function buildDayTimeline(opts) {
     why: approx ? "After nightfall, with the evening Shema." : `After nightfall (${fmt(z.tzeit)}), with the evening Shema — ideally before ${fmt(z.midnight)}.`,
     changes: changes.tonight, changesLabel: "Changes tonight" });
 
-  // 6. Bedtime
-  add({ id: "bedtime-shema", part: "bedtime", kind: "texts", texts: [{ key: "bedtimeShema" }], soft: true, start: z.tzeit, end: new Date(z.midnight.getTime() + 2 * TL_HOUR),
+  // 6. Bedtime. The Shema before sleep has no latest time: it is said whenever you go
+  // to sleep, so it shows no countdown (noDeadline) and stays open until dawn.
+  add({ id: "bedtime-shema", part: "bedtime", kind: "texts", texts: [{ key: "bedtimeShema" }], soft: true, noDeadline: true,
+    start: z.tzeit, end: new Date(z.alot.getTime() + 24 * TL_HOUR),
     timeLabel: "before sleep", title: "Shema before sleep",
     why: "End the day as it began: the first paragraph of the Shema, and letting go of the day's hurts." });
 
@@ -606,9 +608,9 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     }
     const { focus, target, next } = tlFocus(all, now, done);
     if (focus) {
-      card.appendChild(el("div", "now-label", "Right now"));
+      card.appendChild(el("div", "now-label", focus.noDeadline ? "Before you sleep" : "Right now"));
       card.appendChild(el("div", "now-title", focus.title));
-      if (!day.approx) card.appendChild(el("div", "now-time", `Until ${fmt(focus.end)} · ${tlLeft(focus.end - now)} left`));
+      if (!day.approx && !focus.noDeadline) card.appendChild(el("div", "now-time", `Until ${fmt(focus.end)} · ${tlLeft(focus.end - now)} left`));
     } else if (target) {
       card.appendChild(el("div", "now-label", "Nothing due right now"));
       card.appendChild(el("div", "now-title", `Next: ${target.title}`));
@@ -637,7 +639,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       actions.appendChild(city);
     }
     if (actions.children.length) card.appendChild(actions);
-    if (next) card.appendChild(el("div", "now-next", `Then: ${next.title}${day.approx ? "" : next.start <= now ? ` · by ${fmt(next.end)}` : ` · ${fmt(next.start)}`}`));
+    if (next) card.appendChild(el("div", "now-next", `Then: ${next.title}${day.approx ? "" : next.noDeadline ? "" : next.start <= now ? ` · by ${fmt(next.end)}` : ` · ${fmt(next.start)}`}`));
     nowContainer.appendChild(card);
   }
 
@@ -656,7 +658,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       }
     });
     let placed = false;
-    if (focus && !day.approx) {
+    if (focus && !day.approx && !focus.noDeadline) {
       const li = itemEls.get(focus);
       // The marker moves down the card from when the window opened (the label on top).
       const timeEl = li.querySelector(".tl-time");
