@@ -2758,3 +2758,73 @@ details.today-more[open] > summary::after { content: " ▴"; }
 /* Up near the top, under the date bar: a compact heading, in line with the cards. */
 #prep-section > .section-heading { margin: 22px 0 12px; padding-top: 0; border-top: 0; text-align: left; }
 #prep-section > .section-heading h2 { font-size: 1.35rem; margin-bottom: 2px; }
+
+/* ---------------------------------------------------------------- */
+/* Now marker inside the "Right now" item: slides down with the time */
+/* ---------------------------------------------------------------- */
+
+.tl-item {
+  position: relative;
+  /* How far down the marker sits: the share of the window already past, on a track
+     between the item's start time (top) and its latest time (bottom). */
+  --tl-now-top: calc(66px + (100% - 140px) * var(--tl-now, 0));
+  --tl-rail-x: 82px;
+}
+.tl-now-mark {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--tl-now-top);
+  height: 0;
+  display: grid;
+  grid-template-columns: 66px 16px minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: center;
+  z-index: 2;
+  pointer-events: none;
+}
+.tl-now-mark-label { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.tl-now-mark-label small { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #fff; background: #c2410c; border-radius: 999px; padding: 0 6px; margin-bottom: 2px; }
+.tl-now-mark-time { font-size: 0.75rem; font-weight: 700; color: #c2410c; }
+.tl-now-mark-left { font-size: 0.68rem; color: #9a3412; }
+.tl-now-mark.is-urgent .tl-now-mark-left { font-weight: 700; color: #c2410c; }
+.tl-now-mark i { width: 14px; height: 14px; border-radius: 50%; background: #c2410c; box-shadow: 0 0 0 4px #fde3d6; }
+.tl-now-mark b { height: 2px; width: 14px; margin-left: -12px; background: #c2410c; }
+.tl-now-fill {
+  position: absolute;
+  left: var(--tl-rail-x);
+  width: 2px;
+  top: 22px;
+  height: calc(var(--tl-now-top) - 22px);
+  background: #c2410c;
+  opacity: 0.55;
+  z-index: 0;
+  pointer-events: none;
+}
+@media (max-width: 420px) {
+  .tl-item { --tl-rail-x: 66px; }
+  .tl-now-mark { grid-template-columns: 52px 16px minmax(0, 1fr); column-gap: 8px; }
+  .tl-now-mark-left { font-size: 0.64rem; }
+}
+/* The "Right now" item gets a taller time track, so the marker has room to move. */
+.tl-item:has(> .tl-now-mark) { min-height: 220px; }
+.tl-now-end {
+  position: absolute;
+  left: 0;
+  width: 66px;
+  bottom: 8px;
+  text-align: right;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  color: var(--flag-blue);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.tl-now-end small { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; }
+@media (max-width: 420px) {
+  .tl-now-end { width: 52px; font-size: 0.75rem; }
+}
+.tl-now-mark-label > * { white-space: nowrap; }
+@media (max-width: 420px) {
+  .tl-now-mark-left { font-size: 0.6rem; }
+}
