@@ -431,14 +431,6 @@ function tlBody(item, ctx, used) {
     item.read.forEach(r => box.appendChild(tlGuideBody(r, used, item.read.length > 1)));
     return box;
   }
-  if (item.kind === "torah") {
-    const box = el("div", "tl-body");
-    const btn = el("button", "settings-link-btn", "Open this week's portion");
-    btn.type = "button";
-    btn.addEventListener("click", () => goToSection("torah-container"));
-    box.appendChild(btn);
-    return box;
-  }
   return null;
 }
 
@@ -504,6 +496,12 @@ function tlRenderItem(item, ctx, used) {
 
   // The drop-down spans the card's full width (under the tick button too),
   // so the Hebrew has room on a phone.
+  // The Torah portion is read on its own page (torah.html).
+  if (item.kind === "torah") {
+    const a = el("a", "tl-how-link", "Read today's aliyah →");
+    a.href = `torah.html?date=${ctx.dateISO}`;
+    card.appendChild(a);
+  }
   const body = tlBody(item, ctx, used);
   if (body) {
     const d = el("details", "tl-how");

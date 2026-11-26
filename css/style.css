@@ -2815,3 +2815,83 @@ details.today-more[open] > summary::after { content: " ▴"; }
 .tl-note p + p { margin-top: 4px; }
 .tl-note p:last-child { font-style: italic; }
 .tl-item--past .tl-note { display: none; }
+
+/* ---------------------------------------------------------------- */
+/* Parsha line in the date card                                       */
+/* ---------------------------------------------------------------- */
+
+#today-parsha:empty { display: none; }
+a.today-parsha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 8px 12px 8px 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fbf8f0;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+a.today-parsha:hover, a.today-parsha:focus-visible { border-color: var(--gold); box-shadow: var(--shadow-hover); outline: none; }
+a.today-parsha .icon-badge { flex: none; width: 38px; height: 38px; }
+.today-parsha-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.today-parsha-text strong { color: var(--flag-blue-deep); font-size: 1rem; }
+.today-parsha-text span { color: var(--ink-soft); font-size: 0.9rem; }
+.today-parsha-go { flex: none; font-weight: 600; font-size: 0.9rem; color: var(--flag-blue); }
+
+/* Timeline: "Read today's aliyah" goes to the reading page */
+a.tl-how-link { display: inline-block; margin-top: 6px; color: var(--flag-blue); font-weight: 600; font-size: 0.9rem; text-decoration: none; }
+a.tl-how-link:hover { text-decoration: underline; }
+
+/* ---------------------------------------------------------------- */
+/* Torah reading page (torah.html)                                    */
+/* ---------------------------------------------------------------- */
+
+.tr-head { display: flex; align-items: center; gap: 14px; }
+.tr-head .icon-badge { flex: none; }
+.tr-he-name { margin: 0 0 2px; font-family: "Frank Ruhl Libre", serif; font-size: 1.3rem; color: var(--flag-blue-deep); text-align: left; }
+.tr-intro { margin: 14px 0 12px; color: var(--ink-soft); line-height: 1.55; }
+
+.tr-days { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 10px; scrollbar-width: thin; }
+.tr-day {
+  flex: 1 0 74px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 8px 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.tr-day:hover, .tr-day:focus-visible { border-color: var(--flag-blue-bright); outline: none; }
+.tr-day-name { font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); }
+.tr-day-aliyah { font-family: "Fraunces", serif; font-weight: 700; font-size: 1.05rem; color: var(--gold); }
+.tr-day-date { font-size: 0.7rem; color: var(--ink-soft); }
+.tr-day.is-today .tr-day-name { color: var(--flag-blue); }
+.tr-day.is-active { background: linear-gradient(160deg, var(--flag-blue-bright), var(--flag-blue)); border-color: var(--flag-blue); }
+.tr-day.is-active .tr-day-name, .tr-day.is-active .tr-day-aliyah, .tr-day.is-active .tr-day-date { color: var(--cream); }
+
+.tr-card { margin-top: 6px; }
+.tr-card-title { font-family: "Fraunces", serif; font-size: 1.35rem; color: var(--flag-blue-deep); margin: 0 0 2px; }
+.tr-text { margin-top: 10px; }
+.tr-verses { display: flex; flex-direction: column; gap: 14px; }
+.tr-verse { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.tr-verse:last-child { border-bottom: 0; }
+.tr-num { font-size: 0.75rem; font-weight: 600; color: var(--gold); padding-top: 6px; font-variant-numeric: tabular-nums; }
+.tr-he { margin: 0 0 6px; font-family: "Frank Ruhl Libre", serif; font-size: 1.35rem; line-height: 1.8; color: var(--flag-blue-deep); text-align: right; }
+.tr-en { margin: 0; line-height: 1.6; }
+.tr-text[data-lang="en"] .tr-he { display: none; }
+.tr-text[data-lang="he"] .tr-en { display: none; }
+.tr-links { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; }
+
+@media (max-width: 420px) {
+  .tr-verse { grid-template-columns: 34px minmax(0, 1fr); gap: 6px; }
+  .tr-he { font-size: 1.25rem; }
+  .tr-day { flex-basis: 64px; }
+}

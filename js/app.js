@@ -459,172 +459,38 @@ function renderCountdownStrip(container, today, events, onSelect) {
   container.appendChild(strip);
 }
 
-/** Convert a Hebcal leyning string like "Deuteronomy 16:18-17:13" (or "...16:18-20" same-chapter)
- *  into a Sefaria API ref path like "Deuteronomy.16.18-17.13". */
-function leyningToSefariaPath(str) {
-  const m = /^(.+?)\s(\d+):(\d+)-(?:(\d+):)?(\d+)$/.exec(str);
-  if (!m) return null;
-  const [, book, c1, v1, c2, v2] = m;
-  const endChapter = c2 || c1;
-  return `${book.replace(/ /g, "_")}.${c1}.${v1}-${endChapter}.${v2}`;
-}
-
-const BOOK_ICONS = {
-  Genesis: "book-genesis",
-  Exodus: "book-exodus",
-  Leviticus: "book-leviticus",
-  Numbers: "book-numbers",
-  Deuteronomy: "book-deuteronomy"
-};
-
-function bookIconFromRef(ref) {
-  if (!ref) return "book-star";
-  const book = ref.split(/\s\d/)[0];
-  return BOOK_ICONS[book] || "book-star";
-}
-
+/** The week's portion for `today` plus today's aliyah text (fetching the text also
+ *  saves it for offline reading on torah.html). Helpers live in torah.js. */
 async function loadTorahPortion(events, today) {
-  const parashatEvents = events.filter(e => e.category === "parashat" && e.leyning);
-
-  // Normal case: the upcoming (or current) Shabbat has its own weekly portion.
-  let parashatEvt = parashatEvents
-    .filter(e => daysBetween(today, e.date) >= 0 && daysBetween(today, e.date) <= 10)
-    .sort((a, b) => a.date - b.date)[0];
-
-  // Some years a Yom Tov falls on Shabbat and displaces the regular weekly reading
-  // for that week entirely (no "parashat" event appears). Fall back to the most
-  // recently completed portion so the page still shows something meaningful.
-  let carriedOver = false;
-  if (!parashatEvt) {
-    parashatEvt = parashatEvents
-      .filter(e => daysBetween(e.date, today) >= 0 && daysBetween(e.date, today) <= 10)
-      .sort((a, b) => b.date - a.date)[0];
-    carriedOver = true;
-  }
-
-  if (!parashatEvt) return null;
-
-  const dow = today.getDay(); // 0=Sun..6=Sat
-  const aliyaNum = String(dow + 1);
-  const aliyaRef = parashatEvt.leyning[aliyaNum]; // e.g. "Deuteronomy 16:18-17:13"
-
-  const result = {
-    parashaName: parashatEvt.title.replace(/^Parashat\s+/, ""),
-    hebrewName: parashatEvt.hebrew,
-    shabbatDate: parashatEvt.date,
-    aliyaNum: parseInt(aliyaNum, 10),
-    aliyaRef,
-    carriedOver,
-    text: null
-  };
-
-  if (aliyaRef) {
-    const path = leyningToSefariaPath(aliyaRef);
-    if (path) {
-      try {
-        const data = await fetchJSON(`${SEFARIA_BASE}/${path}?context=0&commentary=0`);
-        result.text = { ref: aliyaRef, sefariaPath: path, english: data.text, hebrew: data.he };
-      } catch (e) {
-        console.warn("Sefaria fetch failed", e);
-        result.text = { ref: aliyaRef, sefariaPath: path, english: null, hebrew: null };
-      }
-    }
-  }
-
-  return result;
+  const p = findParasha(events, today);
+  if (!p) return null;
+  const text = p.aliyaRef ? await loadAliyahText(p.aliyaRef) : null;
+  return Object.assign(p, { text });
 }
 
-function renderTorahPortion(container, portion) {
-  const card = el("article", "torah-card");
-  if (!portion) {
-    card.appendChild(el("h3", null, "This Week's Torah Portion"));
-    card.appendChild(el("p", "intro", "Couldn't load this week's Torah portion right now — try refreshing the page in a moment."));
-    container.appendChild(card);
-    return;
-  }
-
-  const book = portion.aliyaRef ? portion.aliyaRef.split(/\s\d/)[0] : null;
-  if (book) card.classList.add("book-" + book);
-
-  const dayLabel = DOW_NAMES[new Date().getDay()];
-  const headRow = el("div", "card-head");
-  headRow.appendChild(iconBadge(bookIconFromRef(portion.aliyaRef), "icon-badge--gold"));
-  headRow.appendChild(el("h3", null, `Parshat ${portion.parashaName}`));
-  card.appendChild(headRow);
-  card.appendChild(el("p", "torah-meta", `${portion.hebrewName || ""} · ${portion.carriedOver ? "Most recently read on Shabbat, " : "Read this Shabbat, "}${fmtDate(portion.shabbatDate)}`));
-
-  const chitasNote = el("p", "intro");
-  if (portion.carriedOver) {
-    chitasNote.innerHTML = `A Yom Tov falls on this coming Shabbat, so the regular weekly reading is set aside this week. Here's the most recently completed portion to continue learning from — the day-by-day cycle picks back up next week.`;
-  } else {
-    chitasNote.innerHTML = `Following the daily custom of dividing the week's Torah reading into seven parts — one per day — <strong>today (${dayLabel})</strong> is the day for the <strong>${ordinal(portion.aliyaNum)} aliyah</strong>${portion.aliyaRef ? ` (${portion.aliyaRef})` : ""}.`;
-  }
-  card.appendChild(chitasNote);
-
-  const engNotes = [];
-  const hebNotes = [];
-  const eng = portion.text ? flattenSefaria(portion.text.english).map(v => cleanSefariaVerse(v, engNotes)) : [];
-  const heb = portion.text ? flattenSefaria(portion.text.hebrew).map(v => cleanSefariaVerse(v, hebNotes)) : [];
-
-  if (eng.length || heb.length) {
-    const toggleRow = el("div", "lang-toggle");
-    const engBtn = el("button", "lang-btn lang-btn--active", "English");
-    const hebBtn = el("button", "lang-btn", "עברית");
-    engBtn.type = "button";
-    hebBtn.type = "button";
-    toggleRow.appendChild(engBtn);
-    toggleRow.appendChild(hebBtn);
-    card.appendChild(toggleRow);
-
-    const textBox = el("p", "torah-text");
-    card.appendChild(textBox);
-
-    const notesBox = el("details", "torah-notes");
-    card.appendChild(notesBox);
-
-    function showNotes(notes) {
-      notesBox.innerHTML = "";
-      notesBox.hidden = !notes.length;
-      if (!notes.length) return;
-      notesBox.appendChild(el("summary", null, `Translator's notes (${notes.length})`));
-      const ol = el("ol");
-      notes.forEach(n => {
-        const li = el("li");
-        if (n.term) li.appendChild(el("strong", null, n.term + " "));
-        li.appendChild(document.createTextNode(n.text));
-        ol.appendChild(li);
-      });
-      notesBox.appendChild(ol);
-    }
-
-    function showLang(lang) {
-      const isHeb = lang === "he";
-      renderVerses(textBox, isHeb ? heb : eng);
-      showNotes(isHeb ? hebNotes : engNotes);
-      textBox.classList.toggle("torah-text--hebrew", isHeb);
-      hebBtn.classList.toggle("lang-btn--active", isHeb);
-      engBtn.classList.toggle("lang-btn--active", !isHeb);
-    }
-    showLang(eng.length ? "en" : "he");
-
-    if (eng.length && heb.length) {
-      engBtn.addEventListener("click", () => showLang("en"));
-      hebBtn.addEventListener("click", () => showLang("he"));
-    } else {
-      hebBtn.disabled = !heb.length;
-      engBtn.disabled = !eng.length;
-    }
-  }
-
-  const link = el("a", "torah-link", "Read the full portion on Sefaria →");
-  link.href = portion.text && portion.text.sefariaPath ? `https://www.sefaria.org/${portion.text.sefariaPath}` : "https://www.sefaria.org/";
-  link.target = "_blank";
-  link.rel = "noopener";
-  card.appendChild(link);
-  card.appendChild(reportLink(`torah:${portion.parashaName}${portion.aliyaRef ? ":" + portion.aliyaRef : ""}`));
-
-  makeCollapsible(card, 3, false);
-  container.appendChild(card);
+/** The parsha line in the date card: this week's portion and the viewed day's
+ *  aliyah, linking to the reading page. */
+function renderTodayParsha(events, date) {
+  const box = document.getElementById("today-parsha");
+  if (!box) return;
+  box.innerHTML = "";
+  const p = findParasha(events, date);
+  if (!p) return;
+  const a = el("a", "today-parsha");
+  a.href = torahPageHref(date);
+  a.appendChild(iconBadge(bookIconFromRef(p.aliyaRef), "icon-badge--gold"));
+  const text = el("span", "today-parsha-text");
+  text.appendChild(el("strong", null, `Parshat ${p.parashaName}`));
+  const isToday = daysBetween(realToday, date) === 0;
+  const day = isToday ? "Today" : DOW_NAMES[date.getDay()];
+  const sub = p.carriedOver
+    ? "This week's reading is set aside for Yom Tov — keep learning last week's"
+    : `${day}: ${trOrdinal(p.aliyaNum)} aliyah${p.aliyaRef ? ` (${trPrettyRef(p.aliyaRef)})` : ""}`;
+  text.appendChild(el("span", null, sub));
+  a.appendChild(text);
+  a.appendChild(el("span", "today-parsha-go", "Read →"));
+  a.setAttribute("aria-label", `Read Parshat ${p.parashaName}. ${sub}`);
+  box.appendChild(a);
 }
 
 function renderPrepCard(container, upcoming, isBrowsingAhead) {
@@ -1290,6 +1156,7 @@ async function setViewingDate(date) {
   const occasions = pickOccasions(ctx);
 
   renderTodayContext(occasions, ctx);
+  renderTodayParsha(events, date);
 
   // The date cards in Coming up count from the day being viewed.
   const countdownContainer = document.getElementById("countdown-container");
@@ -1341,10 +1208,8 @@ async function setViewingDate(date) {
   renderDayFooter(timelineContainer, date, events);
   renderZmanimCard(document.getElementById("zmanim-container"), date).catch(e => console.error(e));
 
-  const torahContainer = document.getElementById("torah-container");
-  torahContainer.innerHTML = "";
-  const portion = await loadTorahPortion(events, date).catch(e => { console.error(e); return null; });
-  renderTorahPortion(torahContainer, portion);
+  // The week's portion (the reading itself is on torah.html).
+  const portion = findParasha(events, date);
   updateTorahSummary(portion);
 
   renderQuizCard(document.getElementById("quiz-container"), occasions, portion, todaysMitzvah);

@@ -5,7 +5,7 @@ A daily companion site for learning Judaism, keyed to the Jewish calendar. Each 
 - Today's Hebrew and Gregorian date
 - Coming up: the next dates on the calendar (with their dates), a "next up" note, and the get-ready guide when one is open — all in one section right under the date bar
 - Halacha, customs, and a spiritual reflection for whatever the day actually is (Selichot, Rosh Hashanah, Erev Tavshilin, Sukkot, Chanukah, Purim, Pesach, the Omer, Tisha B'Av, an ordinary Tuesday, etc.) — content lives in [`js/content.js`](js/content.js)
-- This week's Torah portion, showing the specific one-seventh "daily aliyah" for today (Sunday = 1st aliyah ... Shabbat = 7th), with the actual text pulled live from Sefaria
+- This week's Torah portion: a line in the date card ("Parshat Vayishlach · Today: 5th aliyah") opens the reading page ([`torah.html`](torah.html), [`js/torah-page.js`](js/torah-page.js)) — the week's seven aliyot, one per day (Sunday = 1st ... Shabbat = 7th), Hebrew without cantillation then English, verse by verse, live from Sefaria. Shared helpers are in [`js/torah.js`](js/torah.js)
 
 It's plain HTML/CSS/JS — no build step, no dependencies to install. It fetches live data client-side from the [Hebcal](https://www.hebcal.com/home/developer-apis) and [Sefaria](https://developers.sefaria.org/) public APIs, so it needs to be served over `http(s)://`, not opened directly as a `file://` page (the browser blocks the fetches otherwise).
 
