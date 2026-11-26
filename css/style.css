@@ -2755,3 +2755,6 @@ details.today-more[open] > summary::after { content: " ▴"; }
 .prep-note-sub { margin: 4px 0 0; font-size: 0.9rem; color: var(--ink-soft); line-height: 1.45; }
 #prep-section .countdown-chip { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 #prep-section { margin-bottom: 28px; }
+/* Up near the top, under the date bar: a compact heading, in line with the cards. */
+#prep-section > .section-heading { margin: 22px 0 12px; padding-top: 0; border-top: 0; text-align: left; }
+#prep-section > .section-heading h2 { font-size: 1.35rem; margin-bottom: 2px; }

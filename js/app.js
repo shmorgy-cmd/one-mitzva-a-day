@@ -668,7 +668,7 @@ function renderPrepCard(container, upcoming, isBrowsingAhead) {
   card.appendChild(richEl("p", "intro", guide.expectNote, profile, used));
   card.appendChild(reportLink(`prep:${guide.key}`));
 
-  makeCollapsible(card, 2, false);
+  makeCollapsible(card, 1, false); // folded to its title: it sits above the timeline
   container.appendChild(card);
 }
 
@@ -724,7 +724,7 @@ function renderDayPrepCard(container, upcoming, isBrowsingAhead) {
   if (src) card.appendChild(src);
   card.appendChild(reportLink(`prep:${guide.key}`));
 
-  makeCollapsible(card, 2, false);
+  makeCollapsible(card, 1, false); // folded to its title: it sits above the timeline
   container.appendChild(card);
 }
 

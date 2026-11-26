@@ -138,8 +138,8 @@ function renderInstallHint() {
   actions.appendChild(dismiss);
   hint.appendChild(actions);
 
-  // Below the date bar and the settings button.
-  const anchor = document.getElementById("date-nav-container") || document.getElementById("profile-pill");
+  // Below the date bar and the Coming up dates, just above the timeline.
+  const anchor = document.getElementById("prep-section") || document.getElementById("date-nav-container");
   anchor.insertAdjacentElement("afterend", hint);
 }
 
