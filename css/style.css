@@ -260,7 +260,6 @@ button.ts-row:focus-visible {
 
 #timeline-container,
 #zmanim-container,
-#daily-mitzvah-container,
 #prep-section,
 #occasion-container,
 #torah-container,
@@ -1043,12 +1042,7 @@ button.ts-row:focus-visible {
   margin: 0;
 }
 
-.daily-mitzvah-card {
-  border: 1px solid var(--gold-light);
-  background: linear-gradient(180deg, #fdf6e9 0%, var(--paper) 55%);
-}
 
-.daily-mitzvah-card .card-head { align-items: flex-start; }
 
 .mitzvot-card .card-head { align-items: flex-start; }
 

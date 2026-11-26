@@ -787,24 +787,6 @@ function appendMitzvahDetail(container, m) {
   container.appendChild(reportLink(`mitzvah:${m.id}`));
 }
 
-function renderDailyMitzvahCard(container, mitzvah) {
-  container.innerHTML = "";
-  const card = el("article", "occasion-card daily-mitzvah-card");
-
-  const headRow = el("div", "card-head");
-  headRow.appendChild(iconBadge(mitzvah.icon, "icon-badge--gold"));
-  const titleWrap = el("div");
-  titleWrap.appendChild(el("h3", null, mitzvah.title));
-  titleWrap.appendChild(el("p", "torah-meta", `Today's Mitzvah · ${mitzvah.subtitle}`));
-  headRow.appendChild(titleWrap);
-  card.appendChild(headRow);
-
-  appendMitzvahDetail(card, mitzvah);
-
-  makeCollapsible(card, 1, true);
-  container.appendChild(card);
-}
-
 /** A single row inside the "Everyday Mitzvot" list — its own small, independent
  *  expand/collapse, lighter-weight than a full card. */
 function renderMitzvahRow(m) {
@@ -1643,7 +1625,6 @@ async function setViewingDate(date) {
   }
 
   const todaysMitzvah = getMitzvahForDate(date);
-  renderDailyMitzvahCard(document.getElementById("daily-mitzvah-container"), todaysMitzvah);
   const guide = computeDailyGuide(date, hebrewInfo, events);
   const timelineContainer = document.getElementById("timeline-container");
   renderTimeline({
