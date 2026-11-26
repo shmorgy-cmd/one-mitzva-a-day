@@ -901,9 +901,6 @@ async function refreshAll() {
   browseEvents = null;
   try {
     realTodayEvents = await loadCalendarWindow(realToday);
-    const countdownContainer = document.getElementById("countdown-container");
-    countdownContainer.innerHTML = "";
-    renderCountdownStrip(countdownContainer, realToday, realTodayEvents, (date) => setViewingDate(date));
     scheduleReminders(realTodayEvents);
     renderInstallHint();
   } catch (e) {
@@ -1221,10 +1218,9 @@ function renderDayFooter(container, date, events) {
 }
 
 // --- Browsing state -------------------------------------------------
-// `realToday` never changes once the page loads; it's what the countdown
-// strip and the "getting ready" prep card are always based on, since those
-// are meant to help someone plan *before* they go offline for a chag.
-// `viewingDate` is whatever date the visitor has navigated to.
+// `realToday` never changes once the page loads; reminders are based on it.
+// The Coming up date cards and get-ready guide follow `viewingDate`,
+// which is whatever date the visitor has navigated to.
 let realToday = null;
 let realTodayEvents = null;
 let viewingDate = null;
@@ -1236,7 +1232,7 @@ let currentSettings = getSettings();
 const hebrewDateCache = new Map();
 
 async function ensureEventsCover(date) {
-  if (browseEvents && date >= browseWindowStart && date <= browseWindowEnd) {
+  if (browseEvents && date >= browseWindowStart && addDays(date, 30) <= browseWindowEnd) {
     return browseEvents;
   }
   const events = await loadCalendarWindow(date);
@@ -1294,6 +1290,11 @@ async function setViewingDate(date) {
   const occasions = pickOccasions(ctx);
 
   renderTodayContext(occasions, ctx);
+
+  // The date cards in Coming up count from the day being viewed.
+  const countdownContainer = document.getElementById("countdown-container");
+  countdownContainer.innerHTML = "";
+  renderCountdownStrip(countdownContainer, date, events, (d) => setViewingDate(d));
 
   const prepContainer = document.getElementById("prep-container");
   prepContainer.innerHTML = "";
@@ -1425,9 +1426,6 @@ async function init() {
       });
     }
 
-    const countdownContainer = document.getElementById("countdown-container");
-    countdownContainer.innerHTML = "";
-    renderCountdownStrip(countdownContainer, realToday, realTodayEvents, (date) => setViewingDate(date));
 
     // A link ending in #print opens the printable Shabbat / Yom Tov sheet directly.
     if (location.hash === "#print") openPrintPreview(realToday);
