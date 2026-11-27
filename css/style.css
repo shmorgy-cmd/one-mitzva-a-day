@@ -2961,3 +2961,28 @@ body.has-sheet { overflow: hidden; }
 .tl-item.is-skipped .tl-card { opacity: 0.6; }
 .tl-item.is-skipped .tl-title { color: var(--ink-soft); }
 .tl-item.is-skipped .tl-why, .tl-item.is-skipped .tl-how, .tl-item.is-skipped .tl-carried { display: none; }
+
+/* Time-bound items: "From" at the top of the time column, "By / Until / Latest"
+   at the bottom; the Now marker moves between the two. */
+.tl-end {
+  position: absolute;
+  left: 0;
+  width: 66px;
+  bottom: 12px;
+  text-align: right;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.tl-end small { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.tl-item:has(> .tl-end) { min-height: 140px; --tl-now-top: calc(48px + (100% - 124px) * var(--tl-now, 0)); }
+.tl-item--current .tl-end { color: var(--flag-blue); font-weight: 600; }
+.tl-item--also .tl-end { color: #5b7cc4; }
+.tl-item--past .tl-end, .tl-item.is-done .tl-end, .tl-item.is-skipped .tl-end { display: none; }
+.tl-item--past:has(> .tl-end), .tl-item.is-done:has(> .tl-end), .tl-item.is-skipped:has(> .tl-end) { min-height: 0; }
+@media (max-width: 420px) {
+  .tl-end { width: 52px; font-size: 0.75rem; }
+}
+.tl-item:has(> .tl-end) .tl-card { align-self: stretch; }
+.tl-item--past:has(> .tl-end) .tl-card, .tl-item.is-done:has(> .tl-end) .tl-card { align-self: start; }

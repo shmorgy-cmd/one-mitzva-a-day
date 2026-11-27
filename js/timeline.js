@@ -146,16 +146,22 @@ function buildDayTimeline(opts) {
     return "evening";
   }
 
-  // 1. Waking up — the morning practices from the mitzvot list.
-  add({ id: "modeh-ani", part: "waking", kind: "mitzvah", mitzvah: "modeh-ani", soft: true, start: z.alot, end: z.tfilla, timeLabel: "on waking",
+  // Time-bound items (prayers, the Shema, tefillin) show "From" at the top of the
+  // time column and "By / Until / Latest" at the bottom; the Now marker moves between.
+  const win = (start, end, endWord) => approx ? {} : { window: true, timeSmall: "from", timeLabel: fmt(start), endSmall: endWord, endLabel: fmt(end) };
+
+  // 1. Waking up — the morning practices from the mitzvot list. They are said on
+  // waking and have no countdown (noDeadline); their "end" (Shacharit's latest time)
+  // only decides when this part of the day folds away.
+  add({ id: "modeh-ani", part: "waking", kind: "mitzvah", noDeadline: true, neverFocus: true, mitzvah: "modeh-ani", soft: true, start: z.alot, end: z.tfilla, timeLabel: "on waking",
     title: "Modeh Ani", why: "Your first words of the day: thank you for waking up." });
-  add({ id: "netilat-yadayim", part: "waking", kind: "mitzvah", mitzvah: "netilat-yadayim", soft: true, start: z.alot, end: z.tfilla,
+  add({ id: "netilat-yadayim", part: "waking", kind: "mitzvah", noDeadline: true, neverFocus: true, mitzvah: "netilat-yadayim", soft: true, start: z.alot, end: z.tfilla,
     texts: [{ key: "asherYatzar" }],
     title: "Wash your hands (netilat yadayim)", why: "A fresh, clean start: water over each hand, three times, then the blessing al netilat yadayim — and Asher Yatzar." });
-  add({ id: "shoes", part: "waking", kind: "mitzvah", mitzvah: "shoes", soft: true, start: z.alot, end: z.tfilla,
+  add({ id: "shoes", part: "waking", kind: "mitzvah", noDeadline: true, neverFocus: true, mitzvah: "shoes", soft: true, start: z.alot, end: z.tfilla,
     title: "Getting dressed", why: "Even putting on shoes has a gentle order — right first, then left." });
-  add({ id: "birchot", part: "waking", kind: "texts", texts: [{ key: "elokaiNeshama" }, { key: "morningTorahBlessings" }, { key: "morningBlessings" }], soft: true, start: z.alot, end: z.tfilla,
-    title: "Morning blessings (Birchot HaShachar)", why: "Short thank-yous for everyday gifts — seeing, standing, getting dressed. They open Shacharit in the siddur." });
+  add({ id: "birchot", part: "waking", kind: "texts", noDeadline: true, neverFocus: true, texts: [{ key: "elokaiNeshama" }, { key: "morningTorahBlessings" }, { key: "morningBlessings" }], soft: true, start: z.alot, end: z.tfilla,
+    title: "Morning blessings (Birchot HaShachar)", why: "Short thank-yous for everyday gifts — seeing, standing, getting dressed. They open Shacharit in the siddur; if you missed them, many say them until midday — ask your rabbi." });
 
   // 2. Morning
   if (restDay) {
@@ -164,8 +170,8 @@ function buildDayTimeline(opts) {
       why: shabbat ? "Shabbat is itself the sign between God and the Jewish people, so tefillin aren't worn." : "Like Shabbat, the festival is its own sign, so tefillin aren't worn." });
   } else if (info.tishaBav) {
     add({ id: "tefillin", part: "afternoon", kind: "mitzvah", mitzvah: "tefillin", soft: true, skippable: true, start: z.minchaG, end: z.sunset, sortAt: minus(z.minchaG, 1),
-      timeLabel: fmt(z.minchaG), timeSmall: approx ? "" : "from", title: "Tallit and tefillin — at Mincha today", tag: "Tisha B'Av",
-      why: `On Tisha B'Av they're worn at Mincha instead of the morning${approx ? "" : ` — latest: sunset (${fmt(z.sunset)})`}. Traditionally a men's mitzvah; customs vary.` });
+      timeLabel: fmt(z.minchaG), timeSmall: approx ? "" : "from", ...win(z.minchaG, z.sunset, "latest"), title: "Tallit and tefillin — at Mincha today", tag: "Tisha B'Av",
+      why: "On Tisha B'Av they're worn at Mincha instead of the morning. Traditionally a men's mitzvah; customs vary." });
   } else {
     // Open until sunset (the latest time); if not done by the end of the morning it
     // follows you through the day (carry), and "Not for me" puts it aside (skippable).
@@ -173,18 +179,18 @@ function buildDayTimeline(opts) {
     // above Shacharit with the same bright "Now" box.
     add({ id: "tefillin", part: "morning", kind: "mitzvah", mitzvah: "tefillin", soft: true, carry: true, skippable: true, start: z.misheyakir, end: z.sunset,
       idealEnd: z.tfilla, idealNote: "ideally before Shacharit",
-      timeLabel: fmt(z.misheyakir), timeSmall: approx ? "" : "from", title: "Tallit and tefillin", tag: info.cholHamoed ? "Chol HaMoed" : null,
+      timeLabel: fmt(z.misheyakir), timeSmall: approx ? "" : "from", ...win(z.misheyakir, z.sunset, "latest"), title: "Tallit and tefillin", tag: info.cholHamoed ? "Chol HaMoed" : null,
       why: (info.cholHamoed ? "Customs differ about tefillin on Chol HaMoed — follow your community. " : "") +
-        (approx ? "Worn during Shacharit; the latest is sunset." : `From ${fmt(z.misheyakir)}, ideally during Shacharit — latest: sunset (${fmt(z.sunset)}).`) + " Traditionally a men's mitzvah; customs vary — learn with your rabbi." });
+        (approx ? "Ideally put on before Shacharit and worn during it; the latest is sunset." : "Ideally put on before Shacharit and worn during it.") + " Traditionally a men's mitzvah; customs vary — learn with your rabbi." });
   }
   add({ id: "shema", part: "morning", kind: "mitzvah", mitzvah: "shema", start: z.alot, end: z.shma, sortAt: new Date(z.misheyakir.getTime() + 1),
-    timeLabel: fmt(z.shma), timeSmall: approx ? "" : "by", title: "Say the morning Shema",
+    timeLabel: fmt(z.shma), timeSmall: approx ? "" : "by", ...win(z.alot, z.shma, "by"), title: "Say the morning Shema",
     why: approx ? "In the first part of the morning — it's inside Shacharit. Set your city for the exact deadline."
-      : `By ${fmt(z.shma)} (stricter opinion: ${fmt(z.shmaMGA)}). It's inside Shacharit — if you'll pray later, say it on its own first.` });
+      : `Stricter opinion: by ${fmt(z.shmaMGA)}. It's inside Shacharit — if you'll pray later, say it on its own first.` });
   add({ id: "shacharit", part: "morning", kind: "prayer", prayer: "shacharit", start: z.alot, end: z.tfilla, sortAt: new Date(z.misheyakir.getTime() + 2),
-    timeLabel: fmt(z.tfilla), timeSmall: approx ? "" : "by",
+    timeLabel: fmt(z.tfilla), timeSmall: approx ? "" : "by", ...win(z.alot, z.tfilla, "by"),
     title: shabbat && !festival ? "Shabbat morning prayers" : festival ? "Festival morning prayers" : "Shacharit (morning prayer)",
-    why: approx ? "In the morning, ideally soon after sunrise." : `Ideally from sunrise (${fmt(z.sunrise)}); finish the Amidah by ${fmt(z.tfilla)}.`,
+    why: approx ? "In the morning, ideally soon after sunrise." : `Ideally from sunrise (${fmt(z.sunrise)}); finish the Amidah by the latest time shown.`,
     changes: changes.today, season: changes.season,
     changesLabel: "Changes today" });
 
@@ -196,21 +202,21 @@ function buildDayTimeline(opts) {
 
   // 4. Afternoon
   add({ id: "mincha", part: "afternoon", kind: "prayer", prayer: "mincha", start: z.minchaG, end: z.sunset,
-    timeLabel: fmt(z.minchaG), timeSmall: approx ? "" : "from", title: "Mincha (afternoon prayer)",
-    why: approx ? "In the afternoon, before sunset." : `Any time from ${fmt(z.minchaG)} until sunset at ${fmt(z.sunset)} — many wait until ${fmt(z.minchaK)}.`,
+    timeLabel: fmt(z.minchaG), timeSmall: approx ? "" : "from", ...win(z.minchaG, z.sunset, "until"), title: "Mincha (afternoon prayer)",
+    why: approx ? "In the afternoon, before sunset." : `Any time until sunset — many wait until ${fmt(z.minchaK)}.`,
     changes: [], sameAs: changes.today.map(i => i.title) });
 
   // 5. Evening
   add({ id: "maariv", part: "evening", kind: "prayer", prayer: "maariv", start: z.tzeit, end: z.midnight,
-    timeLabel: fmt(z.tzeit), timeSmall: approx ? "" : "from",
+    timeLabel: fmt(z.tzeit), timeSmall: approx ? "" : "from", ...win(z.tzeit, z.midnight, "ideally by"),
     title: dow === 5 ? "Maariv for Shabbat" : "Maariv (evening prayer)",
-    why: approx ? "After nightfall, with the evening Shema." : `After nightfall (${fmt(z.tzeit)}), with the evening Shema — ideally before ${fmt(z.midnight)}.`,
+    why: approx ? "After nightfall, with the evening Shema — ideally before midnight." : "After nightfall, with the evening Shema — ideally before halachic midnight; at the latest, dawn.",
     changes: changes.tonight, changesLabel: "Changes tonight" });
 
   // 6. Bedtime. The Shema itself has no clock deadline: it is said whenever you go
   // to sleep, so it shows no countdown (noDeadline) and stays open until dawn. Its
   // closing blessing, Hamapil, does depend on the time, by community (see the note).
-  add({ id: "bedtime-shema", part: "bedtime", kind: "texts", texts: [{ key: "bedtimeShema" }], soft: true, noDeadline: true,
+  add({ id: "bedtime-shema", part: "bedtime", kind: "texts", texts: [{ key: "bedtimeShema" }], soft: true, noDeadline: true, nowLabel: "Before you sleep",
     start: z.tzeit, end: new Date(z.alot.getTime() + 24 * TL_HOUR),
     timeLabel: "before sleep", title: "Shema before sleep",
     why: "End the day as it began: the first paragraph of the Shema, and letting go of the day's hurts.",
@@ -301,9 +307,12 @@ function tlStatus(item, now) {
 
 /** The one thing to do now (the most urgent open item), and what comes next. */
 function tlFocus(items, now, done) {
-  const timed = items.filter(i => !i.anytime);
+  // (The waking steps are never "Now": they belong to the moment you wake up.)
+  const timed = items.filter(i => !i.anytime && !i.neverFocus);
+  // Things with no clock (the waking steps, the bedtime Shema) come last, so they
+  // are "Now" only when nothing with a deadline is open.
   const current = timed.filter(i => tlStatus(i, now) === "current" && !done[i.id])
-    .sort((a, b) => ((a.soft ? 1 : 0) - (b.soft ? 1 : 0)) || (a.end - b.end));
+    .sort((a, b) => ((a.noDeadline ? 1 : 0) - (b.noDeadline ? 1 : 0)) || ((a.soft ? 1 : 0) - (b.soft ? 1 : 0)) || (a.end - b.end));
   const upcoming = timed.filter(i => tlStatus(i, now) === "upcoming")
     .sort((a, b) => (a.start - b.start) || ((a.soft ? 1 : 0) - (b.soft ? 1 : 0)));
   const focus = current[0] || null;
@@ -482,6 +491,13 @@ function tlRenderItem(item, ctx, used) {
   if (item.timeSmall) time.appendChild(el("small", null, item.timeSmall));
   time.appendChild(document.createTextNode(item.timeLabel || ""));
   li.appendChild(time);
+  // Time-bound items: the latest time sits at the bottom of the time column.
+  if (item.endLabel) {
+    const end = el("div", "tl-end");
+    end.appendChild(el("small", null, item.endSmall || "until"));
+    end.appendChild(document.createTextNode(item.endLabel));
+    li.appendChild(end);
+  }
   li.appendChild(el("div", "tl-dot"));
 
   const card = el("div", "tl-card");
@@ -698,7 +714,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     }
     const { focus, target, next, also, nextUp } = tlFocus(all, now, done);
     if (focus) {
-      card.appendChild(el("div", "now-label", focus.noDeadline ? "Before you sleep" : "Right now"));
+      card.appendChild(el("div", "now-label", focus.noDeadline ? (focus.nowLabel || "Before you sleep") : "Right now"));
       card.appendChild(el("div", "now-title", focus.title));
       if (!day.approx && !focus.noDeadline) card.appendChild(el("div", "now-time", `Until ${fmt(focus.end)} · ${tlLeft(focus.end - now)} left`));
     } else if (target) {
@@ -746,22 +762,9 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     nowLine.remove();
     nowMark.remove();
     nowFill.remove();
-    // Put back any time label swapped for the "Right now" track on the last paint.
-    itemEls.forEach((li) => {
-      if (li.dataset.timeHtml !== undefined) {
-        li.querySelector(".tl-time").innerHTML = li.dataset.timeHtml;
-        delete li.dataset.timeHtml;
-      }
-    });
     let placed = false;
     if (focus && !day.approx && !focus.noDeadline) {
       const li = itemEls.get(focus);
-      // The marker moves down the card from when the window opened (the label on top).
-      const timeEl = li.querySelector(".tl-time");
-      li.dataset.timeHtml = timeEl.innerHTML;
-      timeEl.innerHTML = "";
-      timeEl.appendChild(el("small", null, "From"));
-      timeEl.appendChild(document.createTextNode(fmt(focus.start)));
       const span = focus.end - focus.start;
       const share = span > 0 ? Math.min(1, Math.max(0, (now - focus.start) / span)) : 0;
       const left = focus.end - now;
