@@ -3395,10 +3395,7 @@ a.next-step .fc-kicker { color: #1f6a43; }
   .ts-heb-row { justify-content: flex-start; }
 }
 
-/* Other communities' customs, folded under your own */
-.minhag-others, .tl-note-others { margin-top: 6px; }
-.minhag-others > summary, .tl-note-others > summary { cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--flag-blue); }
-.tl-note .tl-note-others p { font-style: normal; margin-top: 4px; }
+/* "No Tachanun" markers */
 .tl-tag.tl-tag--flag { background: #fdecef; color: #9b2c40; }
 .ds-flag { display: block; margin-top: 2px; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.02em; color: #9b2c40; white-space: nowrap; }
 .ds-day.is-on .ds-flag { color: #ffd9e0; }

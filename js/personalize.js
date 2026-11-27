@@ -506,7 +506,7 @@ function pzEl(tag, cls, html) {
 /** "Your custom" box for "I'm Jewish" visitors. With a specific community,
  *  shows only that community; with "Other / not sure", shows each one. */
 function renderMinhagBox(minhagim, profile) {
-  if (!minhagim) return null;
+  if (!minhagim || !profile || !profile.community) return null;
   const present = COMMUNITY_KEYS.filter(k => minhagim[k] && minhagim[k].length);
   if (!present.length) return null;
   // Nusach Sefard (Chassidic) has its own entries where it differs; otherwise it
@@ -521,20 +521,14 @@ function renderMinhagBox(minhagim, profile) {
     parent.appendChild(ul);
   };
 
-  // Your own custom first; every other community's, folded, underneath — so
-  // everyone sees what changes for everyone, with their own up front.
-  if (c && present.includes(c)) {
+  // A specific community sees only its own custom; "Other / not sure" sees them
+  // all side by side.
+  if (c && c !== "other") {
+    if (!present.includes(c)) return null;
     box.appendChild(pzEl("p", "minhag-box-label", `Your custom · ${escapeHtml(COMMUNITY_NAMES[c])}`));
     const ul = pzEl("ul", "minhag-list");
     minhagim[c].forEach(i => ul.appendChild(pzEl("li", null, escapeHtml(i))));
     box.appendChild(ul);
-    const others = present.filter(k => k !== c);
-    if (others.length) {
-      const d = pzEl("details", "minhag-others");
-      d.appendChild(pzEl("summary", null, "How other communities do it"));
-      others.forEach(k => list(k, d));
-      box.appendChild(d);
-    }
   } else {
     box.appendChild(pzEl("p", "minhag-box-label", "How different communities do it"));
     present.forEach(k => list(k, box));

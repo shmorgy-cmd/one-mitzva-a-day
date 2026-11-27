@@ -294,10 +294,11 @@ function getPrayerChanges({ date, heb, hebTomorrow, israel, events, community, n
         });
       }
     }
-    // A Chassidic festive day that isn't yours: shown too, labeled, so you know
-    // why Chabad or Chassidic friends (or shuls) skip Tachanun today.
+    // A Chassidic festive day, for those whose nusach is "Not sure" / "Other" (or not
+    // set): shown side by side. A specific nusach sees only its own custom.
     const cd = pcChassidicDay(heb);
-    if (cd && weekday && !reason) {
+    const sideBySide = !nusach || nusach === "unsure" || nusach === "other";
+    if (cd && weekday && !reason && sideBySide) {
       today.push({
         id: "tachanun-community",
         title: "Tachanun: depends on your community",
@@ -629,11 +630,11 @@ function getPrayerChanges({ date, heb, hebTomorrow, israel, events, community, n
   return { today, tonight, season };
 }
 
-/** Every community's note, the visitor's own first (labeled "Your custom"). */
+/** Pick which community notes to show: the visitor's own, or all of them. */
 function prayerCustomsFor(item, community) {
   if (!item.customs) return [];
   const key = pcCommunityKey(community);
   const names = { ashkenazi: "Ashkenazi", sephardi: "Sephardi", chabad: "Chabad" };
-  const order = key ? [key, ...Object.keys(names).filter(k => k !== key)] : Object.keys(names);
-  return order.filter(k => item.customs[k]).map(k => ({ label: k === key ? `Your custom (${names[k]})` : names[k], text: item.customs[k], own: k === key }));
+  if (key) return item.customs[key] ? [{ label: `Your custom (${names[key]})`, text: item.customs[key] }] : [];
+  return Object.keys(names).filter(k => item.customs[k]).map(k => ({ label: names[k], text: item.customs[k] }));
 }

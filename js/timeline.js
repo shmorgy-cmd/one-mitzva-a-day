@@ -486,16 +486,15 @@ TL_NUSACH_NOTES["guide-sukkah-day"] = TL_NUSACH_NOTES["guide-sukkah-night"];
 
 const TL_NUSACHS = ["ashkenaz", "sefard", "sephardi", "chabad"];
 
-/** Every community's custom: the visitor's own as a note of its own ("Your custom"),
- *  the others gathered in one folded note. Without a known nusach, all side by side. */
+/** The custom notes to show: only the visitor's own ("Your custom"); all side by side
+ *  for "Not sure" / "Other" or "Show me everything"; none without an answer. */
 function tlNusachNotes(entries, profile) {
   const n = profile && profile.nusach;
   const label = (e) => e.for.map(k => COMMUNITY_LABELS[k]).join(", ").replace(/, ([^,]*)$/, " & $1") + " custom";
   const note = (e, own) => ({ nusach: e.for, label: own ? `Your custom · ${COMMUNITY_LABELS[n]}` : label(e), text: e.text });
-  if (!TL_NUSACHS.includes(n)) return entries.map(e => note(e, false));
-  const own = entries.filter(e => e.for.includes(n));
-  const others = entries.filter(e => !e.for.includes(n));
-  return [...own.map(e => note(e, true)), ...(others.length ? [{ others: others.map(e => note(e, false)) }] : [])];
+  if (TL_NUSACHS.includes(n) && !(profile && profile.showAll)) return entries.filter(e => e.for.includes(n)).map(e => note(e, true));
+  if (n || (profile && profile.showAll)) return entries.map(e => note(e, false));
+  return [];
 }
 
 /** No tefillin on Chol HaMoed: everyone in Israel, and Chassidim, Sephardim
@@ -592,13 +591,6 @@ function tlApplyFamily(items, allDay, profile) {
 /** A card note: plain text, or { family, text } with its "Married" / "With children" label. */
 function tlNoteEl(n) {
   if (typeof n === "string") return el("p", null, n);
-  if (n.others) {
-    // Other communities' customs, folded under the visitor's own.
-    const d = el("details", "tl-note-others");
-    d.appendChild(el("summary", null, "How other communities do it"));
-    n.others.forEach(o => d.appendChild(tlNoteEl(o)));
-    return d;
-  }
   const p = el("p", "tl-note-family");
   p.appendChild(n.nusach ? communityTag(n.label, n.nusach, currentProfile) : familyTag(n.family, currentProfile));
   p.appendChild(document.createTextNode(n.text));

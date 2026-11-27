@@ -981,7 +981,8 @@ function renderDayNotes(date, info, changes, guide, events) {
     // Shabbat Mevarchim: Chabad and many Chassidim say all of Tehillim before Shacharit.
     const mev = todaysEvents.find(e => e.category === "mevarchim");
     const tehillim = ["chabad", "sefard"];
-    if (mev) {
+    const sideBySide = nusach === "unsure" || nusach === "other" || (currentProfile && currentProfile.showAll);
+    if (mev && (tehillim.includes(nusach) || sideBySide)) {
       notes.push({ icon: "📜", text: "Tehillim before Shacharit", why: `Today is Shabbat Mevarchim — the new month is blessed after the Torah reading (${mev.title.replace(/^Mevarchim Chodesh /, "Rosh Chodesh ")}). Chabad and many Chassidic communities say the whole book of Tehillim before Shacharit, often together in shul.`, community: { text: "Chabad & Chassidic", for: tehillim } });
     }
   }
