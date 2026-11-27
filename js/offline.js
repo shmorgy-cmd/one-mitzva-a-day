@@ -3,7 +3,7 @@
  *   • registers the service worker (sw.js) and shows an offline notice
  *   • once a day, prefetches the next 14 days of data so the app works offline
  *   • shows an "install this app" hint (Android/desktop prompt, iOS instructions)
- *   • opt-in local reminders (candle lighting, prep checklist) while the app is open
+ *   • opt-in local reminders (candle lighting, tallit and tefillin, prep checklist) while the app is open
  */
 
 const PREFETCH_KEY = "omad_prefetch_v1";
@@ -209,6 +209,8 @@ function scheduleReminders(events) {
       });
   }
 
+  if (prefs.tefillin && settings.location) scheduleTefillinReminder(events, settings).catch(() => {});
+
   if (prefs.prep) {
     const info = nextPrepInfo(events, startOfDay(new Date()));
     if (info && info.ready) {
@@ -220,6 +222,46 @@ function scheduleReminders(events) {
         notify(`${info.name} is coming up`, `It starts ${inDays(info.daysUntil)} — your prep checklist is ready.`, `prep-${key}`);
       }
     }
+  }
+}
+
+/** Is tefillin worn on this day? Not on Shabbat, Yom Tov or Tisha B'Av morning, and on
+ *  Chol HaMoed only by those whose custom wears them (see tlNoTefillinOnCholHamoed). */
+function tefillinDay(events, date, settings) {
+  if (date.getDay() === 6) return false;
+  const info = pcDayInfo(events, date);
+  if (info.yomTov || info.roshHashana || info.yomKippur || info.tishaBav) return false;
+  const profile = getProfile();
+  if (info.cholHamoed && tlNoTefillinOnCholHamoed(profile, isInIsrael(settings))) return false;
+  return true;
+}
+
+/** "Tallit and tefillin" 30 minutes before the best time for Shacharit ends (sof
+ *  zman tefillah), on days tefillin are worn — today's if it's still ahead, else
+ *  tomorrow's. Quiet if already ticked on the timeline, or for women without
+ *  "Show me everything". */
+async function scheduleTefillinReminder(events, settings) {
+  if (typeof pcDayInfo !== "function" || typeof tlNoTefillinOnCholHamoed !== "function" || typeof fetchZmanim !== "function") return;
+  const profile = getProfile();
+  if (profile && profile.gender === "female" && !profile.showAll) return;
+  const chabad = profile && profile.community === "chabad";
+  const now = Date.now();
+  for (const offset of [0, 1]) {
+    const date = startOfDay(addDays(new Date(), offset));
+    if (!tefillinDay(events, date, settings)) continue;
+    const times = await fetchZmanim(settings.location, toISO(date));
+    // Chabad follows the Alter Rebbe's times, as the timeline does.
+    const latest = times && ((chabad && times.sofZmanTfilaBaalHatanya) || times.sofZmanTfilla);
+    if (!latest) continue;
+    const end = new Date(latest);
+    const wait = end.getTime() - 30 * 60 * 1000 - now;
+    if (wait <= 0 || wait > 26 * 60 * 60 * 1000) continue;
+    const dateISO = toISO(date);
+    reminderTimers.push(setTimeout(() => {
+      if (typeof tlDoneFor === "function" && tlDoneFor(dateISO).tefillin) return; // already done today
+      notify("Tallit and tefillin", `The best time for Shacharit ends at ${fmtZman(latest)} — you can still put on tefillin until sunset.`, `tefillin-${dateISO}`);
+    }, wait));
+    return;
   }
 }
 

@@ -81,7 +81,7 @@ The "Print for Shabbat" button next to the day strip's arrows ([`js/print.js`](j
 
 - [`manifest.json`](manifest.json) + [`icons/`](icons/) make the site installable ("Add to Home Screen").
 - [`sw.js`](sw.js) is the service worker: app files are saved for offline use; Hebcal/Sefaria data is network-first with a saved fallback. **Bump `CACHE_VERSION` in `sw.js` whenever you change any app file**, so visitors get the new version.
-- [`js/offline.js`](js/offline.js) prefetches the next 14 days of data once a day, shows the offline notice and the install hint (Android prompt / iOS "Share → Add to Home Screen"), and runs the opt-in local reminders from Settings (only while the app is open).
+- [`js/offline.js`](js/offline.js) prefetches the next 14 days of data once a day, shows the offline notice and the install hint (Android prompt / iOS "Share → Add to Home Screen"), and runs the opt-in local reminders from Settings (only while the app is open): candle lighting 30 minutes before; tallit and tefillin 30 minutes before the best time for Shacharit ends (sof zman tefillah, the Alter Rebbe's for Chabad) on days tefillin are worn — not Shabbat, Yom Tov, Tisha B'Av morning, or Chol HaMoed where your custom doesn't wear them — and not once ticked on the timeline (offered to women only with "Show me everything"); and the holiday prep checklist.
 
 ## Optional outside services ([`js/config.js`](js/config.js))
 

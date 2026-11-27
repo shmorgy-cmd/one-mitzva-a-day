@@ -363,10 +363,10 @@ function openSettingsPanel(onDone) {
   }
 
   function renderReminderStatus() {
-    const anyOn = settings.reminders.candles || settings.reminders.prep;
+    const anyOn = settings.reminders.candles || settings.reminders.prep || settings.reminders.tefillin;
     if (!anyOn) { rStatus.textContent = ""; return; }
-    if (settings.reminders.candles && !settings.location) {
-      rStatus.textContent = "Set your city above so we know when candle lighting is.";
+    if ((settings.reminders.candles || settings.reminders.tefillin) && !settings.location) {
+      rStatus.textContent = "Set your city above so we know the times for your reminders.";
     } else if (!("Notification" in window)) {
       rStatus.textContent = "This browser doesn't support notifications — reminders will appear on the page instead.";
     } else if (Notification.permission === "granted") {
@@ -380,6 +380,10 @@ function openSettingsPanel(onDone) {
 
   const rGroup = sEl("div", "settings-radios");
   rGroup.appendChild(reminderToggle("candles", "Candle lighting — 30 minutes before"));
+  // Tallit and tefillin — a men's mitzvah, so for women only with "Show me everything".
+  if (profile.gender !== "female" || profile.showAll) {
+    rGroup.appendChild(reminderToggle("tefillin", "Tallit and tefillin — 30 minutes before the best time for Shacharit ends (weekdays)"));
+  }
   rGroup.appendChild(reminderToggle("prep", "When a holiday prep checklist is ready"));
   rSection.appendChild(rGroup);
   rSection.appendChild(rStatus);
