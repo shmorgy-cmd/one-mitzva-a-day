@@ -78,11 +78,51 @@ document.addEventListener("click", () => {
 
 /** A small label ("For men", "For women"…) that explains itself when tapped. */
 function genderTag(text, profile) {
+  return infoTag(text, genderWhy(profile));
+}
+
+// ---------------------------------------------------------------------
+// Family: married, children
+// ---------------------------------------------------------------------
+
+/** "young" | "teens" | "grown" | null */
+function childrenStage(profile) {
+  const c = profile && profile.children;
+  return c === "young" || c === "teens" || c === "grown" ? c : null;
+}
+
+/** How to show family content: "plain" (it's yours), "label" (Show me everything), or null. */
+function familyShow(kind, profile) {
+  const mine = kind === "married" ? !!(profile && profile.married === true)
+    : kind === "kids" ? !!childrenStage(profile) && childrenStage(profile) !== "grown"
+    : kind === "young" ? childrenStage(profile) === "young"
+    : kind === "teens" ? childrenStage(profile) === "teens"
+    : kind === "grown" ? childrenStage(profile) === "grown"
+    : false;
+  if (mine) return "plain";
+  return profile && profile.showAll ? "label" : null;
+}
+
+/** A "Married" / "With children" label that says why it's shown. */
+function familyTag(kind, profile) {
+  const text = kind === "married" ? "Married" : kind === "teens" ? "With teens" : kind === "grown" ? "Grown children" : "With children";
+  const stage = { young: "young children", teens: "teens", grown: "grown children" }[childrenStage(profile)];
+  const mine = familyShow(kind, profile) === "plain";
+  const why = (mine
+    ? (kind === "married" ? "Shown because you said you're married, in Settings." : `Shown because you said you have ${stage}, in Settings.`)
+    : "Shown because \"Show me everything\" is on in Settings.") + " You can change this in Settings (⚙ at the top).";
+  return infoTag(text, why, "g-tag--family");
+}
+
+/** A small tag button that opens a short explanation when tapped. */
+function infoTag(text, whyText, cls) {
   const wrap = pzEl("span", "g-tag-wrap");
-  const btn = pzEl("button", "g-tag", text);
+  const btn = pzEl("button", "g-tag" + (cls ? " " + cls : ""));
+  btn.textContent = text;
   btn.type = "button";
   btn.setAttribute("aria-expanded", "false");
-  const why = pzEl("span", "g-tag-why", genderWhy(profile));
+  const why = pzEl("span", "g-tag-why");
+  why.textContent = whyText;
   why.hidden = true;
   btn.addEventListener("click", (e) => {
     e.stopPropagation();

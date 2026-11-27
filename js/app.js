@@ -429,6 +429,61 @@ function renderTodayParsha(events, date) {
   a.appendChild(el("span", "today-parsha-go", "Read →"));
   a.setAttribute("aria-label", `Read Parshat ${p.parashaName}. ${sub}`);
   box.appendChild(a);
+  renderFamilyCorner(box, p.parashaName);
+}
+
+/** Under the parsha: a kids' corner (young children) or questions to talk over
+ *  with teens, from the week's parsha content. Folded until opened. */
+function renderFamilyCorner(box, parashaName) {
+  const c = typeof parshaContent === "function" ? parshaContent(parashaName) : null;
+  if (!c) return;
+  const young = familyShow("young", currentProfile);
+  const teens = familyShow("teens", currentProfile);
+  const corner = (cls, kicker, title, kind) => {
+    const d = el("details", "family-corner " + cls);
+    const s = el("summary");
+    const t = el("span", "fc-head");
+    t.appendChild(el("span", "fc-kicker", kicker));
+    t.appendChild(el("strong", null, title));
+    s.appendChild(t);
+    d.appendChild(s);
+    const body = el("div", "fc-body");
+    const tagRow = el("p", "fc-tag");
+    tagRow.appendChild(familyTag(kind, currentProfile));
+    body.appendChild(tagRow);
+    d.appendChild(body);
+    box.appendChild(d);
+    return body;
+  };
+  if (young && c.kids) {
+    const k = c.kids;
+    const body = corner("family-corner--kids", "🎈 For the kids this week", k.title, "young");
+    body.appendChild(el("p", "fc-story", k.story));
+    if (k.word) {
+      const w = el("p", "fc-word");
+      w.appendChild(el("span", "fc-emoji", k.word.emoji || "✨"));
+      const wt = el("span");
+      wt.appendChild(el("b", null, `Word of the week: ${k.word.word}`));
+      wt.appendChild(document.createTextNode(` — ${k.word.meaning}`));
+      w.appendChild(wt);
+      body.appendChild(w);
+    }
+    if (k.questions && k.questions.length) {
+      body.appendChild(el("p", "fc-label", "Ask them"));
+      const ul = el("ul", "fc-list");
+      k.questions.forEach(q => ul.appendChild(el("li", null, q)));
+      body.appendChild(ul);
+    }
+    if (k.draw) body.appendChild(el("p", "fc-draw", `🖍️ ${k.draw}`));
+  }
+  if (teens && c.questions && c.questions.length) {
+    const body = corner("family-corner--teens", "💬 Talk about it with your teens", `Parshat ${parashaName}`, "teens");
+    if (c.summary) body.appendChild(el("p", "fc-story", c.summary));
+    body.appendChild(el("p", "fc-label", "Questions for the table"));
+    const ul = el("ul", "fc-list");
+    c.questions.forEach(q => ul.appendChild(el("li", null, q)));
+    body.appendChild(ul);
+  }
 }
 
 /** A get-ready guide. `inSheet`: shown open in the slide-up panel (daystrip.js). */

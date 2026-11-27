@@ -112,7 +112,15 @@ On a first visit a 4-step welcome ([`js/profile.js`](js/profile.js)) asks: what 
 - "What's different today": no "No tefillin today" chip for women; on Rosh Chodesh, "A special day for women" with its explanation.
 - Everyday Mitzvot: `MITZVA_GENDER` in [`js/mitzvot.js`](js/mitzvot.js) labels tefillin and tzitzit "For men" and Shabbat candles and challah "Traditionally for women"; nothing is hidden there. For women, "Start here" swaps tefillin for Shabbat candles and the mitzvah of the day skips men's mitzvot.
 
-Family and "Show me everything" for family content come in the next phases. Other answers change the page through [`js/personalize.js`](js/personalize.js):
+**Family** (`childrenStage` / `familyShow` / `familyTag` in `personalize.js`). Family content shows only for what the visitor said (married; young children, teens or grown children), or for everyone, labeled, with "Show me everything" — never for a profile that didn't answer. Each piece carries a green "Married" / "With children" label that explains itself.
+
+- Friday night (`tlApplyFamily` in `timeline.js`): married adds Eishet Chayil (Proverbs 31, loaded from Sefaria) and a shalom bayit thought; children add Blessing the children (grown children: "many bless them by phone").
+- Candle lighting (`tlCandleNote`): its own wording for a married woman, married man, single woman and single man.
+- Holiday tips for families with children (`TL_KIDS_TIPS`): Shabbat candles, Chanukah, Purim, the Seder, Sukkot, shofar, Havdalah and the Omer.
+- The mitzvah of the day gets "Share with your kids" (young) or "Talk with your teens".
+- Under the week's parsha on the Today page (`renderFamilyCorner` in `app.js`): a folded "For the kids this week" corner (story, word of the week, questions, drawing) for young children, or "Talk about it with your teens" (summary and questions), from `parsha-content.js`.
+
+Other answers change the page through [`js/personalize.js`](js/personalize.js):
 
 - **A nusach**: a "Your custom" box on each card with only that community's minhagim ("Other" / "Not sure" shows all communities side by side), and the matching blessing texts and times.
 - **Any reason except "daily reminders"**: Hebrew terms become tap-to-explain (from `GLOSSARY`), plus a "Why today?" note on each day.

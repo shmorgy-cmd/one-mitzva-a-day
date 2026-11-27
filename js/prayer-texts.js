@@ -545,6 +545,17 @@ const PRAYER_TEXTS = {
 
   // --- Home, family and travel -------------------------------------------------
 
+  eishetChayil: {
+    name: "Eishet Chayil — A woman of valor",
+    long: true,
+    note: "Sung on Friday night after Shalom Aleichem, before Kiddush — traditionally by the husband, honoring his wife (and, many say, the Shabbat and the Torah too). It's the closing poem of Proverbs, loaded from Sefaria.",
+    lines: [],
+    sefaria: ["Proverbs.31.10-31"],
+    sefariaLabels: ["Proverbs 31:10–31"],
+    sefariaLink: "https://www.sefaria.org/Proverbs.31.10-31",
+    sefariaFail: "Couldn't load it right now — Eishet Chayil is Proverbs 31:10–31, printed in most benchers and siddurim before Kiddush."
+  },
+
   blessingChildren: {
     name: "Blessing the children (Friday night)",
     note: "Parents rest their hands on each child's head. Some add a few words of their own afterwards.",

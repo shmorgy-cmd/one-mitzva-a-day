@@ -3301,3 +3301,45 @@ button.g-tag::after { content: " ?"; opacity: 0.6; }
   color: var(--ink);
 }
 .day-note-why[hidden] { display: none; }
+
+/* ---------------------------------------------------------------- */
+/* Family: "Married" / "With children" labels, kids' and teens' corner */
+/* ---------------------------------------------------------------- */
+
+.g-tag--family { background: #e6f4ec; color: #1f6a43; }
+.tl-note .tl-note-family .g-tag-wrap,
+.fc-tag .g-tag-wrap { margin: 0 6px 0 0; vertical-align: 1px; }
+.tl-note p.tl-note-family { font-style: normal; }
+
+.family-corner {
+  margin-top: 8px;
+  border-radius: 12px;
+  border: 1px solid #f3cdd3;
+  background: #fdf1f3;
+}
+.family-corner--teens { border-color: #cfdcf6; background: #f1f5fd; }
+.family-corner > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.family-corner > summary::-webkit-details-marker { display: none; }
+.family-corner > summary::after { content: "▾"; color: var(--ink-soft); font-size: 0.85rem; transition: transform 0.2s ease; }
+.family-corner[open] > summary::after { transform: rotate(180deg); }
+.fc-head { display: flex; flex-direction: column; min-width: 0; }
+.fc-kicker { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #b4556a; }
+.family-corner--teens .fc-kicker { color: var(--flag-blue); }
+.fc-head strong { color: var(--flag-blue-deep); font-size: 0.95rem; }
+.fc-body { padding: 0 12px 10px; font-size: 0.9rem; }
+.fc-tag { margin: 0 0 6px; }
+.fc-story { margin: 0 0 8px; }
+.fc-word { display: flex; gap: 8px; align-items: flex-start; background: #fff; border-radius: 10px; padding: 7px 10px; margin: 0 0 8px; }
+.fc-emoji { font-size: 1.2rem; line-height: 1.2; }
+.fc-label { margin: 0 0 2px; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+.fc-list { margin: 0 0 8px; padding-left: 20px; }
+.fc-list li { margin-bottom: 2px; }
+.fc-draw { margin: 0; font-weight: 600; color: #8a3c4c; }

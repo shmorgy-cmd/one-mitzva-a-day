@@ -307,6 +307,7 @@ function buildDayTimeline(opts) {
   }
 
   tlApplyGender(items, allDay, opts.profile || null);
+  tlApplyFamily(items, allDay, opts.profile || null);
 
   const parts = TL_PARTS.map(p => {
     const list = items.filter(i => i.part === p.key).sort((a, b) => (a.sortAt - b.sortAt) || (a.order - b.order));
@@ -356,6 +357,66 @@ const TL_CANDLE_NOTES = {
   both: "Traditionally lit by the woman of the home — a special mitzvah given to women. Anyone living alone lights for themselves."
 };
 
+/** The candle-lighting note, by gender and (when given) marriage. */
+function tlCandleNote(profile) {
+  const view = genderView(profile);
+  const married = profile ? profile.married : null;
+  if (married === true && view === "female") return { family: "married", text: "You light for the whole household — a special mitzvah given to women. Many add one candle for each child." };
+  if (married === true && view === "male") return { family: "married", text: "Your wife's lighting includes you. If she's away, you light, with the blessing — and you can help by setting up the candles." };
+  if (married === false && view === "female") return "A mitzvah of your own: living on your own, you light for yourself, with the blessing. (At your parents', many include daughters in their mother's lighting.)";
+  if (married === false && view === "male") return "Living on your own, you light yourself, with the blessing. (At your parents', your mother's lighting includes you.)";
+  return TL_CANDLE_NOTES[view];
+}
+
+/** Holiday tips for families with children (by timeline id). */
+const TL_KIDS_TIPS = {
+  "guide-candles": "Some families have girls light a candle of their own (the Chabad custom, from age 3); others include daughters in their mother's lighting. Either way, let the kids watch and answer \"Amen\".",
+  "guide-chanukah-lights": "Let each child light their own menorah (or help light yours), then play dreidel with chocolate gelt and sing Maoz Tzur together.",
+  "guide-megillah-night": "Costumes on! Give the kids a noisemaker (grogger) to drown out Haman's name every time it's read.",
+  "guide-purim-day": "Let the kids deliver the gifts of food (mishloach manot) to friends and neighbors, and put the coins for the poor in the box themselves.",
+  "guide-seder": "The youngest asks the Four Questions; hide the afikoman for the kids to find (and \"ransom\"); hand out small treats for good questions to keep them awake.",
+  "guide-sukkah-night": "Let the kids decorate the sukkah — paper chains, drawings, fruit — and tell stories in it after dinner.",
+  "guide-shofar": "Many synagogues hold a short children's shofar blowing in the afternoon — easier for little ones than the long service.",
+  "guide-havdalah": "Let a child hold the braided candle up high, and pass the spices around for everyone to smell.",
+  "guide-count-omer": "Make a counting chart for the fridge and let the kids cross off each day after the count."
+};
+
+/** Adds married and children content (see familyShow): Eishet Chayil, blessing the
+ *  children, a shalom bayit thought, and holiday tips for families with kids. */
+function tlApplyFamily(items, allDay, profile) {
+  if (typeof familyShow !== "function") return; // personalize.js not loaded (tests)
+  const married = familyShow("married", profile);
+  const kids = familyShow("kids", profile);
+  const grown = familyShow("grown", profile);
+  [...items, ...allDay].forEach(it => {
+    const add = (n) => { it.notes = [...(it.notes || []), n]; };
+    if (it.id === "guide-kiddush" && it.guide) {
+      const texts = [...(it.guide.texts || [])];
+      const shabbat = texts.some(t => t.key === "shalomAleichem");
+      let at = shabbat ? 1 : 0;
+      if (shabbat && married) {
+        texts.splice(at++, 0, { key: "eishetChayil" });
+        add({ family: "married", text: "After Shalom Aleichem, many husbands sing Eishet Chayil (\"A woman of valor\") to their wives — a weekly thank-you. The words are below." });
+      }
+      if (kids || grown) texts.splice(at, 0, { key: "blessingChildren" });
+      if (kids) add({ family: "kids", text: "Before Kiddush, bless each child with your hands on their head — the words are below. Many add a few words of their own about the child's week." });
+      if (grown) add({ family: "grown", text: "Many parents bless their grown children by phone before Shabbat or the festival — the same words, below." });
+      if (shabbat && married) add({ family: "married", text: "A thought for the table: Shabbat candles are lit for shalom bayit, peace in the home. Tonight, tell each other one thing you appreciated this week." });
+      it.guide = { ...it.guide, texts };
+    }
+    if (kids && TL_KIDS_TIPS[it.id]) add({ family: "kids", text: TL_KIDS_TIPS[it.id] });
+  });
+}
+
+/** A card note: plain text, or { family, text } with its "Married" / "With children" label. */
+function tlNoteEl(n) {
+  if (typeof n === "string") return el("p", null, n);
+  const p = el("p", "tl-note-family");
+  p.appendChild(familyTag(n.family, currentProfile));
+  p.appendChild(document.createTextNode(n.text));
+  return p;
+}
+
 /** Hides, labels or adds notes to items by the visitor's gender (see genderShow). */
 function tlApplyGender(items, allDay, profile) {
   if (typeof genderView !== "function") return; // personalize.js not loaded (tests)
@@ -372,7 +433,7 @@ function tlApplyGender(items, allDay, profile) {
   }
   [...items, ...allDay].forEach(it => {
     const add = (n) => { it.notes = [...(it.notes || []), n]; };
-    if (it.id === "guide-candles") add(TL_CANDLE_NOTES[view]);
+    if (it.id === "guide-candles") add(tlCandleNote(profile));
     if (women && TL_WOMEN_NOTES[it.id]) add(TL_WOMEN_NOTES[it.id]);
     if (view === "female") {
       if (it.id === "shema") {
@@ -658,8 +719,19 @@ function tlRenderItem(item, ctx, used) {
   // Short halachic notes (e.g. when Hamapil is said), shown on the card itself.
   if (item.notes && item.notes.length) {
     const note = el("div", "tl-note");
-    item.notes.forEach(n => note.appendChild(el("p", null, n)));
+    item.notes.forEach(n => note.appendChild(tlNoteEl(n)));
     main.appendChild(note);
+  }
+  // Something to share with the kids about today's mitzvah.
+  if (item.kind === "daily-mitzvah" && ctx.mitzvah && typeof familyShow === "function") {
+    const young = familyShow("young", currentProfile), teens = familyShow("teens", currentProfile);
+    if (young || teens) {
+      const note = el("div", "tl-note");
+      note.appendChild(tlNoteEl(young
+        ? { family: "young", text: `Share with your kids: tell them about ${ctx.mitzvah.title} in one sentence, then ask — when could we do this together tomorrow?` }
+        : { family: "teens", text: `Talk with your teens: why might ${ctx.mitzvah.title} matter? Is it easy or hard to keep — and what would make it easier?` }));
+      main.appendChild(note);
+    }
   }
 
   // Prayer changes stay visible on the card itself, not hidden in the drop-down.
@@ -751,7 +823,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       if (item.why) card.appendChild(el("p", "tl-why", item.why));
       if (item.notes && item.notes.length) {
         const note = el("div", "tl-note");
-        item.notes.forEach(n => note.appendChild(el("p", null, n)));
+        item.notes.forEach(n => note.appendChild(tlNoteEl(n)));
         card.appendChild(note);
       }
       const body = tlBody(item, ctx, used);
