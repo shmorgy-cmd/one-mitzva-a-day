@@ -1,6 +1,6 @@
 /**
- * print.js — "Print for Shabbat / Yom Tov": builds a clean, black-and-white
- * sheet for the next stretch of rest days (Shabbat, Yom Tov, or both back to
+ * print.js — "Print for Shabbat / Yom Tov": builds a warm, colorful two-page sheet
+ * (it still prints well in black and white) for the next stretch of rest days (Shabbat, Yom Tov, or both back to
  * back), so people who keep Shabbat offline have the week's essentials on paper.
  *
  * The sheet covers the eve before plus every rest day until the stretch ends,
@@ -122,11 +122,32 @@ function pEl(tag, cls, text) {
   return e;
 }
 
-function printSection(title) {
-  const s = pEl("section", "ps-section");
-  s.appendChild(pEl("h2", "ps-h", title));
-  return s;
+/** A colored box with an icon and a title. */
+function ppBox(icon, title, tone, full) {
+  const box = pEl("section", `pp-box pp-${tone}${full ? " pp-full" : ""}`);
+  const h = pEl("h2");
+  h.appendChild(pEl("span", "pp-ic", icon));
+  h.appendChild(document.createTextNode(title));
+  box.appendChild(h);
+  return box;
 }
+
+/** A blessing in Hebrew, transliteration and English. */
+function ppBlessing(key, label) {
+  const b = blessingText(key);
+  if (!b) return null;
+  const wrap = pEl("div", "pp-bless");
+  if (label) wrap.appendChild(pEl("div", "pp-when", label));
+  const he = pEl("div", "pp-heb", b.he);
+  he.lang = "he";
+  he.dir = "rtl";
+  wrap.appendChild(he);
+  wrap.appendChild(pEl("div", "pp-tr", b.tr));
+  wrap.appendChild(pEl("div", "pp-en", b.en));
+  return wrap;
+}
+
+const PP_TIME_ICONS = { candles: "🕯️", havdalah: "✨" };
 
 async function buildPrintSheet(from) {
   const events = await ensureEventsCover(from);
@@ -136,124 +157,209 @@ async function buildPrintSheet(from) {
   const holidays = blockHolidayNames(events, block);
   const saturday = block.days.find(d => d.getDay() === 6);
   const parashatEvt = saturday && events.find(e => e.category === "parashat" && daysBetween(e.date, saturday) === 0);
+  const parshaName = parashatEvt ? parashatEvt.title.replace(/^Parashat /, "") : null;
+  const content = parshaName ? parshaContent(parshaName) : null;
+  const isYomTov = holidays.length > 0;
 
   const titleParts = [...holidays];
-  if (saturday && !titleParts.length) titleParts.push(parashatEvt ? `Shabbat ${parashatEvt.title.replace(/^Parashat /, "Parshat ")}` : "Shabbat");
+  if (saturday && !titleParts.length) titleParts.push(parshaName ? `Shabbat ${parshaName}` : "Shabbat");
   else if (saturday) titleParts.push("Shabbat");
+  const title = titleParts.join(" & ");
 
   const heb = await Promise.all([block.erev, ...block.days].map(d => getHebrewDateCached(d)));
+  const sheet = document.createDocumentFragment();
 
-  const sheet = pEl("article", "print-sheet-inner");
-  const head = pEl("header", "ps-header");
-  head.appendChild(pEl("h1", "ps-title", titleParts.join(" & ")));
-  const range = block.days.length === 1 ? shortDate(block.days[0]) : `${shortDate(block.days[0])} – ${shortDate(block.days[block.days.length - 1])}`;
-  const hebRange = heb[1] ? `${heb[1].hd} ${heb[1].hm}${heb.length > 2 ? ` – ${heb[heb.length - 1].hd} ${heb[heb.length - 1].hm}` : ""} ${heb[1].hy}` : "";
-  head.appendChild(pEl("p", "ps-sub", `${range}${hebRange ? " · " + hebRange : ""}${currentSettings.location ? " · " + currentSettings.location.name : ""} · ${israel ? "Israel" : "outside Israel"} calendar`));
-  sheet.appendChild(head);
+  // ---------------------------------------------------------------- page 1
+  const p1 = pEl("article", "pp-page");
+  const head = pEl("header", "pp-hd");
+  const hLeft = pEl("div");
+  hLeft.appendChild(pEl("div", "pp-kicker", isYomTov ? "Chag Sameach ✨" : "Shabbat Shalom ✨"));
+  hLeft.appendChild(pEl("h1", null, title));
+  const hebLine = [parashatEvt && parashatEvt.hebrew, heb[1] ? `${heb[1].hebrew || ""}` : ""].filter(Boolean).join(" · ");
+  if (hebLine) { const he = pEl("div", "pp-he", hebLine); he.lang = "he"; he.dir = "rtl"; hLeft.appendChild(he); }
+  const last = block.days[block.days.length - 1];
+  const nightOf = (d) => `${d.toLocaleDateString(undefined, { weekday: "long" })} night, ${d.toLocaleDateString(undefined, { month: "long", day: "numeric" })}`;
+  hLeft.appendChild(pEl("div", "pp-dates", `${nightOf(block.erev)} – ${nightOf(last)}`));
+  head.appendChild(hLeft);
 
-  // Times
-  const times = printSection("Times");
+  const timesBox = pEl("div", "pp-times");
+  timesBox.appendChild(pEl("div", "pp-city", currentSettings.location ? currentSettings.location.name : "Set your city for times"));
   const timed = [block.erev, ...block.days].flatMap(d => timedEventsOn(events, d).map(e => ({ d, e })));
-  if (timed.length) {
-    const table = pEl("table", "ps-times");
-    timed.forEach(({ d, e }) => {
-      const tr = pEl("tr");
-      tr.appendChild(pEl("td", null, shortDate(d)));
-      tr.appendChild(pEl("td", null, timedEventLabel(e)));
-      tr.appendChild(pEl("td", "ps-time", fmtClock(e.time)));
-      table.appendChild(tr);
-    });
-    times.appendChild(table);
-  } else {
-    times.appendChild(pEl("p", null, "Set your city in Settings to print candle-lighting and Havdalah times — or check a local Jewish calendar."));
-  }
-  sheet.appendChild(times);
-
-  // Torah reading
-  const torah = printSection("Torah reading");
-  let parsha = null;
-  if (parashatEvt) {
-    parsha = await loadParshaSummary(saturday, israel);
-    torah.appendChild(pEl("p", "ps-strong", `${parashatEvt.title.replace(/^Parashat /, "Parshat ")}${parsha && parsha.ref ? ` (${parsha.ref})` : ""}`));
-    if (parsha && parsha.summary) torah.appendChild(pEl("p", null, parsha.summary));
-  }
-  block.days.forEach(d => {
-    events.filter(e => e.yomtov && e.leyning && e.leyning.torah && daysBetween(e.date, d) === 0).forEach(e => {
-      torah.appendChild(pEl("p", null, `${shortDate(d)} · ${e.title}: ${e.leyning.torah}`));
-    });
+  timed.slice(0, 5).forEach(({ d, e }) => {
+    const row = pEl("div", "pp-trow");
+    row.appendChild(pEl("span", "pp-tic", PP_TIME_ICONS[e.category] || "⏳"));
+    const txt = pEl("div");
+    txt.appendChild(pEl("small", null, `${timedEventLabel(e)} · ${d.toLocaleDateString(undefined, { weekday: "short" })}`));
+    txt.appendChild(pEl("b", null, fmtClock(e.time)));
+    row.appendChild(txt);
+    timesBox.appendChild(row);
   });
-  if (torah.children.length > 1) sheet.appendChild(torah);
+  if (!timed.length) timesBox.appendChild(pEl("div", "pp-tnone", "Set your city in Settings to print candle-lighting and Havdalah times."));
+  head.appendChild(timesBox);
+  p1.appendChild(head);
 
-  // Prayer changes, night by night and day by day
-  const prayers = printSection("Prayer changes");
+  const grid1 = pEl("div", "pp-grid");
+  p1.appendChild(grid1);
+
+  // Candles
+  const firstNight = block.days[0];
+  const ytFirst = events.some(e => e.yomtov && daysBetween(e.date, firstNight) === 0);
+  const candleKey = ytFirst ? (firstNight.getDay() === 6 ? "shabbatYomTovCandles" : "yomTovCandles") : "shabbatCandles";
+  const candles = ppBox("🕯️", "Lighting the candles", "gold");
+  candles.appendChild(pEl("p", null, "Light the candles before the time above, then cover your eyes and say:"));
+  const cb = ppBlessing(candleKey);
+  if (cb) candles.appendChild(cb);
+  candles.appendChild(pEl("p", "pp-soft", "A quiet moment to add your own prayer — for family, health and peace."));
+  grid1.appendChild(candles);
+
+  // Kiddush, washing, challah
+  const outlines = kiddushHavdalahOutlines(events, block);
+  const meal = ppBox("🍷", "Kiddush, washing & challah", "sky");
+  outlines.filter(o => !/Havdalah$/.test(o.label)).forEach(o => {
+    const b = pEl("div", "pp-bless");
+    b.appendChild(pEl("div", "pp-when", o.label));
+    b.appendChild(pEl("div", "pp-en", o.steps.join(" → ")));
+    meal.appendChild(b);
+  });
+  const wash = ppBlessing("netilatYadayim", "Washing the hands");
+  if (wash) meal.appendChild(wash);
+  const motzi = ppBlessing("hamotzi", "Over the challah");
+  if (motzi) meal.appendChild(motzi);
+  grid1.appendChild(meal);
+
+  // At the table
+  const table = ppBox("📖", parshaName ? `At the table: ${parshaName} in a few lines` : "At the table", "gold", true);
+  let sefaria = null;
+  if (content) {
+    (content.parts || [content]).forEach(c => table.appendChild(pEl("p", null, c.summary)));
+    const q = pEl("div", "pp-quote", `"${content.quote.text}" — ${content.quote.ref}`);
+    table.appendChild(q);
+    const t = pEl("p");
+    t.appendChild(pEl("b", null, "A thought: "));
+    t.appendChild(document.createTextNode(content.thought));
+    table.appendChild(t);
+    const ol = pEl("ol", "pp-qs");
+    content.questions.forEach(x => ol.appendChild(pEl("li", null, x)));
+    table.appendChild(ol);
+  } else {
+    if (saturday) sefaria = await loadParshaSummary(saturday, israel);
+    const mitzvahT = getMitzvahForDate(block.days[0]);
+    if (sefaria && sefaria.summary) table.appendChild(pEl("p", null, sefaria.summary));
+    table.appendChild(pEl("p", "pp-quote", mitzvahT.inspiration));
+    const ol = pEl("ol", "pp-qs");
+    ["What was the best moment of your week?", "What are you grateful for at this table?", `What does ${isYomTov ? "this holiday" : "Shabbat"} mean to you?`].forEach(x => ol.appendChild(pEl("li", null, x)));
+    table.appendChild(ol);
+  }
+  grid1.appendChild(table);
+
+  // Prayers and the Torah reading
+  const prayers = ppBox("🙏", "In the prayers", "mint");
+  const plist = pEl("ul");
   const community = currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null;
   const allDays = [block.erev, ...block.days];
   for (let i = 0; i < allDays.length; i++) {
-    const d = allDays[i];
     if (!heb[i]) continue;
-    const r = getPrayerChanges({ date: d, heb: heb[i], hebTomorrow: heb[i + 1] || null, israel, events, community });
-    const dayItems = i === 0 ? [] : r.today; // the eve itself is an ordinary day
-    const nightItems = r.tonight;            // each night's Maariv
-    if (dayItems.length) {
-      prayers.appendChild(pEl("p", "ps-day", `${shortDate(d)} — day`));
-      const ul = pEl("ul", "ps-list");
-      dayItems.forEach(it => ul.appendChild(pEl("li", null, `${it.title}${it.where && it.where !== "—" ? ` — ${it.where}` : ""}`)));
-      prayers.appendChild(ul);
-    }
-    if (nightItems.length) {
-      prayers.appendChild(pEl("p", "ps-day", `${shortDate(d)} — night (Maariv)`));
-      const ul = pEl("ul", "ps-list");
-      nightItems.forEach(it => ul.appendChild(pEl("li", null, `${it.title}${it.where && it.where !== "—" ? ` — ${it.where}` : ""}`)));
-      prayers.appendChild(ul);
-    }
+    const r = getPrayerChanges({ date: allDays[i], heb: heb[i], hebTomorrow: heb[i + 1] || null, israel, events, community });
+    const day = allDays[i].toLocaleDateString(undefined, { weekday: "short" });
+    if (i > 0) r.today.forEach(it => plist.appendChild(pEl("li", null, `${day}: ${it.title}`)));
+    r.tonight.forEach(it => plist.appendChild(pEl("li", null, `${day} night: ${it.title}`)));
   }
-  prayers.appendChild(pEl("p", "ps-note", "A learning aid that still needs rabbinic review — customs differ, so follow your rabbi and community."));
-  sheet.appendChild(prayers);
+  if (!block.days.some(d => d.getDay() !== 6 && !events.some(e => e.yomtov && daysBetween(e.date, d) === 0))) {
+    plist.insertBefore(pEl("li", null, `${isYomTov ? "Yom Tov" : "Shabbat"} prayers — no tefillin`), plist.firstChild);
+  }
+  const torahRef = parashatEvt && parashatEvt.leyning && parashatEvt.leyning.torah;
+  if (parshaName) plist.appendChild(pEl("li", null, `Torah reading: ${parshaName}${torahRef ? ` (${torahRef})` : ""}`));
+  block.days.forEach(d => events.filter(e => e.yomtov && e.leyning && e.leyning.torah && daysBetween(e.date, d) === 0)
+    .forEach(e => plist.appendChild(pEl("li", null, `${e.title}: ${e.leyning.torah}`))));
+  prayers.appendChild(plist);
+  grid1.appendChild(prayers);
 
-  // Kiddush & Havdalah
-  const kh = printSection("Kiddush & Havdalah — outline");
-  kiddushHavdalahOutlines(events, block).forEach(o => {
-    kh.appendChild(pEl("p", "ps-day", o.label));
-    const ol = pEl("ol", "ps-list");
-    o.steps.forEach(s => ol.appendChild(pEl("li", null, s)));
-    kh.appendChild(ol);
-  });
-  kh.appendChild(pEl("p", "ps-note", "An outline only — use a siddur or bencher for the full text."));
-  sheet.appendChild(kh);
+  // Havdalah
+  const hav = outlines.find(o => /Havdalah$/.test(o.label));
+  if (hav) {
+    const havEvt = timed.find(t => t.e.category === "havdalah");
+    const hb = ppBox("✨", `Havdalah${havEvt ? ` · ${fmtClock(havEvt.e.time)}` : ""}`, "sky");
+    const ol = pEl("ol");
+    hav.steps.forEach(s => ol.appendChild(pEl("li", null, s)));
+    hb.appendChild(ol);
+    grid1.appendChild(hb);
+  }
+  p1.appendChild(ppFooter("a starting point for learning — ask your rabbi", 1));
+  sheet.appendChild(p1);
 
-  // Mitzvah & reflection
+  // ---------------------------------------------------------------- page 2: kids
+  const kids = content && content.kids;
   const mitzvah = getMitzvahForDate(block.days[0]);
-  const mz = printSection(`This week's mitzvah: ${mitzvah.title}`);
-  mz.appendChild(pEl("p", null, mitzvah.intro));
-  mz.appendChild(pEl("p", "ps-reflect", mitzvah.inspiration));
-  if (mitzvah.sources && mitzvah.sources.length) mz.appendChild(pEl("p", "ps-note", `Sources: ${mitzvah.sources.join("; ")}`));
-  sheet.appendChild(mz);
-
-  // Quiz + answer key
-  const ctx = buildContext(block.days[0], events, heb[1], currentProfile);
-  const occasions = pickOccasions(ctx);
-  const portion = parashatEvt && parsha ? { parashaName: parashatEvt.title.replace(/^Parashat /, ""), aliyaRef: parsha.ref } : null;
-  const questions = buildTodaysQuiz(occasions, portion, mitzvah);
-  if (questions.length) {
-    const quiz = printSection("Test yourself");
-    const ol = pEl("ol", "ps-quiz");
-    const letters = "abcd";
-    questions.forEach(q => {
-      const li = pEl("li");
-      li.appendChild(pEl("p", "ps-q", q.question));
-      const opts = pEl("p", "ps-opts", q.options.map((o, i) => `(${letters[i]}) ${o}`).join("   "));
-      li.appendChild(opts);
-      ol.appendChild(li);
-    });
-    quiz.appendChild(ol);
-    sheet.appendChild(quiz);
-    const key = pEl("footer", "ps-key");
-    key.textContent = "Answer key: " + questions.map((q, i) => `${i + 1}${letters[q.correctIndex]}`).join("  ·  ");
-    sheet.appendChild(key);
+  const p2 = pEl("article", "pp-page");
+  const kh = pEl("header", "pp-hd");
+  const kLeft = pEl("div");
+  kLeft.appendChild(pEl("div", "pp-kicker", "Kids' corner 🎈"));
+  kLeft.appendChild(pEl("h1", null, kids ? kids.title : (isYomTov ? `Happy ${holidays[0]}!` : "Shabbat is here!")));
+  kLeft.appendChild(pEl("div", "pp-dates", `For the ${isYomTov ? "holiday" : "Shabbat"} table${parshaName ? ` · Parshat ${parshaName}` : ""}`));
+  kh.appendChild(kLeft);
+  if (kids) {
+    const w = pEl("div", "pp-times pp-word");
+    w.appendChild(pEl("div", "pp-city", "This week's word"));
+    const row = pEl("div", "pp-trow");
+    row.appendChild(pEl("span", "pp-tic", kids.word.emoji));
+    const txt = pEl("div");
+    txt.appendChild(pEl("b", null, kids.word.word));
+    txt.appendChild(pEl("small", null, kids.word.meaning));
+    row.appendChild(txt);
+    w.appendChild(row);
+    kh.appendChild(w);
   }
+  p2.appendChild(kh);
 
-  sheet.appendChild(pEl("p", "ps-foot", "One Mitzva a Day · shmorgy-cmd.github.io/one-mitzva-a-day · An introduction, not a halachic ruling — learn with a rabbi."));
-  return { sheet, title: titleParts.join(" & ") };
+  const grid2 = pEl("div", "pp-grid");
+  p2.appendChild(grid2);
+  if (kids) {
+    const story = ppBox("📚", "The story", "rose", true);
+    story.appendChild(pEl("p", "pp-story", kids.story));
+    grid2.appendChild(story);
+    const qs = ppBox("❓", "Can you answer?", "rose");
+    [...kids.questions, "What was your favorite part of this week?"].slice(0, 4).forEach((q, i) => {
+      const r = pEl("div", "pp-riddle");
+      r.appendChild(pEl("b", null, String(i + 1)));
+      r.appendChild(pEl("span", null, q));
+      qs.appendChild(r);
+    });
+    grid2.appendChild(qs);
+  }
+  const check = ppBox("✅", `My ${isYomTov ? "holiday" : "Shabbat"} checklist`, "gold", !kids);
+  const cl = pEl("div", "pp-check");
+  ["🕯️ Candles", "🍞 Challah", "🍇 Grape juice", "🌸 Flowers", "🍽️ Set the table", "🪙 Tzedakah"].forEach(x => {
+    const s = pEl("span");
+    s.appendChild(pEl("i"));
+    s.appendChild(document.createTextNode(x));
+    cl.appendChild(s);
+  });
+  check.appendChild(cl);
+  check.appendChild(pEl("p", "pp-soft", "Before Shabbat, many families put a coin in the tzedakah box — a little kindness to start the day of rest."));
+  grid2.appendChild(check);
+
+  const draw = ppBox("🖍️", "Draw it!", "sky", true);
+  draw.appendChild(pEl("p", null, kids ? kids.draw : `Draw your family's ${isYomTov ? "holiday" : "Shabbat"} table.`));
+  draw.appendChild(pEl("div", "pp-draw", "Your drawing here"));
+  grid2.appendChild(draw);
+
+  const mz = ppBox("🌟", `This week's mitzvah: ${mitzvah.title}`, "mint", true);
+  mz.appendChild(pEl("p", null, mitzvah.intro));
+  grid2.appendChild(mz);
+  p2.appendChild(ppFooter(isYomTov ? "Chag Sameach!" : "Shabbat Shalom!", 2));
+  sheet.appendChild(p2);
+
+  return { sheet, title };
+}
+
+function ppFooter(text, n) {
+  const f = pEl("footer", "pp-ft");
+  const l = pEl("span");
+  l.appendChild(pEl("b", null, "One Mitzva a Day"));
+  l.appendChild(document.createTextNode(` · ${text}`));
+  f.appendChild(l);
+  f.appendChild(pEl("span", null, `Page ${n} of 2`));
+  return f;
 }
 
 // --- Preview + print ------------------------------------------------------------
