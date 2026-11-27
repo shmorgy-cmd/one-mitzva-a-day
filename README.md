@@ -3,7 +3,7 @@
 A daily companion site for learning Judaism, keyed to the Jewish calendar. Each day it shows:
 
 - Today's Hebrew and Gregorian date
-- Coming up: the next dates on the calendar (with their dates), a "next up" note, and the get-ready guide when one is open — all in one section right under the date bar
+- A day strip ([`js/daystrip.js`](js/daystrip.js)): today and the next 7 days as tiles (weekday, date, Hebrew date from the browser's own Hebrew calendar). Special days — festivals, fasts, Rosh Chodesh, Shabbat — get a small icon and their name; days with a get-ready guide (`PREP_GUIDES` in [`js/prep.js`](js/prep.js)) get a "Get ready" button the whole week they're in the strip, which opens the guide in a panel that slides up, with jump buttons to each part. ‹ › move a week, "Other date" opens a calendar, and a "Later" line of chips shows what's further off
 - Halacha, customs, and a spiritual reflection for whatever the day actually is (Selichot, Rosh Hashanah, Erev Tavshilin, Sukkot, Chanukah, Purim, Pesach, the Omer, Tisha B'Av, an ordinary Tuesday, etc.) — content lives in [`js/content.js`](js/content.js)
 - This week's Torah portion: a line in the date card ("Parshat Vayishlach · Today: 5th aliyah") opens the reading page ([`torah.html`](torah.html), [`js/torah-page.js`](js/torah-page.js)) — the week's seven aliyot, one per day (Sunday = 1st ... Shabbat = 7th), Hebrew without cantillation then English, verse by verse, live from Sefaria. Shared helpers are in [`js/torah.js`](js/torah.js)
 

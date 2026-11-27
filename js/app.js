@@ -409,56 +409,6 @@ function groupCountdownEvents(events) {
   return groups;
 }
 
-function countdownLabel(group, today) {
-  const untilStart = daysBetween(today, group.start);
-  if (untilStart > 1) return `in ${untilStart} days`;
-  if (untilStart === 1) return "tomorrow";
-  const todays = group.events.find(e => daysBetween(e.date, today) === 0);
-  if (group.key === "omer") {
-    const m = todays && /(\d+)/.exec(todays.title);
-    return m ? `day ${m[1]} of 49` : "today";
-  }
-  if (group.key === "chanukah") {
-    // Hebcal titles each day by the candles lit that evening ("Chanukah: 4 Candles"),
-    // plus a final "Chanukah: 8th Day" with no lighting.
-    const m = todays && /(\d+) Candles?/.exec(todays.title);
-    if (m) return m[1] === "1" ? "1st candle tonight" : `${ordinal(Number(m[1]))} candle tonight`;
-    return "last day";
-  }
-  if (group.days === 1) return "today";
-  return `day ${daysBetween(group.start, today) + 1} of ${group.days}`;
-}
-
-function renderCountdownStrip(container, today, events, onSelect) {
-  const groups = groupCountdownEvents(events)
-    .filter(g => daysBetween(today, g.end) >= 0 && daysBetween(today, g.start) <= 30);
-
-  const strip = el("div", "countdown-strip");
-  groups.slice(0, 6).forEach((g, i) => {
-    const untilStart = daysBetween(today, g.start);
-    const ongoing = untilStart <= 0;
-    const label = countdownLabel(g, today);
-    const chip = el("button", "countdown-chip");
-    chip.type = "button";
-    chip.style.animationDelay = `${i * 60}ms`;
-    if (ongoing) chip.classList.add("countdown-chip--today");
-    const isFast = g.events.some(e => e.subcat === "fast");
-    if (isFast) chip.classList.add("countdown-chip--fast");
-    chip.appendChild(el("span", "countdown-days", ongoing ? (label === "today" ? "Today" : label) : label));
-    chip.appendChild(el("span", "countdown-title", g.name));
-    const fmtShort = (d) => d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
-    const dateText = !ongoing ? fmtShort(g.start)
-      : daysBetween(today, g.end) > 0 ? `until ${fmtShort(g.end)}` : "";
-    if (dateText) chip.appendChild(el("span", "countdown-date", dateText));
-    if (isFast) chip.appendChild(el("span", "countdown-tag", "Fast day"));
-    chip.title = `${g.name} · ${label} — see the details`;
-    chip.setAttribute("aria-label", `${g.name}, ${label}`);
-    chip.addEventListener("click", () => onSelect(ongoing ? today : g.start));
-    strip.appendChild(chip);
-  });
-  container.appendChild(strip);
-}
-
 /** The week's portion for `today` plus today's aliyah text (fetching the text also
  *  saves it for offline reading on torah.html). Helpers live in torah.js. */
 async function loadTorahPortion(events, today) {
@@ -493,10 +443,11 @@ function renderTodayParsha(events, date) {
   box.appendChild(a);
 }
 
-function renderPrepCard(container, upcoming, isBrowsingAhead) {
+/** A get-ready guide. `inSheet`: shown open in the slide-up panel (daystrip.js). */
+function renderPrepCard(container, upcoming, isBrowsingAhead, inSheet) {
   if (!upcoming) return;
   const { guide, daysUntil, offlineDays, date } = upcoming;
-  if (guide.kind === "day") return renderDayPrepCard(container, upcoming, isBrowsingAhead);
+  if (guide.kind === "day") return renderDayPrepCard(container, upcoming, isBrowsingAhead, inSheet);
   const card = el("article", "occasion-card prep-card");
 
   const headRow = el("div", "card-head");
@@ -534,13 +485,13 @@ function renderPrepCard(container, upcoming, isBrowsingAhead) {
   card.appendChild(richEl("p", "intro", guide.expectNote, profile, used));
   card.appendChild(reportLink(`prep:${guide.key}`));
 
-  makeCollapsible(card, 1, false); // folded to its title: it sits above the timeline
+  if (!inSheet) makeCollapsible(card, 1, false);
   container.appendChild(card);
 }
 
 /** "Get ready" card for a holiday, fast or special day that isn't Yom Tov:
  *  its story, meaning, how to prepare yourself, and a practical checklist. */
-function renderDayPrepCard(container, upcoming, isBrowsingAhead) {
+function renderDayPrepCard(container, upcoming, isBrowsingAhead, inSheet) {
   const { guide, daysUntil, date } = upcoming;
   const card = el("article", "occasion-card prep-card");
   const profile = currentProfile;
@@ -590,7 +541,7 @@ function renderDayPrepCard(container, upcoming, isBrowsingAhead) {
   if (src) card.appendChild(src);
   card.appendChild(reportLink(`prep:${guide.key}`));
 
-  makeCollapsible(card, 1, false); // folded to its title: it sits above the timeline
+  if (!inSheet) makeCollapsible(card, 1, false);
   container.appendChild(card);
 }
 
@@ -978,15 +929,6 @@ function nextPrepInfo(events, date) {
   return best;
 }
 
-/** The next holiday after `date` (one entry per multi-day holiday), skipping
- *  special Shabbatot, Rosh Chodesh and the Omer count. */
-function nextHoliday(events, date) {
-  return groupCountdownEvents(events).find(g =>
-    daysBetween(date, g.start) > 0 &&
-    g.events[0].category === "holiday" &&
-    g.events[0].subcat !== "shabbat");
-}
-
 function inDays(n) {
   return n === 0 ? "today" : n === 1 ? "tomorrow" : `in ${n} days`;
 }
@@ -1120,7 +1062,7 @@ function renderViewingBanner(date) {
 async function setViewingDate(date) {
   date = startOfDay(date);
   viewingDate = date;
-  document.getElementById("date-input").value = toISO(date);
+  dsFollow(date); // the day strip (daystrip.js)
 
   const [events, hebrewInfo] = await Promise.all([
     ensureEventsCover(date),
@@ -1143,43 +1085,6 @@ async function setViewingDate(date) {
   renderTodayContext(occasions, ctx);
   renderTodayParsha(events, date);
 
-  // The date cards in Coming up count from the day being viewed.
-  const countdownContainer = document.getElementById("countdown-container");
-  countdownContainer.innerHTML = "";
-  renderCountdownStrip(countdownContainer, date, events, (d) => setViewingDate(d));
-
-  const prepContainer = document.getElementById("prep-container");
-  prepContainer.innerHTML = "";
-  const upcomingPrep = findUpcomingPrepGuide(events, date);
-  renderPrepCard(prepContainer, upcomingPrep, daysBetween(realToday, date) !== 0);
-  if (!upcomingPrep) {
-    // Nothing to prepare yet: say what's next and when its guide opens.
-    const info = nextPrepInfo(events, date);
-    const next = nextHoliday(events, date);
-    const fmtDay = (d) => d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
-    // A small, tidy note under the date cards.
-    const note = el("div", "prep-note");
-    note.appendChild(iconBadge("candles-shabbat", "icon-badge--gold"));
-    const body = el("div", "prep-note-body");
-    const line = (label, text) => {
-      const p = el("p", "prep-note-line");
-      if (label) p.appendChild(el("strong", null, `${label}: `));
-      p.appendChild(document.createTextNode(text));
-      body.appendChild(p);
-    };
-    if (next && (!info || daysBetween(date, next.start) < info.daysUntil) && (!info || next.name !== info.name)) {
-      line("Next on the calendar", `${next.name}, ${inDays(daysBetween(date, next.start))}.`);
-    }
-    if (info) {
-      line(body.childElementCount ? "Then" : "Next up", `${info.name}, ${inDays(info.daysUntil)}.`);
-      body.appendChild(el("p", "prep-note-sub",
-        `Its get-ready guide — the story, what it means and how to prepare — opens here on ${fmtDay(addDays(date, Math.max(info.opensIn, 0)))}.`));
-    }
-    if (!body.childElementCount) line(null, "Nothing special on the calendar in the next few weeks — a good time to settle into the daily practices.");
-    note.appendChild(body);
-    prepContainer.appendChild(note);
-  }
-
   const todaysMitzvah = getMitzvahForDate(date);
   const guide = computeDailyGuide(date, hebrewInfo, events);
   const timelineContainer = document.getElementById("timeline-container");
@@ -1200,39 +1105,6 @@ async function setViewingDate(date) {
   renderQuizCard(document.getElementById("quiz-container"), occasions, portion, todaysMitzvah);
 }
 
-function renderDateNav(container) {
-  container.innerHTML = "";
-  const nav = el("div", "date-nav");
-
-  const prevBtn = el("button", "date-nav-arrow", "←");
-  prevBtn.type = "button";
-  prevBtn.setAttribute("aria-label", "Previous day");
-  prevBtn.addEventListener("click", () => setViewingDate(addDays(viewingDate, -1)));
-
-  const input = el("input", "date-input");
-  input.type = "date";
-  input.id = "date-input";
-  input.value = toISO(viewingDate);
-  input.addEventListener("change", () => {
-    if (input.value) setViewingDate(parseLocalDate(input.value));
-  });
-
-  const nextBtn = el("button", "date-nav-arrow", "→");
-  nextBtn.type = "button";
-  nextBtn.setAttribute("aria-label", "Next day");
-  nextBtn.addEventListener("click", () => setViewingDate(addDays(viewingDate, 1)));
-
-  const todayBtn = el("button", "date-nav-today", "Today");
-  todayBtn.type = "button";
-  todayBtn.addEventListener("click", () => setViewingDate(realToday));
-
-  nav.appendChild(prevBtn);
-  nav.appendChild(input);
-  nav.appendChild(nextBtn);
-  nav.appendChild(todayBtn);
-  container.appendChild(nav);
-}
-
 /** Mitzvah texts can depend on the visitor's community (e.g. the tefillin blessings). */
 function resolveMitzvahTexts(texts) {
   const community = pcCommunityKey(profileCommunity());
@@ -1245,8 +1117,6 @@ async function init() {
   realToday = startOfDay(new Date());
   viewingDate = realToday;
   document.getElementById("gregorian-date").textContent = fmtDate(realToday);
-
-  renderDateNav(document.getElementById("date-nav-container"));
 
   // The way into the About page.
   document.querySelectorAll(".mz-teaser-icon").forEach(s => { s.innerHTML = getIcon(s.dataset.icon); });

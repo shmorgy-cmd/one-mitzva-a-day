@@ -138,8 +138,8 @@ function renderInstallHint() {
   actions.appendChild(dismiss);
   hint.appendChild(actions);
 
-  // Below the date bar and the Coming up dates, just above the timeline.
-  const anchor = document.getElementById("prep-section") || document.getElementById("date-nav-container");
+  // Below the day strip, just above the timeline.
+  const anchor = document.getElementById("day-strip") || document.getElementById("top");
   anchor.insertAdjacentElement("afterend", hint);
 }
 
