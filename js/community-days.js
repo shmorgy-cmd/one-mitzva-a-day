@@ -8,8 +8,8 @@
  * what's shown is decided at display time by communityDayShown(), so changing
  * the nusach in Settings needs no reload.
  *
- * Who sees what: the nusachs in `for`; "Show me everything" sees all, labeled;
- * "Other" / "Not sure" see none of these (the side-by-side customs are enough).
+ * Who sees what: everyone sees every community's days in "What's different today",
+ * labeled with whose day it is (their own first); the "Later" chips list only their own.
  */
 
 const COMMUNITY_LABELS = { ashkenaz: "Ashkenazi", sefard: "Chassidic", sephardi: "Sephardi", chabad: "Chabad" };
@@ -139,12 +139,12 @@ function cdNusach(profile) {
   return profile && profile.nusach ? profile.nusach : null;
 }
 
-/** "plain" (your community), "label" (Show me everything), or null (hidden). */
+/** "plain" (your community's day) or "label" (another community's — shown to
+ *  everyone, labeled with whose day it is). */
 function communityDayShown(e, profile) {
   if (!e || e.category !== "community") return null;
   const n = cdNusach(profile);
-  if (n && e.for.includes(n)) return "plain";
-  return profile && profile.showAll ? "label" : null;
+  return n && e.for.includes(n) ? "plain" : "label";
 }
 
 /** The label for a community day: "Chabad", "Chassidic & Chabad"… */
@@ -157,10 +157,8 @@ function communityWhy(forNusachs, profile) {
   const n = cdNusach(profile);
   const name = typeof nusachLabel === "function" ? nusachLabel(n) : n;
   return (n && forNusachs.includes(n)
-    ? `Shown because you chose ${name} as your prayer tradition in Settings.`
-    : n === "unsure" || n === "other" || !n
-      ? "Shown side by side because your prayer tradition is set to \"Not sure\" or \"Other\" (or not set) in Settings."
-      : "Shown because \"Show me everything\" is on in Settings.") + " You can change this in Settings (⚙ at the top).";
+    ? `Your community's custom — you chose ${name} as your prayer tradition in Settings.`
+    : "Another community's custom, shown so you know what others do today. Your own tradition is set in Settings.") + " You can change it in Settings (⚙ at the top).";
 }
 
 /** A gold "Chabad" / "Sephardi custom" label that explains itself. */

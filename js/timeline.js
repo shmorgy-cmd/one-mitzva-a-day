@@ -306,6 +306,14 @@ function buildDayTimeline(opts) {
       timeLabel: fmt(fastEnds.at), title: "The fast ends", tag: "Fast", why: "Pray Maariv, then break the fast gently — a drink of water first." });
   }
 
+  // "No Tachanun" on the prayers it's left out of — at a glance, on the card itself.
+  const noTach = changes.today.some(c => c.id === "no-tachanun");
+  const noTachMincha = noTach || dow === 5 || changes.today.some(c => c.id === "no-tachanun-mincha");
+  items.forEach(it => {
+    if (it.id === "shacharit" && noTach && !restDay) it.flag = "No Tachanun";
+    if (it.id === "mincha" && noTachMincha && !restDay) it.flag = "No Tachanun";
+  });
+
   tlApplyTone(items, allDay, opts.profile || null);
   tlApplyNusach(items, allDay, opts.profile || null, info);
   tlApplyGender(items, allDay, opts.profile || null);
@@ -478,13 +486,16 @@ TL_NUSACH_NOTES["guide-sukkah-day"] = TL_NUSACH_NOTES["guide-sukkah-night"];
 
 const TL_NUSACHS = ["ashkenaz", "sefard", "sephardi", "chabad"];
 
-/** Which custom notes to show: the visitor's own, or all side by side
- *  ("Not sure" / "Other" / "Show me everything"), or none (no answer). */
-function tlNusachPick(entries, profile) {
+/** Every community's custom: the visitor's own as a note of its own ("Your custom"),
+ *  the others gathered in one folded note. Without a known nusach, all side by side. */
+function tlNusachNotes(entries, profile) {
   const n = profile && profile.nusach;
-  if (TL_NUSACHS.includes(n) && !(profile && profile.showAll)) return entries.filter(e => e.for.includes(n));
-  if (n || (profile && profile.showAll)) return entries;
-  return [];
+  const label = (e) => e.for.map(k => COMMUNITY_LABELS[k]).join(", ").replace(/, ([^,]*)$/, " & $1") + " custom";
+  const note = (e, own) => ({ nusach: e.for, label: own ? `Your custom · ${COMMUNITY_LABELS[n]}` : label(e), text: e.text });
+  if (!TL_NUSACHS.includes(n)) return entries.map(e => note(e, false));
+  const own = entries.filter(e => e.for.includes(n));
+  const others = entries.filter(e => !e.for.includes(n));
+  return [...own.map(e => note(e, true)), ...(others.length ? [{ others: others.map(e => note(e, false)) }] : [])];
 }
 
 /** No tefillin on Chol HaMoed: everyone in Israel, and Chassidim, Sephardim
@@ -512,20 +523,18 @@ function tlApplyNusach(items, allDay, profile, info) {
         notes: israel || !TL_NUSACHS.includes(n) ? [] : [{ nusach: [n], label: COMMUNITY_LABELS[n] + " custom", text: "Many Ashkenazim outside Israel do wear them — a difference of custom, not of right and wrong." }] };
     } else {
       it.why = it.why.replace("Customs differ about tefillin on Chol HaMoed — follow your community. ", "");
-      const picks = tlNusachPick([
+      it.notes = [...(it.notes || []), ...tlNusachNotes([
         { for: ["ashkenaz"], text: "Many Ashkenazim outside Israel wear tefillin on Chol HaMoed — some without the blessing, some saying it quietly — and many don't. Follow your family or shul." },
         { for: ["sefard", "sephardi", "chabad"], text: "Not worn on Chol HaMoed (nor by anyone in Israel)." }
-      ], profile);
-      it.notes = [...(it.notes || []), ...picks.map(e => ({ nusach: e.for, label: label(e), text: e.text }))];
+      ], profile)];
     }
   }
 
   [...items, ...allDay].forEach(it => {
     const entries = TL_NUSACH_NOTES[it.id];
     if (!entries) return;
-    const picks = tlNusachPick(entries.filter(e => !e.women || women), profile);
-    if (!picks.length) return;
-    it.notes = [...(it.notes || []), ...picks.map(e => ({ nusach: e.for, label: label(e), text: e.text }))];
+    const notes = tlNusachNotes(entries.filter(e => !e.women || women), profile);
+    if (notes.length) it.notes = [...(it.notes || []), ...notes];
   });
 }
 
@@ -583,6 +592,13 @@ function tlApplyFamily(items, allDay, profile) {
 /** A card note: plain text, or { family, text } with its "Married" / "With children" label. */
 function tlNoteEl(n) {
   if (typeof n === "string") return el("p", null, n);
+  if (n.others) {
+    // Other communities' customs, folded under the visitor's own.
+    const d = el("details", "tl-note-others");
+    d.appendChild(el("summary", null, "How other communities do it"));
+    n.others.forEach(o => d.appendChild(tlNoteEl(o)));
+    return d;
+  }
   const p = el("p", "tl-note-family");
   p.appendChild(n.nusach ? communityTag(n.label, n.nusach, currentProfile) : familyTag(n.family, currentProfile));
   p.appendChild(document.createTextNode(n.text));
@@ -891,6 +907,7 @@ function tlRenderItem(item, ctx, used) {
   const main = el("div", "tl-main");
   const h = el("h3", "tl-title", item.title);
   if (item.tag) h.appendChild(el("span", "tl-tag", item.tag));
+  if (item.flag) h.appendChild(el("span", "tl-tag tl-tag--flag", item.flag));
   if (item.genderTag) h.appendChild(genderTag(item.genderTag, currentProfile));
   h.appendChild(el("span", "tl-tag tl-tag--now", "Now"));
   h.appendChild(el("span", "tl-tag tl-tag--also", "Also now"));

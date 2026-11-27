@@ -377,7 +377,7 @@ const MULTI_DAY_GROUPS = [
 function groupCountdownEvents(events) {
   const relevant = events
     .filter(e => e.category === "holiday" || e.category === "roshchodesh" || e.category === "omer"
-      || (e.category === "community" && !e.quiet && typeof communityDayShown === "function" && communityDayShown(e, currentProfile)))
+      || (e.category === "community" && !e.quiet && typeof communityDayShown === "function" && communityDayShown(e, currentProfile) === "plain"))
     .filter(e => !/^Erev /.test(e.title) && !/^Mevarchim/.test(e.title))
     .sort((a, b) => a.date - b.date);
 
@@ -921,7 +921,8 @@ function getZmanimCached(date) {
 function computePrayerChanges(date, heb, hebTomorrow, events) {
   if (!heb || !heb.hm) return { changes: null, textCtx: null };
   const changes = getPrayerChanges({
-    date, heb, hebTomorrow, israel: isInIsrael(currentSettings), events, community: profileCommunity()
+    date, heb, hebTomorrow, israel: isInIsrael(currentSettings), events, community: profileCommunity(),
+    nusach: currentProfile && currentProfile.nusach
   });
   const textCtx = {
     info: pcDayInfo(events, date),
@@ -943,7 +944,7 @@ const DAY_NOTE_ICONS = {
   "hallel-full": "🎶", "hallel-half": "🎶", "hallel-modern": "🎶", "no-hallel": "🔇",
   "yaaleh-vyavo": "🌙", "yaaleh-tonight": "🌙", musaf: "📜", "al-hanissim": "✨", "al-hanissim-tonight": "✨",
   megillah: "📜", aneinu: "🙏", "fast-torah": "📖", "tisha-bav": "💔", eichah: "💔",
-  "no-tachanun": "🌤️", "no-tachanun-mincha": "🌤️", "tachanun-modern": "🌤️",
+  "no-tachanun": "🌤️", "no-tachanun-mincha": "🌤️", "tachanun-modern": "🌤️", "tachanun-community": "🌤️",
   "omer-today": "🌾", "omer-tonight": "🌾", "atah-chonantanu": "🕯️", selichot: "🙏", "selichot-first": "🙏",
   "avinu-malkeinu": "🙏", "avinu-malkeinu-erev-yk": "🙏", "aseret-changes": "📖",
   "tal-umatar-start": "🌧️", "tal-umatar-end": "☀️", geshem: "🌧️", tal: "💧",
@@ -971,18 +972,16 @@ function renderDayNotes(date, info, changes, guide, events) {
   const todaysEvents = (events || []).filter(e => daysBetween(e.date, date) === 0);
   const nusach = currentProfile && currentProfile.nusach;
   if (typeof communityDayShown === "function") {
-    todaysEvents.filter(e => communityDayShown(e, currentProfile)).forEach(e => {
+    // Yours first, then other communities' days (labeled with whose they are).
+    const mine = (e) => communityDayShown(e, currentProfile) === "plain" ? 0 : 1;
+    todaysEvents.filter(e => communityDayShown(e, currentProfile)).sort((a, b) => mine(a) - mine(b)).forEach(e => {
       notes.push({ icon: /Yahrzeit|Hillula|Gimmel Tammuz|Yud Shevat|Chof Av/.test(e.title) ? "🕯️" : /seder|Mimouna/i.test(e.title) ? "🍯" : /Kippur Katan|BeHaB/.test(e.title) ? "🙏" : "✨",
         text: e.title, why: e.blurb, community: { text: communityDayLabel(e), for: e.for } });
-      const tachanunKnown = notes.some(n => /Tachanun/.test(n.text)) || (changes ? changes.today : []).some(c => /tachanun/.test(c.id));
-      if (e.noTachanun.includes(nusach) && !tachanunKnown) {
-        notes.push({ icon: "🌤️", text: "No Tachanun today", why: `Your community skips Tachanun on ${e.title}, a day of celebration.`, community: { text: COMMUNITY_LABELS[nusach] + " custom", for: e.noTachanun } });
-      }
     });
     // Shabbat Mevarchim: Chabad and many Chassidim say all of Tehillim before Shacharit.
     const mev = todaysEvents.find(e => e.category === "mevarchim");
     const tehillim = ["chabad", "sefard"];
-    if (mev && (tehillim.includes(nusach) || (currentProfile && currentProfile.showAll))) {
+    if (mev) {
       notes.push({ icon: "📜", text: "Tehillim before Shacharit", why: `Today is Shabbat Mevarchim — the new month is blessed after the Torah reading (${mev.title.replace(/^Mevarchim Chodesh /, "Rosh Chodesh ")}). Chabad and many Chassidic communities say the whole book of Tehillim before Shacharit, often together in shul.`, community: { text: "Chabad & Chassidic", for: tehillim } });
     }
   }

@@ -125,7 +125,7 @@ function pcDayInfo(events, day) {
 }
 
 /** Why Tachanun is left out on this Hebrew date, or null when it's said. */
-function noTachanunReason(heb, info, community) {
+function noTachanunReason(heb, info, community, nusach) {
   if (info.yomTov || info.roshHashana || info.yomKippur) return "it's a festival";
   if (info.roshChodesh) return "it's Rosh Chodesh";
   if (info.chanukahDay) return "it's Chanukah";
@@ -141,9 +141,18 @@ function noTachanunReason(heb, info, community) {
   if (pcIs(heb, "Sh'vat", 15)) return "it's Tu BiShvat";
   if (pcIs(heb, "Elul", 29)) return "it's Erev Rosh Hashanah";
   if (heb.hm === "Tishrei" && heb.hd >= 9) return "from Erev Yom Kippur to the end of Tishrei is a festive stretch";
-  if (community === "chabad" && (pcIs(heb, "Kislev", 19) || pcIs(heb, "Kislev", 20) || pcIs(heb, "Tamuz", 12) || pcIs(heb, "Tamuz", 13))) {
-    return "it's a Chabad festive day (Chabad custom)";
-  }
+  const cd = pcChassidicDay(heb);
+  if (cd && community === "chabad" && cd.chabad) return `it's ${cd.name}, a Chabad festive day (Chabad custom)`;
+  if (cd && nusach === "sefard" && cd.sefard) return `it's ${cd.name}, a Chassidic festive day (Chassidic custom)`;
+  return null;
+}
+
+/** Festive days on which Chabad (and on 19 Kislev, many Chassidim) leave out Tachanun. */
+function pcChassidicDay(heb) {
+  if (pcIs(heb, "Kislev", 19)) return { name: "Yud-Tes Kislev", chabad: true, sefard: true };
+  if (pcIs(heb, "Kislev", 20)) return { name: "the day after Yud-Tes Kislev", chabad: true, sefard: false };
+  if (pcIs(heb, "Tamuz", 12)) return { name: "Yud-Beis Tammuz", chabad: true, sefard: false };
+  if (pcIs(heb, "Tamuz", 13)) return { name: "Yud-Gimmel Tammuz", chabad: true, sefard: false };
   return null;
 }
 
@@ -151,7 +160,7 @@ function noTachanunReason(heb, info, community) {
 // The engine
 // ---------------------------------------------------------------------
 
-function getPrayerChanges({ date, heb, hebTomorrow, israel, events, community }) {
+function getPrayerChanges({ date, heb, hebTomorrow, israel, events, community, nusach }) {
   const today = [];
   const tonight = [];
   const season = [];
@@ -266,7 +275,7 @@ function getPrayerChanges({ date, heb, hebTomorrow, israel, events, community })
 
   // --- Tachanun ----------------------------------------------------------------
   if (dow !== 6) {
-    const reason = noTachanunReason(heb, info, community);
+    const reason = noTachanunReason(heb, info, community, nusach);
     if (reason && weekday) {
       today.push({
         id: "no-tachanun",
@@ -275,7 +284,7 @@ function getPrayerChanges({ date, heb, hebTomorrow, israel, events, community })
         where: "After the Amidah, Shacharit and Mincha"
       });
     } else if (!reason && weekday && dow !== 5) {
-      const nextReason = hebTomorrow ? noTachanunReason(hebTomorrow, next, community) : null;
+      const nextReason = hebTomorrow ? noTachanunReason(hebTomorrow, next, community, nusach) : null;
       if (nextReason || next.yomTov || next.chanukahDay || next.purim) {
         today.push({
           id: "no-tachanun-mincha",
@@ -284,6 +293,22 @@ function getPrayerChanges({ date, heb, hebTomorrow, israel, events, community })
           where: "Mincha, after the Amidah"
         });
       }
+    }
+    // A Chassidic festive day that isn't yours: shown too, labeled, so you know
+    // why Chabad or Chassidic friends (or shuls) skip Tachanun today.
+    const cd = pcChassidicDay(heb);
+    if (cd && weekday && !reason) {
+      today.push({
+        id: "tachanun-community",
+        title: "Tachanun: depends on your community",
+        detail: `Today is ${cd.name}. ${cd.sefard ? "Chabad and many Chassidim leave" : "Chabad leaves"} out Tachanun; other communities say it as usual.`,
+        where: "After the Amidah, Shacharit and Mincha",
+        customs: {
+          chabad: "Not said — a Chabad festive day.",
+          ashkenazi: cd.sefard ? "Said as usual (many Chassidim leave it out)." : "Said as usual.",
+          sephardi: "Said as usual."
+        }
+      });
     }
     if (info.yomHaatzmaut || info.yomYerushalayim) {
       today.push({
@@ -604,11 +629,11 @@ function getPrayerChanges({ date, heb, hebTomorrow, israel, events, community })
   return { today, tonight, season };
 }
 
-/** Pick which community notes to show: the visitor's own, or all of them. */
+/** Every community's note, the visitor's own first (labeled "Your custom"). */
 function prayerCustomsFor(item, community) {
   if (!item.customs) return [];
   const key = pcCommunityKey(community);
   const names = { ashkenazi: "Ashkenazi", sephardi: "Sephardi", chabad: "Chabad" };
-  if (key) return item.customs[key] ? [{ label: `Your custom (${names[key]})`, text: item.customs[key] }] : [];
-  return Object.keys(names).filter(k => item.customs[k]).map(k => ({ label: names[k], text: item.customs[k] }));
+  const order = key ? [key, ...Object.keys(names).filter(k => k !== key)] : Object.keys(names);
+  return order.filter(k => item.customs[k]).map(k => ({ label: k === key ? `Your custom (${names[k]})` : names[k], text: item.customs[k], own: k === key }));
 }

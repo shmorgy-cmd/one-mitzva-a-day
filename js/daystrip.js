@@ -57,14 +57,32 @@ function dsDayInfo(events, date) {
   else if (date.getDay() === 6) name = specialShabbat ? specialShabbat.title : "Shabbat";
   else if (date.getDay() === 5) name = "Erev Shabbat";
   // Otherwise, a day your community keeps (Yud-Tes Kislev, a hillula…).
+  const prof = typeof currentProfile !== "undefined" ? currentProfile : null;
   if (!name && typeof communityDayShown === "function") {
-    const c = todays.find(e => e.category === "community" && !e.quiet && communityDayShown(e, typeof currentProfile !== "undefined" ? currentProfile : null));
-    if (c) name = c.title.replace(/^Tonight: /, "").replace(/^Yahrzeit of (the )?/, "");
+    // Your community's day first, then another community's.
+    const cds = todays.filter(e => e.category === "community" && !e.quiet && communityDayShown(e, prof))
+      .sort((a, b) => (communityDayShown(a, prof) === "plain" ? 0 : 1) - (communityDayShown(b, prof) === "plain" ? 0 : 1));
+    if (cds[0]) name = cds[0].title.replace(/^Tonight: /, "").replace(/^Yahrzeit of (the )?/, "");
   }
   const guide = typeof PREP_GUIDES !== "undefined"
     ? PREP_GUIDES.find(g => todays.some(e => g.matchTitle(e.title))) || null
     : null;
-  return { name, icon: name ? dsIconFor(name, isFast) : null, special: !!name, fast: isFast, guide };
+  return { name, icon: name ? dsIconFor(name, isFast) : null, special: !!name, fast: isFast, guide, noTachanun: dsNoTachanun(events, date, prof) };
+}
+
+/** Intl's Hebrew month names, in Hebcal's spelling (what prayer-changes.js expects). */
+const DS_HEBCAL_MONTHS = { Tishri: "Tishrei", Heshvan: "Cheshvan", Iyar: "Iyyar", Shevat: "Sh'vat" };
+
+/** Is Tachanun left out on this weekday (by your community's custom)? Not marked on
+ *  Shabbat, when it's never said. Computed from the browser's Hebrew calendar. */
+function dsNoTachanun(events, date, profile) {
+  if (date.getDay() === 6 || typeof noTachanunReason !== "function" || typeof cdHeb !== "function") return false;
+  const h = cdHeb(date);
+  if (!h) return false;
+  const heb = { hd: h.day, hm: DS_HEBCAL_MONTHS[h.month] || h.month };
+  const info = pcDayInfo(events, date);
+  const community = typeof profileCommunity === "function" ? pcCommunityKey(profileCommunity()) : null;
+  return !!noTachanunReason(heb, info, community, profile && profile.nusach);
 }
 
 const dsHebFmt = (() => {
@@ -165,6 +183,7 @@ async function renderDayStrip() {
     if (firstOfMonth) num.appendChild(el("small", null, d.toLocaleDateString(undefined, { month: "short" })));
     pick.appendChild(num);
     pick.appendChild(el("span", "ds-sub", info.special ? info.name : dsHebrewDate(d)));
+    if (info.noTachanun) pick.appendChild(el("span", "ds-flag", "no Tachanun"));
     pick.setAttribute("aria-label", `${d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}${info.special ? ", " + info.name : ""}`);
     if (isOn) pick.setAttribute("aria-current", "date");
     pick.title = `${dsHebrewDate(d)}${info.special ? " · " + info.name : ""}`;

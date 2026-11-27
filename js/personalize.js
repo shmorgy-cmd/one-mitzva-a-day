@@ -506,29 +506,38 @@ function pzEl(tag, cls, html) {
 /** "Your custom" box for "I'm Jewish" visitors. With a specific community,
  *  shows only that community; with "Other / not sure", shows each one. */
 function renderMinhagBox(minhagim, profile) {
-  if (!minhagim || !profile || !profile.community) return null;
+  if (!minhagim) return null;
+  const present = COMMUNITY_KEYS.filter(k => minhagim[k] && minhagim[k].length);
+  if (!present.length) return null;
   // Nusach Sefard (Chassidic) has its own entries where it differs; otherwise it
   // follows the Ashkenazi ones.
-  const c = profile.nusach === "sefard" && minhagim.sefard ? "sefard" : profile.community;
+  const pc = profile && profile.community;
+  const c = profile && profile.nusach === "sefard" && minhagim.sefard ? "sefard" : pc;
   const box = pzEl("div", "minhag-box");
+  const list = (k, parent) => {
+    parent.appendChild(pzEl("p", "minhag-community", escapeHtml(COMMUNITY_NAMES[k])));
+    const ul = pzEl("ul", "minhag-list");
+    minhagim[k].forEach(i => ul.appendChild(pzEl("li", null, escapeHtml(i))));
+    parent.appendChild(ul);
+  };
 
-  if (c && (COMMUNITY_KEYS.includes(c) || c === "sefard")) {
-    const items = minhagim[c];
-    if (!items || !items.length) return null;
+  // Your own custom first; every other community's, folded, underneath — so
+  // everyone sees what changes for everyone, with their own up front.
+  if (c && present.includes(c)) {
     box.appendChild(pzEl("p", "minhag-box-label", `Your custom · ${escapeHtml(COMMUNITY_NAMES[c])}`));
     const ul = pzEl("ul", "minhag-list");
-    items.forEach(i => ul.appendChild(pzEl("li", null, escapeHtml(i))));
+    minhagim[c].forEach(i => ul.appendChild(pzEl("li", null, escapeHtml(i))));
     box.appendChild(ul);
+    const others = present.filter(k => k !== c);
+    if (others.length) {
+      const d = pzEl("details", "minhag-others");
+      d.appendChild(pzEl("summary", null, "How other communities do it"));
+      others.forEach(k => list(k, d));
+      box.appendChild(d);
+    }
   } else {
-    const present = COMMUNITY_KEYS.filter(k => minhagim[k] && minhagim[k].length);
-    if (!present.length) return null;
     box.appendChild(pzEl("p", "minhag-box-label", "How different communities do it"));
-    present.forEach(k => {
-      box.appendChild(pzEl("p", "minhag-community", escapeHtml(COMMUNITY_NAMES[k])));
-      const ul = pzEl("ul", "minhag-list");
-      minhagim[k].forEach(i => ul.appendChild(pzEl("li", null, escapeHtml(i))));
-      box.appendChild(ul);
-    });
+    present.forEach(k => list(k, box));
   }
   box.appendChild(pzEl("p", "minhag-box-foot", "Customs vary even within a community — your family's tradition and your rabbi's guidance come first."));
   return box;
