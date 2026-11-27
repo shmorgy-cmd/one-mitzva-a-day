@@ -275,22 +275,14 @@ function renderTodayContext(occasions, ctx) {
   const used = new Set();
   const thought = resolve(top.content.inspiration, ctx);
   if (thought) {
-    const box = el("div", "today-thought");
-    box.appendChild(el("p", "today-thought-label", isToday ? "A thought for today" : "A thought for this day"));
-    const p = richEl("p", "today-thought-text", thought, ctx.profile, used);
-    box.appendChild(p);
+    // Folded to one line (a preview); tap to read it all.
+    const box = el("details", "today-thought");
+    const sum = el("summary");
+    sum.appendChild(el("span", "today-thought-label", isToday ? "💭 A thought for today" : "💭 A thought for this day"));
+    sum.appendChild(el("span", "today-thought-peek", stripHtml(thought)));
+    box.appendChild(sum);
+    box.appendChild(richEl("p", "today-thought-text", thought, ctx.profile, used));
     moreBox.appendChild(box);
-    // "Read more" only when the thought is longer than its three lines.
-    requestAnimationFrame(() => {
-      if (p.scrollHeight <= p.clientHeight + 2) return;
-      const btn = el("button", "today-thought-more", "Read more");
-      btn.type = "button";
-      btn.addEventListener("click", () => {
-        const open = p.classList.toggle("is-open");
-        btn.textContent = open ? "Show less" : "Read more";
-      });
-      box.appendChild(btn);
-    });
   }
 
   // 3. More about today (holidays, fasts, seasons…)
@@ -912,20 +904,20 @@ async function getHebrewDateCached(date) {
   return info;
 }
 
+/** The small label above the date: "Today is", or "Looking ahead to / back at" with a
+ *  way back when browsing another day. */
 function renderViewingBanner(date) {
+  const label = document.getElementById("ts-label");
   const existing = document.getElementById("viewing-banner");
   if (existing) existing.remove();
-  if (daysBetween(realToday, date) === 0) return;
-
-  const banner = el("div", "viewing-banner");
-  banner.id = "viewing-banner";
-  const label = daysBetween(realToday, date) > 0 ? "Looking ahead to" : "Looking back at";
-  banner.appendChild(el("span", null, `${label} ${fmtDate(date)}`));
-  const backBtn = el("button", "viewing-banner-back", "Back to Today");
+  const diff = daysBetween(realToday, date);
+  if (label) label.textContent = diff === 0 ? "Today is" : diff > 0 ? "Looking ahead to" : "Looking back at";
+  if (diff === 0) return;
+  const backBtn = el("button", "viewing-banner-back", "Back to today");
+  backBtn.id = "viewing-banner";
   backBtn.type = "button";
   backBtn.addEventListener("click", () => setViewingDate(realToday));
-  banner.appendChild(backBtn);
-  document.querySelector(".ts-date").insertAdjacentElement("beforebegin", banner);
+  document.querySelector(".ts-date").appendChild(backBtn);
 }
 
 async function setViewingDate(date) {

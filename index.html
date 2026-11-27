@@ -49,15 +49,24 @@
 
   <main class="wrap">
 
+    <!-- Today at a glance: the date and what the day is, then "Right now" beside the
+         parsha and a thought (stacked on a phone). -->
     <section class="today-summary" id="top" aria-label="Today at a glance">
-      <div class="ts-date">
-        <div id="hebrew-date" class="hebrew-date">—</div>
-        <div id="gregorian-date" class="gregorian-date">—</div>
+      <div class="ts-head">
+        <div class="ts-date">
+          <span class="ts-label" id="ts-label">Today is</span>
+          <div id="gregorian-date" class="gregorian-date">—</div>
+        </div>
+        <div id="hebrew-date" class="hebrew-date" lang="he" dir="rtl">—</div>
       </div>
       <div id="today-line"></div>
-      <div id="today-parsha"></div>
-      <div id="now-container"></div>
-      <div id="today-more"></div>
+      <div class="ts-grid">
+        <div id="now-container"></div>
+        <div class="ts-side">
+          <div id="today-parsha"></div>
+          <div id="today-more"></div>
+        </div>
+      </div>
     </section>
 
     <!-- The day strip: today and the next 7 days, special days, "Get ready" guides (daystrip.js). -->

@@ -2533,22 +2533,6 @@ body.has-he-voice .spk--tts { display: grid; }
 .today-line-text { margin: 0; font-weight: 600; font-size: 1.02rem; color: var(--flag-blue-deep); line-height: 1.35; }
 #today-line .tavshilin-banner { margin: 0 0 10px; padding: 10px 14px; }
 
-.today-thought { margin: 12px 0 4px; padding: 12px 14px; border-left: 3px solid var(--gold); background: #fbf6ea; border-radius: 0 10px 10px 0; }
-.today-thought-label { margin: 0 0 4px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8a5a00; }
-.today-thought-text {
-  margin: 0;
-  font-family: "Fraunces", serif;
-  font-style: italic;
-  font-size: 1.04rem;
-  line-height: 1.6;
-  color: var(--flag-blue-deep);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.today-thought-text.is-open { display: block; -webkit-line-clamp: unset; overflow: visible; }
-.today-thought-more { margin-top: 4px; border: 0; background: none; padding: 0; font: inherit; font-size: 0.88rem; font-weight: 600; color: var(--flag-blue); cursor: pointer; }
 
 details.today-more { margin: 10px 0 6px; }
 details.today-more > summary { cursor: pointer; list-style: none; font-weight: 600; color: var(--flag-blue); padding: 6px 0; }
@@ -2966,8 +2950,11 @@ body.has-sheet { overflow: hidden; }
 
 /* The Shema after its best time: still open, with what to do */
 .tl-late:empty { display: none; }
-.tl-late { margin: 6px 0 0; padding: 6px 10px; border-radius: 8px; background: #fff4e5; color: #8a4b00; font-size: 0.84rem; font-weight: 600; line-height: 1.4; }
-.tl-item.is-late .tl-end { text-decoration: line-through; color: #b45309; }
+.tl-late { margin: 6px 0 0; padding: 6px 10px; border-radius: 8px; font-size: 0.84rem; font-weight: 600; line-height: 1.4; }
+/* Best time (gentle), past the best time but still open (calm), missed (amber) */
+.tl-late--best { padding: 0; background: none; color: #8a5a00; font-weight: 600; }
+.tl-late--late { background: #eef2fc; color: var(--flag-blue-deep); }
+.tl-late--missed { background: #fff4e5; color: #8a4b00; }
 .tl-item.is-missed .tl-card { border: 1px dashed #e0a458; background: #fffaf2; }
 .tl-item.is-missed .tl-title { color: var(--ink); }
 
@@ -3004,7 +2991,7 @@ body.has-sheet { overflow: hidden; }
   .tl-cheer { transition: opacity 0.2s ease; }
   .tl-cheer-icon { animation: none; }
 }
-.now-late { margin-top: 6px; display: inline-block; padding: 3px 10px; border-radius: 999px; background: #fff4e5; color: #8a4b00; font-size: 0.84rem; font-weight: 700; }
+.now-best { margin-top: 6px; font-size: 0.86rem; color: #f6e2b3; font-weight: 600; }
 /* Not yet: an item can't be ticked before its time */
 .tl-check:disabled { opacity: 0.35; cursor: not-allowed; }
 .tl-makeup:empty { display: none; }
@@ -3028,4 +3015,39 @@ a.tl-zmanim-link:hover { text-decoration: underline; }
 .zp-card-head h2 { margin: 0; font-family: "Fraunces", serif; font-size: 1.05rem; color: var(--flag-blue-deep); }
 @media (max-width: 700px) {
   .zp-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------------------------------------------------------------- */
+/* Today at a glance: compact header, then Right now beside the side */
+/* column (parsha, thought, more about today); stacked on a phone.    */
+/* ---------------------------------------------------------------- */
+.today-summary { margin: 16px 0 8px; padding: 14px 16px 12px; border-left-width: 4px; }
+.ts-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px 14px; flex-wrap: wrap; padding: 0; }
+.ts-date { padding: 0; display: flex; flex-direction: column; }
+.ts-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #8a5a00; }
+.today-summary .gregorian-date { margin: 0; font-family: "Fraunces", serif; font-weight: 700; font-size: 1.3rem; color: var(--flag-blue-deep); }
+.today-summary .hebrew-date { font-size: 1.15rem; font-weight: 500; color: var(--flag-blue); }
+.today-summary .viewing-banner-back { align-self: flex-start; margin-top: 4px; }
+.today-summary #today-line { margin-top: 8px; }
+.today-summary .today-line { display: inline-flex; margin: 0; padding: 3px 12px 3px 4px; border-radius: 999px; background: #eef2fc; gap: 8px; }
+.today-summary .today-line .icon-badge { width: 26px; height: 26px; }
+.today-summary .today-line .icon-badge svg { width: 15px; height: 15px; }
+.today-summary .today-line-text { font-size: 0.9rem; }
+.ts-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 12px; margin-top: 12px; align-items: start; }
+.ts-grid .now-card { margin: 0; }
+.ts-side { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.ts-side a.today-parsha { margin: 0; }
+details.today-thought { border-radius: 10px; background: #fbf6ea; border-left: 3px solid var(--gold); }
+details.today-thought > summary { list-style: none; cursor: pointer; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; }
+details.today-thought > summary::-webkit-details-marker { display: none; }
+.today-thought-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #8a5a00; }
+.today-thought-peek { font-family: "Fraunces", serif; font-style: italic; font-size: 0.92rem; color: var(--flag-blue-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.today-thought-peek::after { content: ""; }
+details.today-thought[open] .today-thought-peek { display: none; }
+.today-thought-text { margin: 0; padding: 0 12px 10px; font-family: "Fraunces", serif; font-style: italic; font-size: 0.98rem; line-height: 1.6; color: var(--flag-blue-deep); }
+.ts-side details.today-more { margin: 0; }
+.ts-side details.today-more > summary { padding: 2px 2px; font-size: 0.9rem; }
+@media (max-width: 760px) {
+  .ts-grid { grid-template-columns: 1fr; gap: 8px; }
+  .today-summary .gregorian-date { font-size: 1.15rem; }
 }
