@@ -3375,3 +3375,14 @@ a.next-step {
 }
 a.next-step .fc-kicker { color: #1f6a43; }
 .next-step-sub { font-size: 0.82rem; color: var(--ink-soft); }
+
+/* The Hebrew date in English, and when it changes (at sunset) */
+.ts-heb { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; text-align: right; }
+.hebrew-date-en { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 1rem; color: var(--flag-blue-deep); }
+.hebrew-date-change { font-size: 0.78rem; color: var(--ink-soft); }
+.tl-part-heb { flex: none; font-size: 0.72rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: #fbf3e2; color: #7a5410; white-space: nowrap; }
+.tl-part-heb--night { background: #e6ebf8; color: var(--flag-blue-deep); }
+.tl-sunset { margin: 0 0 8px; padding: 7px 12px; border-radius: 10px; background: linear-gradient(90deg, #fbeee0, #e6ebf8); font-size: 0.85rem; color: var(--flag-blue-deep); }
+@media (max-width: 600px) {
+  .ts-heb { align-items: flex-start; text-align: left; }
+}

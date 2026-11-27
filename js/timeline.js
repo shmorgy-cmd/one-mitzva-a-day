@@ -991,7 +991,7 @@ function tlRenderItem(item, ctx, used) {
 }
 
 /** Draws the "Right now" card into `nowContainer` and the timeline into `container`. */
-function renderTimeline({ container, nowContainer, date, isToday, times, events, guide, changes, textCtx, mitzvah, community, info }) {
+function renderTimeline({ container, nowContainer, date, isToday, times, events, guide, changes, textCtx, mitzvah, community, info, hebDay, hebNight }) {
   if (tlTimer) { clearInterval(tlTimer); tlTimer = null; }
   container.innerHTML = "";
   nowContainer.innerHTML = "";
@@ -1085,6 +1085,11 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     toggle.appendChild(el("span", "tl-part-name", `${p.icon} ${p.title}`));
     const meta = el("span", "tl-part-meta", p.range || "");
     toggle.appendChild(meta);
+    // Which Hebrew date this part of the day falls on: the Jewish day begins at
+    // sunset, so the evening already belongs to the next date.
+    const night = p.key === "evening" || p.key === "bedtime";
+    const heb = night ? hebNight : hebDay;
+    if (heb) toggle.appendChild(el("span", "tl-part-heb" + (night ? " tl-part-heb--night" : ""), heb));
     toggle.appendChild(el("span", "tl-part-caret", "▾"));
     toggle.addEventListener("click", () => {
       tlFolds.set(ctx.dateISO, p.key, sec.classList.contains("is-folded"));
@@ -1093,6 +1098,10 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     h.appendChild(toggle);
     head.appendChild(h);
     sec.appendChild(head);
+    if (p.key === "evening" && hebNight) {
+      const sunset = day.z && day.z.sunset && !day.approx ? ` (${fmt(day.z.sunset)})` : "";
+      sec.appendChild(el("p", "tl-sunset", `🌇 The Hebrew date changes at sunset${sunset}: ${hebDay ? hebDay + " ends and " : ""}${hebNight} begins. Tonight's prayers already belong to ${hebNight}.`));
+    }
     const ul = el("ul", "tl-list");
     p.items.forEach(item => {
       const li = tlRenderItem(item, ctx, used);

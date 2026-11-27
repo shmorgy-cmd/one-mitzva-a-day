@@ -1127,6 +1127,23 @@ function renderViewingBanner(date) {
   document.querySelector(".ts-date").appendChild(backBtn);
 }
 
+/** "17 Kislev 5787" from Hebcal's converter (hd, hm, hy). */
+function hebDateEnglish(info, withYear = true) {
+  if (!info || !info.hd || !info.hm) return "";
+  return `${info.hd} ${info.hm}${withYear && info.hy ? " " + info.hy : ""}`;
+}
+
+/** Under the Hebrew date: the Jewish day begins at sunset, so say when it changes. */
+function renderHebrewDateChange(hebTomorrow, times) {
+  const box = document.getElementById("hebrew-date-change");
+  if (!box) return;
+  const next = hebDateEnglish(hebTomorrow, false);
+  if (!next) { box.textContent = ""; return; }
+  const sunset = times && times.sunset;
+  const at = sunset ? ` (${tlCityFormatter(times)(new Date(sunset))})` : "";
+  box.textContent = `🌇 Until sunset${at} — then it's ${next}`;
+}
+
 async function setViewingDate(date) {
   date = startOfDay(date);
   viewingDate = date;
@@ -1138,6 +1155,8 @@ async function setViewingDate(date) {
   ]);
 
   document.getElementById("hebrew-date").textContent = hebrewInfo ? hebrewInfo.hebrew || "" : "";
+  document.getElementById("hebrew-date-en").textContent = hebDateEnglish(hebrewInfo);
+  document.getElementById("hebrew-date-change").textContent = "";
   document.getElementById("gregorian-date").textContent = fmtDate(date);
   renderViewingBanner(date);
   const [hebTomorrow, times] = await Promise.all([
@@ -1145,6 +1164,7 @@ async function setViewingDate(date) {
     getZmanimCached(date)
   ]);
   if (!pcSameDay(viewingDate, date)) return; // the visitor moved to another day meanwhile
+  renderHebrewDateChange(hebTomorrow, times);
   const { changes, textCtx } = computePrayerChanges(date, hebrewInfo, hebTomorrow, events);
 
   const ctx = buildContext(date, events, hebrewInfo, currentProfile);
@@ -1161,7 +1181,8 @@ async function setViewingDate(date) {
     nowContainer: document.getElementById("now-container"),
     date, isToday: daysBetween(realToday, date) === 0, times, events,
     guide, changes: changes || { today: [], tonight: [], season: [] }, textCtx, mitzvah: todaysMitzvah,
-    community: pcCommunityKey(profileCommunity()), info: pcDayInfo(events, date)
+    community: pcCommunityKey(profileCommunity()), info: pcDayInfo(events, date),
+    hebDay: hebDateEnglish(hebrewInfo, false), hebNight: hebDateEnglish(hebTomorrow, false)
   });
   renderDayFooter(timelineContainer, date, events);
   renderDayNotes(date, pcDayInfo(events, date), changes, guide, events);
