@@ -306,6 +306,8 @@ function buildDayTimeline(opts) {
       timeLabel: fmt(fastEnds.at), title: "The fast ends", tag: "Fast", why: "Pray Maariv, then break the fast gently — a drink of water first." });
   }
 
+  tlApplyGender(items, allDay, opts.profile || null);
+
   const parts = TL_PARTS.map(p => {
     const list = items.filter(i => i.part === p.key).sort((a, b) => (a.sortAt - b.sortAt) || (a.order - b.order));
     let range = "";
@@ -319,6 +321,67 @@ function buildDayTimeline(opts) {
   }).filter(p => p.items.length);
 
   return { z, approx, allDay, parts };
+}
+
+// ---------------------------------------------------------------------
+// Men's and women's practices
+// ---------------------------------------------------------------------
+
+/** Practices that are traditionally men's (by timeline id). */
+const TL_FOR_MEN = new Set(["tefillin", "no-tefillin"]);
+
+/** Notes for women, by timeline id. Exempt-but-welcome practices say so warmly;
+ *  practices women are fully obligated in say that too — many people don't know. */
+const TL_WOMEN_NOTES = {
+  shema: "For women: the morning Shema is tied to a set time, so women aren't obligated — but many say it, and saying at least the first verse (Shema Yisrael…) is widely encouraged.",
+  shacharit: "For women: women pray every day too. Many say Shacharit and Mincha; at the least, a short prayer in your own words — praise, a request and thanks. Customs differ, so ask your rabbi.",
+  mincha: "For women: many women say Mincha as well as Shacharit — customs differ, so ask your rabbi.",
+  maariv: "For women: Maariv was traditionally not taken on by women as an obligation — it's welcome if you'd like to say it.",
+  "guide-shofar": "For women: hearing the shofar is tied to a set time, so women are exempt — but almost all women come to hear it, and it's a cherished custom. Can't get to synagogue? Many communities arrange a blowing nearby.",
+  "guide-lulav": "For women: exempt (it's tied to a set time), but many take the lulav. Ashkenazi women usually say the blessing; Sephardi women usually take it without the blessing.",
+  "guide-sukkah-night": "For women: exempt from eating in the sukkah, but very welcome to — many do, with the blessing (Ashkenazi custom) or without it (Sephardi custom).",
+  "guide-sukkah-day": "For women: exempt from eating in the sukkah, but very welcome to — many do, with the blessing (Ashkenazi custom) or without it (Sephardi custom).",
+  "guide-count-omer": "For women: exempt (it's tied to a set time). Many women count anyway, and some count without the blessing — ask your rabbi.",
+  "guide-chanukah-lights": "For women: this one is fully yours too — women are obligated in the Chanukah lights, because women were part of the miracle.",
+  "guide-megillah-night": "For women: fully yours too — women are obligated to hear the Megillah, because women were part of the miracle (Esther above all).",
+  "guide-purim-day": "For women: the Megillah, gifts of food, gifts to the poor and the festive meal are all fully women's mitzvot too.",
+  "guide-kiddush": "For women: women are fully obligated in Kiddush, just like men — and can say it for the whole table.",
+  "guide-seder": "For women: every mitzvah of the Seder — matzah, four cups, maror, telling the story — is fully women's too, because women were part of the Exodus."
+};
+
+/** Candle lighting, by who's reading. */
+const TL_CANDLE_NOTES = {
+  female: "A special mitzvah given to women — bringing light and peace (shalom bayit) into the home. Many add a personal prayer for their family right after lighting.",
+  male: "Usually lit by the woman of the home. If you live alone (or she's away), you light yourself — and anyone can help by setting up the candles.",
+  both: "Traditionally lit by the woman of the home — a special mitzvah given to women. Anyone living alone lights for themselves."
+};
+
+/** Hides, labels or adds notes to items by the visitor's gender (see genderShow). */
+function tlApplyGender(items, allDay, profile) {
+  if (typeof genderView !== "function") return; // personalize.js not loaded (tests)
+  const view = genderView(profile);
+  const women = genderShow("female", profile);
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i];
+    if (TL_FOR_MEN.has(it.id)) {
+      const show = genderShow("male", profile);
+      if (!show) { items.splice(i, 1); continue; }
+      if (show === "label") it.genderTag = "For men";
+      if (view === "male" && it.why) it.why = it.why.replace(/ ?Traditionally a men's mitzvah; customs vary( — learn with your rabbi)?\./, " Learn how with your rabbi — it takes a few minutes.");
+    }
+  }
+  [...items, ...allDay].forEach(it => {
+    const add = (n) => { it.notes = [...(it.notes || []), n]; };
+    if (it.id === "guide-candles") add(TL_CANDLE_NOTES[view]);
+    if (women && TL_WOMEN_NOTES[it.id]) add(TL_WOMEN_NOTES[it.id]);
+    if (view === "female") {
+      if (it.id === "shema") {
+        it.tag = "Encouraged";
+        it.missedNote = "The time for the morning Shema has passed — no worries. You can still say the first verse now.";
+      }
+      if (it.id === "maariv") { it.tag = "Optional"; it.skippable = true; it.soft = true; }
+    }
+  });
 }
 
 /** Where an item stands at `now`: "past", "current", "upcoming" or "anytime". */
@@ -576,6 +639,7 @@ function tlRenderItem(item, ctx, used) {
   const main = el("div", "tl-main");
   const h = el("h3", "tl-title", item.title);
   if (item.tag) h.appendChild(el("span", "tl-tag", item.tag));
+  if (item.genderTag) h.appendChild(genderTag(item.genderTag, currentProfile));
   h.appendChild(el("span", "tl-tag tl-tag--now", "Now"));
   h.appendChild(el("span", "tl-tag tl-tag--also", "Also now"));
   main.appendChild(h);
@@ -662,7 +726,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
   nowContainer.innerHTML = "";
   const fmt = tlCityFormatter(times);
   const day = buildDayTimeline({
-    date, times, community, info, guide, changes, fmt,
+    date, times, community, info, guide, changes, fmt, profile: currentProfile,
     timed: (events || []).filter(e => e.at && daysBetween(e.date, date) === 0)
   });
   const used = new Set();
@@ -685,6 +749,11 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       const h = el("h3", "tl-title", item.title);
       card.appendChild(h);
       if (item.why) card.appendChild(el("p", "tl-why", item.why));
+      if (item.notes && item.notes.length) {
+        const note = el("div", "tl-note");
+        item.notes.forEach(n => note.appendChild(el("p", null, n)));
+        card.appendChild(note);
+      }
       const body = tlBody(item, ctx, used);
       if (body) {
         const d = el("details", "tl-how");

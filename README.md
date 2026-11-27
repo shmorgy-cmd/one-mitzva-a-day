@@ -106,7 +106,13 @@ On a first visit a 4-step welcome ([`js/profile.js`](js/profile.js)) asks: what 
 | `community` | derived from nusach: `ashkenazi`, `sephardi`, `chabad`, or `other` (shows each side by side) |
 | `showAll` | show practices for everyone, labeled |
 
-Today these change the page through [`js/personalize.js`](js/personalize.js) (gender, family and "Show me everything" are saved now and used by the coming phases):
+**Gender** (`genderView` / `genderShow` / `genderTag` in `personalize.js`). Male sees men's practices, Female sees women's, and "Prefer not to say" (or not set) sees both, each labeled "For men" / "For women"; "Show me everything" turns hidden practices into labeled ones. Each label explains itself when tapped ("Why am I seeing this?").
+
+- Timeline ([`js/timeline.js`](js/timeline.js), `tlApplyGender`): tallit and tefillin (`TL_FOR_MEN`) are left off for women; women get gentle notes (`TL_WOMEN_NOTES`) on the morning Shema ("Encouraged"), Shacharit, Mincha and Maariv ("Optional"), on exempt-but-welcome practices (shofar, lulav, sukkah, the Omer) and on ones women are fully obligated in (Chanukah lights, Megillah, Purim, Kiddush, the Seder). Candle lighting has its own wording for each view (`TL_CANDLE_NOTES`).
+- "What's different today": no "No tefillin today" chip for women; on Rosh Chodesh, "A special day for women" with its explanation.
+- Everyday Mitzvot: `MITZVA_GENDER` in [`js/mitzvot.js`](js/mitzvot.js) labels tefillin and tzitzit "For men" and Shabbat candles and challah "Traditionally for women"; nothing is hidden there. For women, "Start here" swaps tefillin for Shabbat candles and the mitzvah of the day skips men's mitzvot.
+
+Family and "Show me everything" for family content come in the next phases. Other answers change the page through [`js/personalize.js`](js/personalize.js):
 
 - **A nusach**: a "Your custom" box on each card with only that community's minhagim ("Other" / "Not sure" shows all communities side by side), and the matching blessing texts and times.
 - **Any reason except "daily reminders"**: Hebrew terms become tap-to-explain (from `GLOSSARY`), plus a "Why today?" note on each day.

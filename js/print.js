@@ -243,7 +243,7 @@ async function buildPrintSheet(from) {
     table.appendChild(ol);
   } else {
     if (saturday) sefaria = await loadParshaSummary(saturday, israel);
-    const mitzvahT = getMitzvahForDate(block.days[0]);
+    const mitzvahT = getMitzvahForDate(block.days[0], currentProfile);
     if (sefaria && sefaria.summary) table.appendChild(pEl("p", null, sefaria.summary));
     table.appendChild(pEl("p", "pp-quote", mitzvahT.inspiration));
     const ol = pEl("ol", "pp-qs");
@@ -289,7 +289,7 @@ async function buildPrintSheet(from) {
 
   // ---------------------------------------------------------------- page 2: kids
   const kids = content && content.kids;
-  const mitzvah = getMitzvahForDate(block.days[0]);
+  const mitzvah = getMitzvahForDate(block.days[0], currentProfile);
   const p2 = pEl("article", "pp-page");
   const kh = pEl("header", "pp-hd");
   const kLeft = pEl("div");

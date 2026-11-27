@@ -39,6 +39,62 @@ function isConverting(profile) {
   return !!profile && profile.reason === "converting";
 }
 
+/** Whose practices to show: "male", "female", or "both" (prefer not to say / not set). */
+function genderView(profile) {
+  const g = profile && profile.gender;
+  return g === "male" || g === "female" ? g : "both";
+}
+
+/**
+ * How to show a practice that belongs to `forGender` ("male" / "female"):
+ * "plain" (it's yours), "label" (shown, marked whose it is), or null (hidden).
+ * "Show me everything" turns every null into "label".
+ */
+function genderShow(forGender, profile) {
+  const v = genderView(profile);
+  if (v === forGender) return "plain";
+  if (v === "both") return "label";
+  return profile && profile.showAll ? "label" : null;
+}
+
+/** "Why am I seeing this?" for a gender label. */
+function genderWhy(profile) {
+  const g = profile && profile.gender;
+  const base = profile && profile.showAll && (g === "male" || g === "female")
+    ? "Shown because \"Show me everything\" is on in Settings."
+    : g === "unspecified"
+      ? "Shown because you chose \"Prefer not to say\" in Settings, so you see practices for everyone."
+      : "Shown with a label because you haven't chosen male or female in Settings.";
+  return base + " You can change this in Settings (⚙ at the top).";
+}
+
+// Tapping anywhere else closes an open label explanation.
+document.addEventListener("click", () => {
+  document.querySelectorAll(".g-tag-why:not([hidden])").forEach(w => {
+    w.hidden = true;
+    w.previousElementSibling.setAttribute("aria-expanded", "false");
+  });
+});
+
+/** A small label ("For men", "For women"…) that explains itself when tapped. */
+function genderTag(text, profile) {
+  const wrap = pzEl("span", "g-tag-wrap");
+  const btn = pzEl("button", "g-tag", text);
+  btn.type = "button";
+  btn.setAttribute("aria-expanded", "false");
+  const why = pzEl("span", "g-tag-why", genderWhy(profile));
+  why.hidden = true;
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    why.hidden = !why.hidden;
+    btn.setAttribute("aria-expanded", String(!why.hidden));
+  });
+  wrap.appendChild(btn);
+  wrap.appendChild(why);
+  return wrap;
+}
+
 function isJewishProfile(profile) {
   return !!profile && (String(profile.reason).startsWith("jewish-") || profile.reason === "converted");
 }

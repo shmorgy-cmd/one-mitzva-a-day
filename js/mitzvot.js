@@ -1029,10 +1029,21 @@ function anytimeMitzvot() {
   return MITZVOT.filter(m => !m.timeGate);
 }
 
+/** Mitzvot that are traditionally men's or women's. The library shows them all,
+ *  labeled; the "mitzvah of the day" skips men's ones for women. */
+const MITZVA_GENDER = {
+  tefillin: "male",
+  tzitzit: "male",
+  "shabbat-candles": "female",
+  "separating-challah": "female"
+};
+const MITZVA_GENDER_LABEL = { male: "For men", female: "Traditionally for women" };
+
 /** Deterministic "today's mitzvah" — advances daily, wraps around the list,
  *  and moves with whatever date is being browsed (true to the site's name). */
-function getMitzvahForDate(date) {
-  const pool = anytimeMitzvot();
+function getMitzvahForDate(date, profile) {
+  const women = profile && profile.gender === "female" && !profile.showAll;
+  const pool = anytimeMitzvot().filter(m => !(women && MITZVA_GENDER[m.id] === "male"));
   // Count whole days from a fixed local date (not the day of the year, which restarts
   // on January 1 and would repeat recent mitzvot within days of New Year).
   const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());

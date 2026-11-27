@@ -875,7 +875,11 @@ function renderDayNotes(date, info, changes, guide, events) {
   const notes = [];
   const add = (icon, text, target) => notes.push({ icon, text, target });
   const dow = date.getDay();
-  if (info.yomTov || dow === 6) add("🚫", "No tefillin today", "no-tefillin");
+  if ((info.yomTov || dow === 6) && genderShow("male", currentProfile)) add("🚫", "No tefillin today", "no-tefillin");
+  // Rosh Chodesh is a special day for women: many have the custom of lighter work.
+  if (info.roshChodesh && genderShow("female", currentProfile)) {
+    notes.push({ icon: "🌙", text: "A special day for women", why: "Many women have the custom of doing less work today (like sewing or laundry) — a gift given to the women of the desert, who wouldn't give their jewelry for the golden calf.", gender: genderView(currentProfile) === "female" ? null : "For women" });
+  }
   const guideAll = guide ? [...guide.today, ...guide.tonight] : [];
   if (info.fast && !guideAll.some(g => /fast/i.test(g.title))) {
     const begins = (events || []).find(e => e.at && /^Fast begins/.test(e.title) && daysBetween(e.date, date) === 0);
@@ -906,14 +910,24 @@ function renderDayNotes(date, info, changes, guide, events) {
 
   const isToday = daysBetween(realToday, date) === 0;
   const chipFor = (n, cls) => {
-    const chip = el(n.target ? "button" : "span", "day-note" + (cls ? " " + cls : ""));
-    if (n.target) chip.type = "button";
+    // A chip with an explanation (and no timeline item) opens it in place.
+    const chip = el(n.target || n.why ? "button" : "span", "day-note" + (cls ? " " + cls : "") + (n.why ? " day-note--why" : ""));
+    if (n.target || n.why) chip.type = "button";
     chip.appendChild(el("span", "day-note-icon", n.icon));
     const text = el("span", null, n.text);
     if (n.tag) { text.appendChild(document.createTextNode(" ")); text.appendChild(el("span", "day-note-tag", n.tag)); }
     chip.appendChild(text);
     if (n.target) chip.addEventListener("click", () => jumpToTimelineItem(n.target));
-    return chip;
+    if (!n.why) return chip;
+    const wrap = el("span", "day-note-wrap");
+    wrap.appendChild(chip);
+    if (n.gender) wrap.appendChild(genderTag(n.gender, currentProfile));
+    const why = el("span", "day-note-why", n.why);
+    why.hidden = true;
+    chip.setAttribute("aria-expanded", "false");
+    chip.addEventListener("click", () => { why.hidden = !why.hidden; chip.setAttribute("aria-expanded", String(!why.hidden)); });
+    wrap.appendChild(why);
+    return wrap;
   };
   const card = el("div", "day-notes" + (notes.length ? "" : " day-notes--plain"));
   if (!notes.length) {
@@ -1032,7 +1046,7 @@ async function setViewingDate(date) {
   renderTodayContext(occasions, ctx);
   renderTodayParsha(events, date);
 
-  const todaysMitzvah = getMitzvahForDate(date);
+  const todaysMitzvah = getMitzvahForDate(date, currentProfile);
   const guide = computeDailyGuide(date, hebrewInfo, events);
   const timelineContainer = document.getElementById("timeline-container");
   renderTimeline({

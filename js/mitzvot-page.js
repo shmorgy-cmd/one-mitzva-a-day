@@ -46,6 +46,7 @@ function mzCard(m) {
   const t = el("span", "mz-card-text");
   t.appendChild(el("span", "mz-card-title", m.title));
   t.appendChild(el("span", "mz-card-sub", m.subtitle));
+  if (MITZVA_GENDER[m.id]) t.appendChild(el("span", "mz-gtag", MITZVA_GENDER_LABEL[MITZVA_GENDER[m.id]]));
   b.appendChild(t);
   const tr = mzTrack()[m.id];
   if (tr) b.appendChild(el("span", `mz-mark mz-mark--${tr}`, tr === "doing" ? "✓ Doing" : "Learning"));
@@ -114,7 +115,7 @@ function mzRenderResults() {
   const matches = (m) => !q || [m.title, m.subtitle, m.intro].join(" ").toLowerCase().includes(q);
 
   if (!q && mzState.cat === "all") {
-    const t = getMitzvahForDate(new Date());
+    const t = getMitzvahForDate(new Date(), currentProfile);
     const today = el("a", "mz-today");
     today.href = `#${t.id}`;
     today.appendChild(mzBadge(t.icon, "icon-badge--gold"));
@@ -132,7 +133,10 @@ function mzRenderResults() {
     sh.appendChild(el("small", null, "gentle first steps"));
     box.appendChild(sh);
     const row = el("div", "mz-start");
-    MITZVA_START_HERE[reason].forEach(id => mzById.get(id) && row.appendChild(mzCard(mzById.get(id))));
+    // Women start with Shabbat candles instead of tefillin (unless "Show me everything").
+    const women = currentProfile && currentProfile.gender === "female" && !currentProfile.showAll;
+    const start = MITZVA_START_HERE[reason].map(id => women && MITZVA_GENDER[id] === "male" ? "shabbat-candles" : id);
+    [...new Set(start)].forEach(id => mzById.get(id) && row.appendChild(mzCard(mzById.get(id))));
     box.appendChild(row);
 
     // Each theme shows its first few; "See all" opens the whole theme.
@@ -203,6 +207,13 @@ function mzRenderDetail(m) {
   head.appendChild(el("h1", null, m.title));
   d.appendChild(head);
   d.appendChild(el("p", "mz-d-sub", m.subtitle));
+  if (MITZVA_GENDER[m.id]) {
+    const g = el("p", "mz-d-gender");
+    g.appendChild(genderView(currentProfile) === "both" || currentProfile && currentProfile.showAll
+      ? genderTag(MITZVA_GENDER_LABEL[MITZVA_GENDER[m.id]], currentProfile)
+      : el("span", "g-tag g-tag--plain", MITZVA_GENDER_LABEL[MITZVA_GENDER[m.id]]));
+    d.appendChild(g);
+  }
 
   const track = el("div", "mz-track");
   [["learning", "learn", "📖 I'm learning this"], ["doing", "do", "✓ I do this"]].forEach(([kind, cls, label]) => {
