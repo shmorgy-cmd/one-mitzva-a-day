@@ -169,7 +169,10 @@ function buildDayTimeline(opts) {
   } else {
     // Open until sunset (the latest time); if not done by the end of the morning it
     // follows you through the day (carry), and "Not for me" puts it aside (skippable).
+    // Ideally put on before Shacharit and worn during it (idealEnd): until then it sits
+    // above Shacharit with the same bright "Now" box.
     add({ id: "tefillin", part: "morning", kind: "mitzvah", mitzvah: "tefillin", soft: true, carry: true, skippable: true, start: z.misheyakir, end: z.sunset,
+      idealEnd: z.tfilla, idealNote: "ideally before Shacharit",
       timeLabel: fmt(z.misheyakir), timeSmall: approx ? "" : "from", title: "Tallit and tefillin", tag: info.cholHamoed ? "Chol HaMoed" : null,
       why: (info.cholHamoed ? "Customs differ about tefillin on Chol HaMoed — follow your community. " : "") +
         (approx ? "Worn during Shacharit; the latest is sunset." : `From ${fmt(z.misheyakir)}, ideally during Shacharit — latest: sunset (${fmt(z.sunset)}).`) + " Traditionally a men's mitzvah; customs vary — learn with your rabbi." });
@@ -728,7 +731,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     if (actions.children.length) card.appendChild(actions);
     if (focus && also.length) {
       // Everything else open right now, then what starts next.
-      also.forEach(i => card.appendChild(el("div", "now-next now-also", `Also now: ${i.title}${day.approx ? "" : ` · until ${fmt(i.end)}`}`)));
+      also.forEach(i => card.appendChild(el("div", "now-next now-also", `Also now: ${i.title}${i.idealNote && i.idealEnd && now < i.idealEnd ? ` · ${i.idealNote}` : day.approx ? "" : ` · until ${fmt(i.end)}`}`)));
       if (nextUp) card.appendChild(el("div", "now-next", `Then: ${nextUp.title}${day.approx || nextUp.noDeadline ? "" : ` · ${fmt(nextUp.start)}`}`));
     } else if (next) card.appendChild(el("div", "now-next", `Then: ${next.title}${day.approx ? "" : next.noDeadline ? "" : next.start <= now ? ` · by ${fmt(next.end)}` : ` · ${fmt(next.start)}`}`));
     nowContainer.appendChild(card);
@@ -789,7 +792,8 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       const cur = core.filter(i => tlStatus(i, now) === "current")
         .sort((a, b) => ((a.soft ? 1 : 0) - (b.soft ? 1 : 0)) || (a.end - b.end));
       const up = core.filter(i => tlStatus(i, now) === "upcoming").sort((a, b) => a.start - b.start);
-      const anchor = cur[0] || up[0];
+      // (If nothing else is open, the "Now" item itself — e.g. tefillin late morning.)
+      const anchor = cur[0] || (focus && !focus.anytime ? focus : null) || up[0];
       nowIdx = anchor ? homeIdx.get(anchor) : partEls.length - 1;
       // …then what isn't done yet follows the day: "anytime" practices once their
       // part is over, and things like tefillin once the morning is over (until
@@ -816,7 +820,9 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
           const ga = group(a.i), gb = group(b.i);
           if (ga !== gb) return ga - gb;
           if (ga === 1 && !!a.i.anytime !== !!b.i.anytime) return a.i.anytime ? 1 : -1; // "anytime" after the timed ones
-          if (ga === 1 && a.i.end - b.i.end) return a.i.end - b.i.end;
+          const dueA = a.i.idealEnd && now < a.i.idealEnd ? a.i.idealEnd : a.i.end;
+          const dueB = b.i.idealEnd && now < b.i.idealEnd ? b.i.idealEnd : b.i.end;
+          if (ga === 1 && dueA - dueB) return dueA - dueB;
           return a.n - b.n;
         }).map(x => x.i);
         here.forEach(i => ul.appendChild(itemEls.get(i)));
@@ -826,7 +832,10 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       here.forEach(item => {
         const li = itemEls.get(item);
         let st = isToday ? tlStatus(item, now) : "plain";
-        if (st === "current" && item !== focus) st = settled[item.id] || item.anytime || item.noDeadline || (item.soft && !item.carry) ? "open" : "also";
+        if (st === "current" && item !== focus) {
+          if (settled[item.id] || item.anytime || item.noDeadline || (item.soft && !item.carry)) st = "open";
+          else st = item.idealEnd && now < item.idealEnd ? "current" : "also"; // e.g. tefillin with Shacharit
+        }
         if (settled[item.id] || st === "past") finishedCount++;
         li.className = `tl-item tl-item--${st}${done[item.id] ? " is-done" : ""}${skipped[item.id] ? " is-skipped" : ""}${item.anytime ? " tl-item--any" : ""}`;
         const chk = li.querySelector(".tl-check");
@@ -845,7 +854,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
 
       // Open or folded: what the visitor chose today, otherwise only the part of the
       // day you're in (and an earlier one with something still open before its end).
-      const byDefault = !isToday || idx === nowIdx ||
+      const byDefault = !isToday || idx === nowIdx || (focus && here.includes(focus)) ||
         (idx < nowIdx && here.some(i => isOpenNow(i) && !i.anytime && !i.carry) && partEnd[part.key] && now < partEnd[part.key]);
       const open = folds[part.key] !== undefined ? folds[part.key] : byDefault;
       sec.classList.toggle("is-folded", !open);
