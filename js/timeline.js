@@ -841,6 +841,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     // The part of the day you're in: where the most urgent open prayer or practice
     // is (or the next one to start). Things that follow you don't count.
     let nowIdx = -1;
+    lastNowIdx = -1;
     const moved = new Set();
     if (isToday) {
       const core = all.filter(i => !i.anytime && !i.carry && !i.noDeadline && !settled[i.id]);
@@ -850,11 +851,15 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       // (If nothing else is open, the "Now" item itself — e.g. tefillin late morning.)
       const anchor = cur[0] || (focus && !focus.anytime ? focus : null) || up[0];
       nowIdx = anchor ? homeIdx.get(anchor) : partEls.length - 1;
+      lastNowIdx = nowIdx;
       // …then what isn't done yet follows the day: "anytime" practices once their
       // part is over, and things like tefillin once the morning is over (until
       // their latest time). Done or set aside, they stay home.
-      const movers = all.filter(i => !settled[i.id] && homeIdx.get(i) < nowIdx && tlStatus(i, now) !== "past" &&
-        (i.anytime || (i.carry && partEnd[partEls[homeIdx.get(i)].part.key] && now >= partEnd[partEls[homeIdx.get(i)].part.key])));
+      // The "anytime" practices stay with the part of the day you're in, ticked or not,
+      // so ticking one never moves anything; tefillin follows you only while not done.
+      const movers = all.filter(i => homeIdx.get(i) < nowIdx && tlStatus(i, now) !== "past" &&
+        (i.anytime ||
+         (!settled[i.id] && i.carry && partEnd[partEls[homeIdx.get(i)].part.key] && now >= partEnd[partEls[homeIdx.get(i)].part.key])));
       const target = partEls[nowIdx].ul;
       movers.slice().reverse().forEach(i => { target.insertBefore(itemEls.get(i), target.firstChild); moved.add(i); });
     }
@@ -897,7 +902,11 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
         const chk = li.querySelector(".tl-check");
         if (chk) {
           chk.setAttribute("aria-pressed", done[item.id] ? "true" : "false");
-          chk.setAttribute("aria-label", `${done[item.id] ? "Mark not done" : "Mark done"}: ${item.title}`);
+          // Not before its time: you can't have said the bedtime Shema in the morning.
+          const notYet = isToday && !done[item.id] && !item.anytime && tlStatus(item, now) === "upcoming";
+          chk.disabled = notYet;
+          chk.title = notYet ? (day.approx ? "Not yet" : `Available from ${fmt(item.start)}`) : "";
+          chk.setAttribute("aria-label", notYet ? `${item.title}: not yet` : `${done[item.id] ? "Mark not done" : "Mark done"}: ${item.title}`);
         }
         const carried = li.querySelector(".tl-carried");
         if (carried) carried.textContent = moved.has(item) && item.carry && !day.approx ? `Still open — latest ${fmt(item.end)}` : "";
@@ -938,6 +947,8 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     renderNow(now, settled);
   }
 
+  let lastNowIdx = -1; // the part of the day you're in, as of the last paint
+
   // When the last thing in a part of the day is ticked (or set aside): a little
   // celebration, then that part folds and the next one with something to do opens.
   // Once per part per day, and only when the visitor ticks — never on load.
@@ -953,6 +964,8 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     const here = [...sec.querySelectorAll(".tl-list > li.tl-item")].map(l => byLi.get(l)).filter(Boolean);
     if (!here.length || !here.every(i => settled[i.id] || tlStatus(i, now) === "past")) return;
     if (tlCheers.get(ctx.dateISO)[key]) return;
+    // Only for a part of the day that has started.
+    if (partEls.findIndex(p => p.sec === sec) > lastNowIdx) return;
     tlCheers.set(ctx.dateISO, key, true);
 
     tlFolds.set(ctx.dateISO, key, false);
