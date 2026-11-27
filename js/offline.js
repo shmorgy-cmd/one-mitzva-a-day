@@ -203,7 +203,7 @@ function scheduleReminders(events) {
         // Only within the next day — the page has to be open for it to fire anyway.
         if (wait > 0 && wait < 26 * 60 * 60 * 1000) {
           reminderTimers.push(setTimeout(() => {
-            notify("Candle lighting in 30 minutes", `${timedEventLabel(e)} is at ${fmtClock(e.time)} in ${settings.location.name}.`, `candles-${toISO(e.date)}`);
+            notify("Candle lighting in 30 minutes", `${timedEventLabel(e)} is at ${fmtClock(e.time)} in ${placeInSentence(settings.location)}.`, `candles-${toISO(e.date)}`);
           }, wait));
         }
       });

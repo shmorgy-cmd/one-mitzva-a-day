@@ -105,6 +105,12 @@ function getBrowserLocation() {
   });
 }
 
+/** The place's name for use inside a sentence ("Times for your current location"). */
+function placeInSentence(loc) {
+  if (!loc) return "your city";
+  return loc.name === "Your current location" ? "your current location" : loc.name;
+}
+
 function locationLabel(loc) {
   if (!loc) return null;
   return loc.name;

@@ -3052,7 +3052,8 @@ a.tl-zmanim-link:hover { text-decoration: underline; }
 .ts-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #8a5a00; }
 .today-summary .gregorian-date { margin: 0; font-family: "Fraunces", serif; font-weight: 700; font-size: 1.3rem; color: var(--flag-blue-deep); }
 .today-summary .hebrew-date { font-size: 1.15rem; font-weight: 500; color: var(--flag-blue); }
-.today-summary .viewing-banner-back { align-self: flex-start; margin-top: 4px; }
+.ts-back { margin-left: 10px; padding: 1px 10px; border-radius: 999px; border: 1px solid #cfdcf6; background: #eef3fd; color: var(--flag-blue); font: 700 0.72rem "Source Sans 3", sans-serif; letter-spacing: 0; text-transform: none; cursor: pointer; vertical-align: 1px; }
+.ts-back:hover, .ts-back:focus-visible { background: var(--flag-blue); color: #fff; border-color: var(--flag-blue); outline: none; }
 .today-summary #today-line { margin-top: 8px; }
 .today-summary .today-line { display: inline-flex; margin: 0; padding: 3px 12px 3px 4px; border-radius: 999px; background: #eef2fc; gap: 8px; }
 .today-summary .today-line .icon-badge { width: 26px; height: 26px; }

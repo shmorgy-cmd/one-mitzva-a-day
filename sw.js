@@ -12,7 +12,7 @@
  * Bump CACHE_VERSION whenever app files change so visitors get the update.
  */
 
-const CACHE_VERSION = "v66";
+const CACHE_VERSION = "v67";
 
 // For visitors who opted in to OneSignal messages, OneSignal registers this same
 // file with its own query parameters (appId, sdkVersion…) — only then is its

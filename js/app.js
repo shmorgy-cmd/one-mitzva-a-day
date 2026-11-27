@@ -1119,12 +1119,13 @@ function renderViewingBanner(date) {
   if (existing) existing.remove();
   const diff = daysBetween(realToday, date);
   if (label) label.textContent = diff === 0 ? "Today is" : diff > 0 ? "Looking ahead to" : "Looking back at";
-  if (diff === 0) return;
-  const backBtn = el("button", "viewing-banner-back", "Back to today");
+  if (diff === 0 || !label) return;
+  // A small pill on the same line as the label, so it adds no height to the card.
+  const backBtn = el("button", "ts-back", "← Back to today");
   backBtn.id = "viewing-banner";
   backBtn.type = "button";
   backBtn.addEventListener("click", () => setViewingDate(realToday));
-  document.querySelector(".ts-date").appendChild(backBtn);
+  label.appendChild(backBtn);
 }
 
 /** "17 Kislev 5787" from Hebcal's converter (hd, hm, hy). */
