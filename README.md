@@ -33,7 +33,7 @@ Add new occasions to the `OCCASIONS` array in [`js/content.js`](js/content.js). 
 
 ## Menu bar
 
-Every page has the same banner at the top ([`js/nav.js`](js/nav.js)): the logo (home) with the tagline ("A daily companion for learning, living, and loving Jewish tradition — one day at a time."), the four pages — Today, Torah, Everyday Mitzvot, About — and a **Settings** button with the saved city under it. The banner stays at the top; once the page scrolls it shrinks to a slim bar and the tagline hides. On phones the pages move to a bottom bar with the same four buttons, and the top keeps the logo and Settings. Each page names itself with `<body data-page="…">` so the bar can mark it; a page can set `window.onSettingsChanged` to refresh after a settings change (the Today page does), otherwise it reloads.
+Every page has the same banner at the top ([`js/nav.js`](js/nav.js)): the logo (home) with the tagline ("A daily companion for learning, living, and loving Jewish tradition — one day at a time."), the five pages — Today, Torah, Everyday Mitzvot, Times, About — and a **Settings** button with the saved city under it. The banner stays at the top; once the page scrolls it shrinks to a slim bar and the tagline hides. On phones the pages move to a bottom bar with the same five buttons, and the top keeps the logo and Settings. Each page names itself with `<body data-page="…">` so the bar can mark it; a page can set `window.onSettingsChanged` to refresh after a settings change (the Today page does), otherwise it reloads.
 
 ## Settings and location
 
@@ -71,7 +71,7 @@ Under the date, one line says what today is (e.g. "Shabbat · Chanukah"), follow
 
 ## Zmanim
 
-Below the timeline, the "All of the day's times" card shows the viewed day's times for the saved city from Hebcal's `/zmanim`, grouped by what you're doing, with earliest and latest: tallit and tefillin, Shacharit, the morning Shema (Magen Avraham and Gra), Mincha and Maariv. Chabad profiles get the Alter Rebbe's times. Without a city it asks for one instead of guessing.
+The Times page ([`zmanim.html`](zmanim.html), [`js/zmanim-page.js`](js/zmanim-page.js), groups in [`js/zmanim.js`](js/zmanim.js)) shows a day's times for the saved city from Hebcal's `/zmanim`, with a day picker (‹ Today ›, any date; `zmanim.html?date=2026-12-04`) — the day itself (dawn, sunrise, midday, sunset, nightfall) and, grouped by what you're doing, earliest and latest: tallit and tefillin, Shacharit, the morning Shema (Magen Avraham and Gra), Mincha and Maariv. Chabad profiles get the Alter Rebbe's times. Without a city it asks for one instead of guessing.
 
 ## Printable Shabbat / Yom Tov sheet
 

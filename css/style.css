@@ -276,7 +276,6 @@ button.ts-row:focus-visible {
 
 
 #timeline-container,
-#zmanim-container,
 #quiz-container { scroll-margin-top: 12px; }
 
 .ts-print-wrap {
@@ -3010,3 +3009,23 @@ body.has-sheet { overflow: hidden; }
 .tl-check:disabled { opacity: 0.35; cursor: not-allowed; }
 .tl-makeup:empty { display: none; }
 .tl-makeup { margin: 6px 0 0; padding: 6px 10px; border-radius: 8px; background: #eef2fc; color: var(--flag-blue-deep); font-size: 0.84rem; font-weight: 600; line-height: 1.4; }
+
+/* Link from the timeline to the Times page */
+a.tl-zmanim-link { display: inline-block; margin: 2px 0 8px; color: var(--flag-blue); font-weight: 600; font-size: 0.9rem; text-decoration: none; }
+a.tl-zmanim-link:hover { text-decoration: underline; }
+
+/* Times page (zmanim.html) */
+.zp-heb { margin: 0 0 2px; font-family: "Frank Ruhl Libre", serif; font-size: 1.3rem; color: var(--flag-blue-deep); text-align: left; min-height: 1.3em; }
+.zp-city { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; color: var(--ink-soft); font-weight: 600; }
+.zp-city-btn { border: 1px solid var(--line); background: var(--paper); color: var(--flag-blue); border-radius: 999px; padding: 3px 12px; font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.zp-city-btn:hover, .zp-city-btn:focus-visible { border-color: var(--flag-blue-bright); outline: none; }
+.zp-nav { display: flex; align-items: center; gap: 6px; margin: 14px 0 12px; flex-wrap: wrap; }
+.zp-body .zm-next { margin-bottom: 12px; }
+.zp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.zp-card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px 6px; box-shadow: var(--shadow); }
+.zp-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.zp-card-head .icon-badge { width: 34px; height: 34px; flex: none; }
+.zp-card-head h2 { margin: 0; font-family: "Fraunces", serif; font-size: 1.05rem; color: var(--flag-blue-deep); }
+@media (max-width: 700px) {
+  .zp-grid { grid-template-columns: 1fr; }
+}

@@ -749,6 +749,10 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
   container.appendChild(el("p", "pc-review", day.approx
     ? "Times depend on your city — set it in settings for exact times. Customs differ, so check the details with your rabbi."
     : `Times for ${currentSettings.location ? currentSettings.location.name : "your city"}, calculated by Hebcal. Customs differ — check the details with your rabbi.`));
+  // All of the day's times are on their own page.
+  const zLink = el("a", "tl-zmanim-link", isToday ? "All of today's times →" : "All of this day's times →");
+  zLink.href = isToday ? "zmanim.html" : `zmanim.html?date=${toISO(date)}`;
+  container.appendChild(zLink);
   container.appendChild(reportLink(`timeline:${toISO(date)}`));
 
   function showMe(item) {
