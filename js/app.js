@@ -1118,9 +1118,6 @@ async function init() {
   viewingDate = realToday;
   document.getElementById("gregorian-date").textContent = fmtDate(realToday);
 
-  // The way into the About page.
-  document.querySelectorAll(".mz-teaser-icon").forEach(s => { s.innerHTML = getIcon(s.dataset.icon); });
-
   try {
     const [events, hebrewDateInfo] = await Promise.all([
       loadCalendarWindow(realToday),

@@ -67,7 +67,8 @@ Under the date, one line says what today is (e.g. "Shabbat · Chanukah"), follow
 
 ## About page
 
-[`about.html`](about.html) tells why the site exists (a convert's story: knowing what to do each day, learning something new, a spiritual thought — without always being able to get to a shiur or ask), who it's for, the "learn with a rabbi" note, and the privacy summary. The home page links to it with a small card, and "About" in the top menu opens it.
+[`about.html`](about.html) tells why the site exists (a convert's story: knowing what to do each day, learning something new, a spiritual thought — without always being able to get to a shiur or ask), who it's for, the "learn with a rabbi" note, and the privacy summary. "About" in the menu bar (and the phone's bottom bar) opens it.
+
 ## Zmanim
 
 Below the timeline, the "All of the day's times" card shows the viewed day's times for the saved city from Hebcal's `/zmanim`, grouped by what you're doing, with earliest and latest: tallit and tefillin, Shacharit, the morning Shema (Magen Avraham and Gra), Mincha and Maariv. Chabad profiles get the Alter Rebbe's times. Without a city it asks for one instead of guessing.

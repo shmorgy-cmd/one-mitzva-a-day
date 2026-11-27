@@ -2420,25 +2420,6 @@ body.has-he-voice .spk--tts { display: grid; }
 /* Everyday Mitzvot page (mitzvot.html) and the way in from home      */
 /* ---------------------------------------------------------------- */
 
-.mz-teaser {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 18px 0 8px;
-  padding: 16px 18px;
-  background: linear-gradient(135deg, #fdf6e9, var(--paper));
-  border: 1px solid var(--gold-light);
-  border-radius: 14px;
-  color: inherit;
-  text-decoration: none;
-  box-shadow: var(--shadow);
-}
-.mz-teaser:hover, .mz-teaser:focus-visible { box-shadow: var(--shadow-hover); outline: none; }
-.mz-teaser-icon { flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--flag-blue); color: #fff; display: grid; place-items: center; }
-.mz-teaser-icon svg { width: 24px; height: 24px; }
-.mz-teaser-text { flex: 1; display: flex; flex-direction: column; gap: 2px; color: var(--ink-soft); font-size: 0.92rem; }
-.mz-teaser-text strong { font-family: "Fraunces", serif; font-size: 1.25rem; color: var(--flag-blue-deep); }
-.mz-teaser-go { flex: none; font-weight: 600; color: var(--flag-blue); white-space: nowrap; }
 .tl-mz-link { display: inline-block; margin-top: 10px; font-weight: 600; color: var(--flag-blue); }
 
 .mz-top { padding: 22px 0 4px; }
@@ -2524,8 +2505,6 @@ body.has-he-voice .spk--tts { display: grid; }
   .mz-d-head h1 { font-size: 1.45rem; }
   .mz-grid { grid-template-columns: 1fr; }
   .mz-sec { padding: 12px; }
-  .mz-teaser { flex-wrap: wrap; }
-  .mz-teaser-go { width: 100%; padding-left: 58px; }
 }
 
 /* About page (about.html) */
@@ -2544,7 +2523,6 @@ body.has-he-voice .spk--tts { display: grid; }
 .about-story p:last-child { margin-bottom: 0; }
 .about-back { margin: 22px 0 30px; }
 .about-back a { color: var(--flag-blue); font-weight: 600; text-decoration: none; }
-.about-teaser { margin-top: 10px; }
 
 /* ---------------------------------------------------------------- */
 /* Date card: what today is, a thought for today, more about today    */
