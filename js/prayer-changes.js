@@ -164,6 +164,7 @@ function getPrayerChanges({ date, heb, hebTomorrow, israel, events, community, n
   const today = [];
   const tonight = [];
   const season = [];
+  const weekly = []; // every-week additions (Monday & Thursday), shown apart from "what changes today"
   const dow = date.getDay();
   const tomorrowDate = pcAddDays(date, 1);
   const info = pcDayInfo(events, date);
@@ -276,6 +277,21 @@ function getPrayerChanges({ date, heb, hebTomorrow, israel, events, community, n
   // --- Tachanun ----------------------------------------------------------------
   if (dow !== 6) {
     const reason = noTachanunReason(heb, info, community, nusach);
+    // Monday and Thursday: a longer Tachanun and prayers around the Torah reading —
+    // all left out, like Tachanun itself, on days without it.
+    if ((dow === 1 || dow === 4) && weekday && !reason) {
+      weekly.push({
+        id: "mon-thu-additions",
+        title: "Longer Tachanun and prayers around the Torah reading",
+        detail: "On Mondays and Thursdays, V'hu Rachum — a long plea for mercy — is said before the regular Tachanun, and short prayers are added before and after the Torah reading.",
+        where: "Shacharit",
+        customs: {
+          ashkenazi: "V'hu Rachum (said standing) before Tachanun; Kel Erech Apayim just before the Torah is taken out; and the four Yehi Ratzon prayers after the reading, before it's returned.",
+          sephardi: "V'hu Rachum is said with Tachanun. Kel Erech Apayim and the Ashkenazi Yehi Ratzon prayers aren't part of most Sephardi siddurim — follow yours.",
+          chabad: "V'hu Rachum before Tachanun, Kel Erech Apayim before the Torah is taken out, and the Yehi Ratzon prayers after the reading, as in Siddur Tehillat Hashem."
+        }
+      });
+    }
     if (reason && weekday) {
       today.push({
         id: "no-tachanun",
@@ -627,7 +643,7 @@ function getPrayerChanges({ date, heb, hebTomorrow, israel, events, community, n
     });
   }
 
-  return { today, tonight, season };
+  return { today, tonight, season, weekly };
 }
 
 /** Pick which community notes to show: the visitor's own, or all of them. */

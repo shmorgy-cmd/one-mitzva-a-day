@@ -207,7 +207,7 @@ function buildDayTimeline(opts) {
     timeLabel: fmt(z.chatzot), timeSmall: approx ? "" : "latest", ...win(z.alot, z.chatzot, "latest"),
     title: shabbat && !festival ? "Shabbat morning prayers" : festival ? "Festival morning prayers" : "Shacharit (morning prayer)",
     why: approx ? "In the morning, ideally soon after sunrise." : `Ideally from sunrise (${fmt(z.sunrise)}).`,
-    changes: changes.today, season: changes.season,
+    changes: changes.today, season: changes.season, weekly: changes.weekly || [],
     changesLabel: "Changes today" });
 
   // 3. Midday — anytime practices
@@ -782,6 +782,12 @@ function tlPrayerBody(item, ctx, used) {
     item.changes.forEach(c => ul.appendChild(renderPrayerChangeItem(c, used, ctx.textCtx)));
     box.appendChild(ul);
   }
+  if (item.weekly && item.weekly.length) {
+    box.appendChild(el("h4", "section-label", "As every Monday & Thursday"));
+    const ul = el("ul", "pc-list");
+    item.weekly.forEach(c => ul.appendChild(renderPrayerChangeItem(c, used, ctx.textCtx)));
+    box.appendChild(ul);
+  }
   if (item.season && item.season.length) {
     const d = el("details", "pc-season");
     d.appendChild(el("summary", null, "This season (said every day for now)"));
@@ -946,6 +952,7 @@ function tlRenderItem(item, ctx, used) {
   const shortChange = (t) => (item.id === "maariv" ? t.replace(/\s*(from )?tonight$/i, "") : t);
   if (changeTitles.length) main.appendChild(el("p", "tl-changes", `${item.id === "maariv" ? "Tonight" : "Today"}: ${changeTitles.map(shortChange).join(" · ")}`));
   if (item.sameAs && item.sameAs.length) main.appendChild(el("p", "tl-changes", `Today's prayer changes (explained under Shacharit): ${item.sameAs.join(" · ")}`));
+  if (item.weekly && item.weekly.length) main.appendChild(el("p", "tl-changes tl-changes--weekly", "As every Monday & Thursday: longer Tachanun (V'hu Rachum) · Torah reading"));
 
   row.appendChild(main);
 

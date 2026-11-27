@@ -1007,6 +1007,10 @@ function renderDayNotes(date, info, changes, guide, events) {
     const icon = DAY_NOTE_ICONS[g.id] || (/fast/i.test(title) ? "⏳" : /Chanukah|menorah/i.test(title) ? "🕎" : /dinner|Kiddush|meal/i.test(title) ? "🍷" : /Shabbat|Yom Tov|candle/i.test(title) ? "🕯️" : "⭐");
     add(icon, `${title}${g.when ? ` · ${g.when}` : ""}`, "guide-" + g.id);
   });
+  // Monday & Thursday additions (V'hu Rachum…), only when Tachanun is said.
+  if (changes && (changes.weekly || []).some(c => c.id === "mon-thu-additions")) {
+    weekly.push({ icon: "🙏", text: "Longer Tachanun (V'hu Rachum)", tag: "every Monday & Thursday", target: "shacharit" });
+  }
   const tachanunListed = (changes ? changes.today : []).some(c => /tachanun/.test(c.id));
   if (!tachanunListed) {
     if (dow === 5) weekly.push({ icon: "🌤️", text: "No Tachanun at Mincha", tag: "every Friday, before Shabbat", target: "mincha" });
