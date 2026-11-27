@@ -737,33 +737,18 @@ function ordinal(n) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-const GEAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>';
-
-/** The settings button under the date nav — summarizes city + profile and opens the panel. */
-function renderProfilePill(profile) {
-  const existing = document.getElementById("profile-pill");
-  if (existing) existing.remove();
-
-  const pill = el("button", "profile-pill");
-  pill.id = "profile-pill";
-  pill.type = "button";
-  pill.setAttribute("aria-label", `Settings: ${settingsSummary(currentSettings, profile)}`);
-  pill.innerHTML = GEAR_SVG;
-  pill.appendChild(el("span", null, settingsSummary(currentSettings, profile)));
-  pill.addEventListener("click", openSettings);
-  document.querySelector(".date-nav").insertAdjacentElement("afterend", pill);
-}
-
+/** Settings live in the menu bar (nav.js); a change there refreshes the Today page. */
 function openSettings() {
-  openSettingsPanel((changed) => { if (changed) refreshAll(); });
+  openNavSettings();
 }
+window.onSettingsChanged = () => refreshAll();
 
 /** Re-read settings and re-fetch everything that depends on location, the
  *  Israel setting, or the profile. */
 async function refreshAll() {
   currentSettings = getSettings();
   currentProfile = getProfile();
-  renderProfilePill(currentProfile);
+  updateNavSettings();
   browseEvents = null;
   try {
     realTodayEvents = await loadCalendarWindow(realToday);
@@ -1278,13 +1263,13 @@ async function init() {
     hebrewDateCache.set(toISO(realToday), hebrewDateInfo);
 
     currentProfile = getProfile();
-    renderProfilePill(currentProfile);
+    updateNavSettings();
     await setViewingDate(realToday);
 
     if (!currentProfile) {
       openOnboarding((newProfile) => {
         currentProfile = newProfile;
-        renderProfilePill(newProfile);
+        updateNavSettings();
         setViewingDate(viewingDate);
       });
     }
@@ -1302,58 +1287,6 @@ async function init() {
   }
 }
 
-/** Mobile bottom tab bar: icons, and highlight the section currently on screen. */
-function initTabBar() {
-  const bar = document.getElementById("tab-bar");
-  if (!bar) return;
-  const links = [...bar.querySelectorAll("a")];
-  links.forEach(a => {
-    const label = a.textContent;
-    a.innerHTML = `<span class="tab-icon" aria-hidden="true">${getIcon(a.dataset.icon)}</span><span>${label}</span>`;
-  });
-  // Sections that belong to each tab: everything above the Torah card counts as "Today".
-  const extra = {
-    top: ["timeline-container", "zmanim-container"]
-  };
-  const sections = [];
-  links.forEach(a => {
-    const id = a.getAttribute("href").slice(1);
-    [id, ...(extra[id] || [])].forEach(sid => sections.push({ id: sid, link: a }));
-  });
-
-  // The active tab owns the lowest section whose top has scrolled past a line
-  // near the top of the screen; at the very bottom of the page, the last tab.
-  function updateActiveTab() {
-    // Sections are scrolled to ~12px from the top (scroll-margin), so a line at 60px
-    // picks the section just tapped even when it's short (like Prep).
-    const line = 60;
-    let active = links[0];
-    let best = -Infinity;
-    sections.forEach(({ id, link }) => {
-      const target = document.getElementById(id);
-      if (!target || !target.offsetHeight) return;
-      const top = target.getBoundingClientRect().top;
-      if (top <= line && top > best) { best = top; active = link; }
-    });
-    const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
-    if (atBottom) active = links[links.length - 1];
-    links.forEach(a => {
-      const on = a === active;
-      a.classList.toggle("is-active", on);
-      if (on) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current");
-    });
-  }
-  let pending = false;
-  window.addEventListener("scroll", () => {
-    if (pending) return;
-    pending = true;
-    requestAnimationFrame(() => { pending = false; updateActiveTab(); });
-  }, { passive: true });
-  window.updateActiveTab = updateActiveTab;
-  updateActiveTab();
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-  initTabBar();
   init();
 });

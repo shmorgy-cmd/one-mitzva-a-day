@@ -31,9 +31,13 @@ Since it's just static files, you can drop the whole folder onto GitHub Pages, N
 
 Add new occasions to the `OCCASIONS` array in [`js/content.js`](js/content.js). Each entry needs a `match(ctx)` function (see the comment at the top of that file for what's available on `ctx`) and a `content` object with `intro`, `halacha`, `customs`, and `inspiration`. Higher `priority` wins when multiple occasions match the same day. Add the occasion's classic sources to `OCCASION_SOURCES` at the bottom of `content.js`; mitzvot carry a `sources` array inline. Sources show at the bottom of every card.
 
+## Menu bar
+
+Every page has the same slim bar at the top ([`js/nav.js`](js/nav.js)): the logo (home), the four pages — Today, Torah, Everyday Mitzvot, About — and a **Settings** button with the saved city under it. The bar stays at the top while scrolling. On phones the pages move to a bottom bar with the same four buttons, and the top keeps the logo and Settings. Each page names itself with `<body data-page="…">` so the bar can mark it; a page can set `window.onSettingsChanged` to refresh after a settings change (the Today page does), otherwise it reloads.
+
 ## Settings and location
 
-The Settings panel ([`js/settings.js`](js/settings.js)) stores the visitor's city, Israel/outside-Israel calendar choice and profile in `localStorage` only. The city is passed to every Hebcal call (calendar + Torah readings with `i=on`/`c=on`, and zmanim) for candle-lighting, Havdalah, fast and prayer times. City search uses [Open-Meteo's free geocoder](https://open-meteo.com/en/docs/geocoding-api) because Hebcal's own autocomplete doesn't allow cross-site requests; it returns the same GeoNames ids Hebcal uses.
+The Settings panel, opened from the menu bar on any page, ([`js/settings.js`](js/settings.js)) stores the visitor's city, Israel/outside-Israel calendar choice and profile in `localStorage` only. The city is passed to every Hebcal call (calendar + Torah readings with `i=on`/`c=on`, and zmanim) for candle-lighting, Havdalah, fast and prayer times. City search uses [Open-Meteo's free geocoder](https://open-meteo.com/en/docs/geocoding-api) because Hebcal's own autocomplete doesn't allow cross-site requests; it returns the same GeoNames ids Hebcal uses.
 
 ## Prayer changes engine
 

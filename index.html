@@ -18,30 +18,30 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Frank+Ruhl+Libre:wght@400;500;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
-  <header class="site-header">
-    <div class="header-stars" aria-hidden="true"></div>
-    <div class="wrap">
-      <div class="brand">
-        <span class="brand-mark">
+<body data-page="today">
+  <header class="site-bar">
+    <div class="wrap site-bar-inner">
+      <a class="sb-brand" href="./" aria-label="One Mitzva a Day — Today">
+        <span class="sb-mark" aria-hidden="true">
           <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
             <polygon points="32,10 51.05,43 12.95,43" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
             <polygon points="32,54 12.95,21 51.05,21" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
           </svg>
         </span>
-        <span class="brand-name">One Mitzva a Day</span>
-      </div>
-      <p class="tagline">A daily companion for learning, living, and loving Jewish tradition — one day at a time.</p>
-      <nav class="site-nav" aria-label="Section navigation">
-        <a href="#top">Today</a>
-        <a href="torah.html">Torah</a>
-        <a href="mitzvot.html">Everyday Mitzvot</a>
-        <a href="#prep-section">Coming Up</a>
-        <a href="#quiz-container">Quiz</a>
-        <a href="about.html">About</a>
+        <span class="sb-name">One Mitzva a Day</span>
+      </a>
+      <nav class="sb-links" aria-label="Pages">
+        <a href="./" data-page="today">Today</a>
+        <a href="torah.html" data-page="torah">Torah</a>
+        <a href="mitzvot.html" data-page="mitzvot">Everyday Mitzvot</a>
+        <a href="about.html" data-page="about">About</a>
       </nav>
+      <button class="sb-settings" id="nav-settings" type="button" aria-label="Settings">
+        <span class="sb-gear" aria-hidden="true"></span>
+        <span class="sb-set-text"><b>Settings</b><small id="nav-settings-city"></small></span>
+      </button>
     </div>
-    <div class="tallit-bar" aria-hidden="true"></div>
+    <div class="sb-tallit" aria-hidden="true"></div>
   </header>
 
   <main class="wrap">
@@ -92,12 +92,11 @@
 
   </main>
 
-  <nav class="tab-bar" id="tab-bar" aria-label="Sections">
-    <a href="#top" data-icon="star">Today</a>
-    <a href="torah.html" data-icon="tablets">Torah</a>
-    <a href="mitzvot.html" data-icon="hand">Mitzvot</a>
-    <a href="#prep-section" data-icon="candles-shabbat">Coming up</a>
-    <a href="#quiz-container" data-icon="trophy">Quiz</a>
+  <nav class="tab-bar" id="tab-bar" aria-label="Pages">
+    <a href="./" data-page="today" data-icon="star">Today</a>
+    <a href="torah.html" data-page="torah" data-icon="tablets">Torah</a>
+    <a href="mitzvot.html" data-page="mitzvot" data-icon="hand">Mitzvot</a>
+    <a href="about.html" data-page="about" data-icon="book-star">About</a>
   </nav>
 
   <footer class="site-footer">
@@ -112,6 +111,7 @@
   <script src="js/profile.js"></script>
   <script src="js/personalize.js"></script>
   <script src="js/settings.js"></script>
+  <script src="js/nav.js"></script>
   <script src="js/prayers.js"></script>
   <script src="js/prayer-changes.js"></script>
   <script src="js/daily-guide.js"></script>

@@ -294,17 +294,7 @@ function mzRoute() {
   }
 }
 
-function mzInitTabBar() {
-  const bar = document.getElementById("tab-bar");
-  if (!bar) return;
-  bar.querySelectorAll("a").forEach(a => {
-    const label = a.textContent;
-    a.innerHTML = `<span class="tab-icon" aria-hidden="true">${getIcon(a.dataset.icon)}</span><span>${label}</span>`;
-  });
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-  mzInitTabBar();
   applyTransliterationPref();
   initHebrewVoice();
   window.addEventListener("hashchange", mzRoute);

@@ -276,10 +276,6 @@ async function initTorahPage() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("#tab-bar a").forEach(a => {
-    const label = a.textContent;
-    a.innerHTML = `<span class="tab-icon" aria-hidden="true">${getIcon(a.dataset.icon)}</span><span>${label}</span>`;
-  });
   if (typeof applyTransliterationPref === "function") applyTransliterationPref();
   initTorahPage();
 });
