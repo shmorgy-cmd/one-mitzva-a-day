@@ -3352,3 +3352,26 @@ button.g-tag::after { content: " ?"; opacity: 0.6; }
 .nusach-help > summary { cursor: pointer; color: var(--flag-blue); font-weight: 600; }
 .nusach-help ul { margin: 6px 0 0; padding-left: 20px; }
 .nusach-help li { margin-bottom: 4px; }
+
+/* ---------------------------------------------------------------- */
+/* Tone, by "what brings you here"                                    */
+/* ---------------------------------------------------------------- */
+
+.tl-whatis { margin: 2px 0 4px; font-size: 0.86rem; color: var(--ink-soft); }
+.tl-whatis b { color: var(--flag-blue); font-weight: 700; }
+.tl-check.tl-check--text { width: auto; height: auto; min-height: 30px; padding: 4px 10px; border-radius: 999px; color: var(--ink-soft); font: 700 0.78rem "Source Sans 3", sans-serif; white-space: nowrap; }
+.tl-check.tl-check--text[aria-pressed="true"] { color: #fff; }
+.tone-note { margin-top: 10px; }
+.tone-gentle-note { background: #eef8f1; border-color: #cde8d6; color: #1f5d3a; }
+/* Reconnecting: nothing looks like a failure. */
+.tone-gentle .tl-item.is-missed .tl-card { border: 1px solid var(--line); background: var(--paper); }
+.tone-gentle .tl-late--missed { background: #f1f5fd; color: var(--ink-soft); font-weight: 500; }
+.tone-gentle .tl-skip-btn { text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; background: #fff; }
+.wizard-tone { margin: 14px 0 0; padding: 10px 12px; border-radius: 12px; background: #fbf6ea; color: var(--flag-blue-deep); font-weight: 600; }
+a.next-step {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: 8px; padding: 8px 12px; border-radius: 12px;
+  border: 1px solid #c7e7d2; background: #eef8f1; text-decoration: none;
+}
+a.next-step .fc-kicker { color: #1f6a43; }
+.next-step-sub { font-size: 0.82rem; color: var(--ink-soft); }

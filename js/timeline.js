@@ -306,6 +306,7 @@ function buildDayTimeline(opts) {
       timeLabel: fmt(fastEnds.at), title: "The fast ends", tag: "Fast", why: "Pray Maariv, then break the fast gently — a drink of water first." });
   }
 
+  tlApplyTone(items, allDay, opts.profile || null);
   tlApplyNusach(items, allDay, opts.profile || null, info);
   tlApplyGender(items, allDay, opts.profile || null);
   tlApplyFamily(items, allDay, opts.profile || null);
@@ -357,6 +358,84 @@ const TL_CANDLE_NOTES = {
   male: "Usually lit by the woman of the home. If you live alone (or she's away), you light yourself — and anyone can help by setting up the candles.",
   both: "Traditionally lit by the woman of the home — a special mitzvah given to women. Anyone living alone lights for themselves."
 };
+
+// ---------------------------------------------------------------------
+// Tone, by "what brings you here"
+// ---------------------------------------------------------------------
+
+/** "What is this?" — one line for those who are curious (nothing assumed). */
+const TL_WHAT_IS = {
+  "modeh-ani": "A one-line thank-you said the moment you wake up, before anything else.",
+  "netilat-yadayim": "Washing your hands in a set way to start the day fresh — a cup, water, and a short blessing.",
+  "asher-yatzar": "A blessing of thanks for a healthy body, said after using the bathroom.",
+  shoes: "Even getting dressed has small Jewish customs — a way of noticing everyday things.",
+  birchot: "A string of short thank-yous for everyday gifts: seeing, standing, waking up free.",
+  tefillin: "Two small black boxes with Torah verses, bound on the arm and head during weekday morning prayer.",
+  shema: "The central Jewish declaration of faith — \"Hear, Israel: the Lord is our God, the Lord is One.\"",
+  shacharit: "The morning prayer — the first of three daily prayers, at the heart of a Jewish day.",
+  mincha: "The short afternoon prayer — a few quiet minutes with God in the middle of the day.",
+  maariv: "The evening prayer, said after dark.",
+  "daily-mitzvah": "A mitzvah is a commandment — and also, people say, a good deed. Here's one to learn today.",
+  torah: "Each week, Jews everywhere read the same part of the Torah (the Five Books of Moses). Here's today's piece.",
+  "bedtime-shema": "A short prayer before sleep: the first line of the Shema, and letting go of the day."
+};
+
+/** Changes how items are worded, by the visitor's reason (the content stays the same). */
+function tlApplyTone(items, allDay, profile) {
+  const tone = typeof toneOf === "function" ? toneOf(profile) : null;
+  if (!tone) return;
+  items.forEach(it => {
+    if (tone === "jewish-reminders") {
+      // Short: what to do, and when — the background stays in the drop-down.
+      if (!["daily-mitzvah", "torah", "quiz"].includes(it.kind)) it.why = "";
+    }
+    if (tone === "jewish-reconnecting") {
+      if (it.missedNote) it.missedNote = "No worries — the time for this passed today. Tomorrow is a new day, whenever you're ready.";
+      if (it.lateNote) it.lateNote = it.lateNote.replace(/^The best time[^—]*— you can still/, "There's still time — you can");
+      if (!it.anytime) it.skippable = true;
+    }
+    if (tone === "converting" && it.id === "tefillin") {
+      it.notes = [...(it.notes || []), "While converting: tallit and tefillin are usually begun after the conversion — ask your rabbi when to start. Learning how now is a great step."];
+      it.skippable = true;
+    }
+    if (tone === "converted" && it.id === "shacharit") {
+      it.notes = [...(it.notes || []), "\"God of our fathers\" — Abraham, Isaac and Jacob are your ancestors too. As the Rambam wrote to Ovadia the convert, say it just as every Jew does."];
+    }
+    if (tone === "curious" && TL_WHAT_IS[it.id]) it.whatIs = TL_WHAT_IS[it.id];
+  });
+  if (tone === "converting") {
+    [...items, ...allDay].filter(it => it.id === "guide-candles" || it.id === "guide-shabbat-day").forEach(it => {
+      it.notes = [...(it.notes || []), "While converting: Shabbat is a beautiful thing to begin now. Many rabbis also ask those in the process to keep one small part of it differently until the conversion — ask yours what that should be."];
+    });
+  }
+}
+
+/** Days in a row (up to a week) with at least one thing ticked, ending today. */
+function tlStreak() {
+  let n = 0;
+  for (let i = 0; i < 7; i++) {
+    const done = tlDoneFor(toISO(addDays(new Date(), -i)));
+    if (Object.keys(done).length) n++; else break;
+  }
+  return n;
+}
+
+/** The cheer for finishing a part of the day, in the visitor's tone. */
+function tlCheerLine(key) {
+  const tone = typeof toneOf === "function" ? toneOf(currentProfile) : null;
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  if (tone === "jewish-reminders") {
+    return ({ waking: "Waking up", morning: "Morning", midday: "Midday", afternoon: "Afternoon", evening: "Evening", bedtime: "Bedtime" }[key] || "This part") + " — done ✓";
+  }
+  if (tone === "jewish-reconnecting") return pick(["Beautiful — one step is plenty ✨", "That was a real step. Well done 🌱", "Lovely. Little by little is how it's done 🌿"]);
+  if (tone === "curious") return pick(["You tried something new today ✨", "A little Jewish practice — done 🌟", "Look at you, learning by doing ✨"]);
+  const line = pick(TL_CHEERS[key] || TL_CHEERS.default);
+  if (tone === "jewish-growing") {
+    const n = tlStreak();
+    if (n >= 2) return `${line} · ${n === 7 ? "A full week in a row!" : `That's ${n} days in a row!`}`;
+  }
+  return line;
+}
 
 // ---------------------------------------------------------------------
 // Prayer tradition (nusach): your custom, on the timeline
@@ -816,6 +895,12 @@ function tlRenderItem(item, ctx, used) {
   h.appendChild(el("span", "tl-tag tl-tag--now", "Now"));
   h.appendChild(el("span", "tl-tag tl-tag--also", "Also now"));
   main.appendChild(h);
+  if (item.whatIs) {
+    const w = el("p", "tl-whatis");
+    w.appendChild(el("b", null, "What is this? "));
+    w.appendChild(document.createTextNode(item.whatIs));
+    main.appendChild(w);
+  }
   // Shown when the item has followed you past its own part of the day.
   main.appendChild(el("p", "tl-carried", ""));
   // Shown when its best time has passed (or it was missed): what to do now.
@@ -856,7 +941,9 @@ function tlRenderItem(item, ctx, used) {
   row.appendChild(main);
 
   if (ctx.isToday) {
-    const chk = el("button", "tl-check", "✓");
+    // For the curious, the tick says what it means: "I tried this".
+    const curious = typeof toneOf === "function" && toneOf(currentProfile) === "curious";
+    const chk = el("button", "tl-check" + (curious ? " tl-check--text" : ""), curious ? "Tried it ✓" : "✓");
     chk.type = "button";
     chk.addEventListener("click", () => {
       const isDone = li.classList.contains("is-done");
@@ -918,10 +1005,15 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
   const all = day.parts.flatMap(p => p.items);
   const itemEls = new Map();
 
-  // A note for those converting, as the old guide card had it.
-  const blessingsShown = [...(guide ? guide.tonight : []), ...(guide ? guide.today : [])].some(i => i.blessings && i.blessings.length);
-  if (blessingsShown && isConverting(currentProfile)) {
-    container.appendChild(el("p", "dg-convert", "Blessings that say \"who has commanded us\": ask your rabbi whether to say them before your conversion — doing the practice itself is always welcome."));
+  // A note at the top, in the visitor's tone: for those converting (blessings come
+  // up every day, from the morning ones on), and a gentle word for those reconnecting.
+  const tone = typeof toneOf === "function" ? toneOf(currentProfile) : null;
+  document.body.classList.toggle("tone-gentle", tone === "jewish-reconnecting");
+  document.body.classList.toggle("tone-short", tone === "jewish-reminders");
+  if (tone === "converting") {
+    container.appendChild(el("p", "dg-convert", "While converting: for blessings that say \"who has commanded us\", ask your rabbi whether to say them now — many advise saying them without God's name until the conversion. Doing the practices themselves is always welcome."));
+  } else if (tone === "jewish-reconnecting" && isToday) {
+    container.appendChild(el("p", "dg-convert tone-gentle-note", "🌱 There's no test here. Pick one thing that speaks to you today — that's a real step, and it's plenty."));
   }
 
   // All-day items (Shabbat, a fast, a festival…) sit above the timeline.
@@ -1276,8 +1368,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       ? `Next: ${f.title}${f.noDeadline || day.approx ? "" : ` · until ${fmt(f.end)}`}`
       : target ? `Next: ${target.title}${day.approx ? "" : ` · from ${fmt(target.start)}`}`
       : "That's everything for today — layla tov.";
-    const lines = TL_CHEERS[key] || TL_CHEERS.default;
-    tlShowCheer(lines[Math.floor(Math.random() * lines.length)], nextLine);
+    tlShowCheer(tlCheerLine(key), nextLine);
     if (next) setTimeout(() => next.sec.scrollIntoView({ behavior: "smooth", block: "nearest" }), 150);
   }
   ctx.onSettle = onSettle;

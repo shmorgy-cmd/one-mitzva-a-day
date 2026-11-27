@@ -40,6 +40,39 @@ function isConverting(profile) {
   return !!profile && profile.reason === "converting";
 }
 
+// ---------------------------------------------------------------------
+// Tone, by "what brings you here" (profile.reason)
+// ---------------------------------------------------------------------
+
+/** "jewish-reminders" | "jewish-growing" | "jewish-reconnecting" | "converting" | "converted" | "curious" | null */
+function toneOf(profile) {
+  return (profile && profile.reason) || null;
+}
+
+/** The last line of the welcome, in each tone. */
+const TONE_WELCOME = {
+  "jewish-reminders": "All set — we'll keep it short: what to do, and when.",
+  "jewish-growing": "Wonderful. We'll go step by step, with the \"why\" behind each one — and suggest a next step each week.",
+  "jewish-reconnecting": "Welcome back. There's no test here — one small thing a day is plenty.",
+  converting: "What a journey. We'll note what fits this stage — and your rabbi is always your best guide.",
+  converted: "Welcome. Everything here is yours — we'll explain as we go.",
+  curious: "Welcome! Everything is explained, nothing is assumed — try whatever speaks to you."
+};
+
+/** A short note on a mitzvah's page for this stage (converting / converted), or null. */
+function toneMitzvahNote(m, profile) {
+  const tone = toneOf(profile);
+  let text = null;
+  if (tone === "converted" && m.id === "honoring-parents") {
+    text = "Your parents are still your parents: honoring and thanking them stays a mitzvah for you — and the warmth you show them is itself a kiddush Hashem.";
+  } else if (tone === "converting" && (m.id === "tefillin" || m.id === "tzitzit")) {
+    text = "While converting: tefillin and tzitzit are usually begun after the conversion — ask your rabbi when to start. Learning how now is a great step.";
+  } else if (tone === "converting" && (m.id === "shabbat-candles" || m.id === "honoring-shabbat")) {
+    text = "While converting: Shabbat is a beautiful thing to begin now. Many rabbis also ask those in the process to keep one small part of Shabbat differently until the conversion — ask yours what that should be.";
+  }
+  return text ? pzEl("p", "dg-convert tone-note", escapeHtml(text)) : null;
+}
+
 /** Whose practices to show: "male", "female", or "both" (prefer not to say / not set). */
 function genderView(profile) {
   const g = profile && profile.gender;

@@ -127,6 +127,16 @@ On a first visit a 4-step welcome ([`js/profile.js`](js/profile.js)) asks: what 
 - Prayer cards: "Your siddur" and your community's order differences, shown open. Birkat HaMazon loads in Nusach Sefard (Chassidic and Chabad) or Edot HaMizrach (Sephardi) from Sefaria (`PT_BIRKAT_BY_NUSACH` in `prayer-texts.js`); Nusach Sefard counts the Omer "la'omer".
 - Nusach Sefard has its own `sefard` entries in the custom boxes where it differs, and otherwise follows the Ashkenazi ones. Settings and the welcome have a folded "How do I know my nusach?" guide.
 
+**Tone, by what brings you here** (`toneOf`, `TONE_WELCOME`, `toneMitzvahNote` in `personalize.js`; `tlApplyTone`, `TL_WHAT_IS`, `tlCheerLine` in `timeline.js`). The content stays the same; how it's framed changes:
+
+- Daily reminders: short cards (the "why" lines stay in the drop-down), no word explanations, short cheers ("Morning — done ✓").
+- Becoming more observant: explanations, a "Your next step this week" card under the parsha (a mitzvah not yet marked "I do this", the same all week), and cheers that count days in a row.
+- Reconnecting: a "there's no test here" note, gentle wording when a time has passed (nothing looks like a failure), and "Not for me today" on every timed item.
+- Converting: a note on blessings ("who has commanded us") at the top of the day, notes on tallit and tefillin and on Shabbat at this stage, also on those mitzvot's pages.
+- Recently converted: explanations, never labeled; a note on "God of our fathers" in Shacharit (the Rambam's letter to Ovadia the convert) and on honoring parents.
+- Curious: a "What is this?" line on each prayer and practice, and the tick reads "Tried it ✓".
+- The welcome's last step closes with a line in that tone.
+
 Other answers change the page through [`js/personalize.js`](js/personalize.js):
 
 - **A nusach**: a "Your custom" box on each card with only that community's minhagim ("Other" / "Not sure" shows all communities side by side), and the matching blessing texts and times.

@@ -107,7 +107,7 @@ function reasonShort(reason) {
     "jewish-growing": "Growing",
     "jewish-reconnecting": "Reconnecting",
     converting: "Converting",
-    converted: "Welcome home",
+    converted: "Learning",
     curious: "Curious"
   }[reason] || null;
 }
@@ -295,6 +295,12 @@ function openOnboarding(onDone) {
     lead.textContent = s.lead;
     modal.appendChild(lead);
     modal.appendChild(s.body());
+    // The last step closes with a line in the tone of what brought them here.
+    if (step === STEPS.length - 1 && typeof TONE_WELCOME !== "undefined" && TONE_WELCOME[profile.reason]) {
+      const tone = pel("p", "wizard-tone");
+      tone.textContent = TONE_WELCOME[profile.reason];
+      modal.appendChild(tone);
+    }
     modal.appendChild(pel("p", "pill-note wizard-privacy", "🔒 Saved only on this device. You can change it anytime in Settings."));
 
     const foot = pel("div", "wizard-foot");

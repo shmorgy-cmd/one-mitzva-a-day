@@ -253,6 +253,8 @@ function mzRenderDetail(m) {
     if (takingOn) sec.appendChild(takingOn);
     d.appendChild(sec);
   }
+  const toneNote = toneMitzvahNote(m, profile);
+  if (toneNote) d.appendChild(toneNote);
 
   const ref = mzSection("A thought to take with you");
   ref.appendChild(richEl("p", "mz-reflect", m.inspiration, profile, used));

@@ -436,6 +436,29 @@ function renderTodayParsha(events, date) {
   a.setAttribute("aria-label", `Read Parshat ${p.parashaName}. ${sub}`);
   box.appendChild(a);
   renderFamilyCorner(box, p.parashaName);
+  renderNextStep(box, date);
+}
+
+/** "Your next step this week" — for those becoming more observant: one mitzvah
+ *  they haven't marked "I do this" yet, the same all week, a new one next week. */
+function renderNextStep(box, date) {
+  if (toneOf(currentProfile) !== "jewish-growing") return;
+  let track = {};
+  try { track = JSON.parse(localStorage.getItem("omad_mitzvot_track_v1") || "{}") || {}; } catch (e) { /* ignore */ }
+  const women = currentProfile.gender === "female" && !currentProfile.showAll;
+  const pool = anytimeMitzvot().filter(m => track[m.id] !== "doing" && !(women && MITZVA_GENDER[m.id] === "male"));
+  if (!pool.length) return;
+  const week = Math.floor(daysBetween(new Date(2024, 0, 7), date) / 7); // weeks from a Sunday
+  const m = pool[((week % pool.length) + pool.length) % pool.length];
+  const a = el("a", "next-step");
+  a.href = `mitzvot.html#${m.id}`;
+  const t = el("span", "fc-head");
+  t.appendChild(el("span", "fc-kicker", "🌱 Your next step this week"));
+  t.appendChild(el("strong", null, m.title));
+  t.appendChild(el("span", "next-step-sub", m.subtitle));
+  a.appendChild(t);
+  a.appendChild(el("span", "today-parsha-go", "Learn how →"));
+  box.appendChild(a);
 }
 
 /** Under the parsha: a kids' corner (young children) or questions to talk over
@@ -611,6 +634,8 @@ function appendMitzvahDetail(container, m) {
   renderWords(container, m.blessings, resolveMitzvahTexts(m.texts), "The words");
   const minhagBox = renderMinhagBox(extras.minhagim, profile);
   if (minhagBox) container.appendChild(minhagBox);
+  const toneNote = toneMitzvahNote(m, profile);
+  if (toneNote) container.appendChild(toneNote);
   const takingOnBox = renderTakingOnBox(extras.takingOn, profile, used);
   if (takingOnBox) container.appendChild(takingOnBox);
   container.appendChild(el("h4", "section-label", "For Reflection"));
