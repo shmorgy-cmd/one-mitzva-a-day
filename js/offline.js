@@ -138,9 +138,10 @@ function renderInstallHint() {
   actions.appendChild(dismiss);
   hint.appendChild(actions);
 
-  // Below the day strip, just above the timeline.
-  const anchor = document.getElementById("day-strip") || document.getElementById("top");
-  anchor.insertAdjacentElement("afterend", hint);
+  // In the welcome card on the Today page, right under the date (other pages: none).
+  const slot = document.getElementById("install-slot");
+  if (!slot) return;
+  slot.appendChild(hint);
 }
 
 window.addEventListener("beforeinstallprompt", (e) => {

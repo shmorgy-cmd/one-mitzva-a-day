@@ -107,6 +107,21 @@ async function renderDayStrip() {
   head.appendChild(btn("‹", "Previous week", () => { dsStart = addDays(dsStart, -7); renderDayStrip(); }));
   head.appendChild(btn("›", "Next week", () => { dsStart = addDays(dsStart, 7); renderDayStrip(); }));
 
+  // The printable sheet for the next Shabbat / Yom Tov, right by the arrows.
+  const block = findRestBlock(events, viewingDate);
+  if (block) {
+    const holidays = blockHolidayNames(events, block);
+    const name = holidays.length ? holidays.join(" & ") : "Shabbat";
+    const p = el("button", "ds-btn ds-print");
+    p.type = "button";
+    p.innerHTML = PRINTER_SVG;
+    p.appendChild(el("span", "ds-print-text", `Print for ${name}`));
+    p.setAttribute("aria-label", `Print for ${name} · ${shortDate(block.days[0])}`);
+    p.title = `Print for ${name} · ${shortDate(block.days[0])}`;
+    p.addEventListener("click", () => openPrintPreview(viewingDate));
+    head.appendChild(p);
+  }
+
   // "Other date": a real date input laid over the button, so a tap opens the
   // phone's own calendar.
   const other = el("label", "ds-btn ds-other");

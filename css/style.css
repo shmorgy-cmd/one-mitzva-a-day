@@ -275,8 +275,8 @@ button.ts-row:focus-visible {
 }
 
 
-#timeline-container,
-#quiz-container { scroll-margin-top: 12px; }
+#timeline-container { scroll-margin-top: 12px; }
+
 
 .ts-print-wrap {
   border-top: 1px solid var(--line);
@@ -3051,3 +3051,35 @@ details.today-thought[open] .today-thought-peek { display: none; }
   .ts-grid { grid-template-columns: 1fr; gap: 8px; }
   .today-summary .gregorian-date { font-size: 1.15rem; }
 }
+
+/* "Add to home screen", compact, inside the welcome card */
+#install-slot:empty { display: none; }
+#install-slot .install-hint { margin: 10px 0 0; padding: 8px 10px; gap: 10px; box-shadow: none; background: #f4f7fe; border: 1px solid #d9e3f8; border-radius: 12px; }
+#install-slot .install-icon { width: 32px; height: 32px; border-radius: 8px; }
+#install-slot .install-text strong { font-size: 0.88rem; }
+#install-slot .install-text span { font-size: 0.78rem; }
+#install-slot .install-btn, #install-slot .install-dismiss { padding: 5px 12px; font-size: 0.82rem; }
+
+/* "What's different today" */
+#day-notes:empty { display: none; }
+.day-notes { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: #fff8ea; border: 1px solid #f0dcae; }
+.day-notes-title { margin: 0 0 6px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8a5a00; }
+.day-notes-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.day-note { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 8px; border-radius: 999px; background: #fff; border: 1px solid #ecd9ae; font: inherit; font-size: 0.85rem; font-weight: 600; color: var(--flag-blue-deep); text-align: left; }
+button.day-note { cursor: pointer; }
+button.day-note:hover, button.day-note:focus-visible { border-color: var(--gold); box-shadow: 0 2px 8px rgba(185, 138, 47, 0.2); outline: none; }
+.day-note-icon { font-size: 1rem; line-height: 1; }
+.day-notes--plain { display: flex; align-items: center; gap: 8px; background: #eef8f1; border-color: #cde8d6; }
+.day-notes-icon { font-size: 1rem; }
+.day-notes-plain { font-size: 0.9rem; font-weight: 600; color: #1f5d3a; }
+/* A short glow on the timeline item you jumped to */
+.tl-item.is-flash .tl-card { animation: tlFlash 1.6s ease; }
+@keyframes tlFlash { 0%, 60% { box-shadow: 0 0 0 4px rgba(217, 178, 92, 0.55); } 100% { box-shadow: none; } }
+/* Print for Shabbat, next to the day strip's arrows */
+.ds-print svg { width: 16px; height: 16px; }
+@media (max-width: 700px) {
+  .ds-print-text { display: none; }
+  .ds-print { padding: 0 9px; }
+}
+/* The quiz inside the timeline's "Test yourself" item */
+.quiz-card--inline { box-shadow: none; border: 0; padding: 0; margin: 0; background: none; animation: none; }

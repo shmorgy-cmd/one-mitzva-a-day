@@ -267,10 +267,6 @@ function renderTodayContext(occasions, ctx) {
     : (isToday ? "An ordinary weekday — where most of Jewish life happens" : "An ordinary weekday")));
   lineBox.appendChild(line);
 
-  if (ctx.erevTavshilin && ctx.isToday(ctx.erevTavshilin)) {
-    lineBox.appendChild(el("div", "tavshilin-banner", "Reminder: prepare Eruv Tavshilin before the holiday begins tonight, since this Yom Tov runs directly into Shabbat."));
-  }
-
   // 2. A thought for today
   const used = new Set();
   const thought = resolve(top.content.inspiration, ctx);
@@ -588,12 +584,14 @@ function buildTodaysQuiz(occasions, portion, mitzvah) {
   return shuffled(pool).slice(0, 4).map(shuffleQuestionOptions);
 }
 
-function renderQuizCard(container, occasions, portion, mitzvah) {
+/** The quiz. `inline`: inside the timeline's "Test yourself" item (no card header). */
+function renderQuizCard(container, occasions, portion, mitzvah, inline) {
+  if (!container) return;
   container.innerHTML = "";
   const questions = buildTodaysQuiz(occasions, portion, mitzvah);
-  if (!questions.length) return;
+  if (!questions.length) { if (inline) container.appendChild(el("p", "intro", "No questions for today yet — come back tomorrow.")); return; }
 
-  const card = el("article", "occasion-card quiz-card");
+  const card = el("article", "occasion-card quiz-card" + (inline ? " quiz-card--inline" : ""));
 
   const headRow = el("div", "card-head");
   headRow.appendChild(iconBadge("trophy", "icon-badge--gold"));
@@ -624,7 +622,7 @@ function renderQuizCard(container, occasions, portion, mitzvah) {
     resultBanner.appendChild(el("span", null, message));
     const retryBtn = el("button", "quiz-retry", "Shuffle & Try Again");
     retryBtn.type = "button";
-    retryBtn.addEventListener("click", () => renderQuizCard(container, occasions, portion, mitzvah));
+    retryBtn.addEventListener("click", () => renderQuizCard(container, occasions, portion, mitzvah, inline));
     resultBanner.appendChild(retryBtn);
     resultBanner.hidden = false;
   }
@@ -661,7 +659,8 @@ function renderQuizCard(container, occasions, portion, mitzvah) {
   card.appendChild(listEl);
   card.appendChild(resultBanner);
 
-  makeCollapsible(card, 2, false);
+  if (inline) card.querySelector(".card-head").remove();
+  else makeCollapsible(card, 2, false);
   container.appendChild(card);
 }
 
@@ -853,22 +852,88 @@ function computeDailyGuide(date, heb, events) {
   });
 }
 
+/** Icons for the "What's different today" box, by prayer-change or guide id. */
+const DAY_NOTE_ICONS = {
+  "hallel-full": "🎶", "hallel-half": "🎶", "hallel-modern": "🎶", "no-hallel": "🔇",
+  "yaaleh-vyavo": "🌙", "yaaleh-tonight": "🌙", musaf: "📜", "al-hanissim": "✨", "al-hanissim-tonight": "✨",
+  megillah: "📜", aneinu: "🙏", "fast-torah": "📖", "tisha-bav": "💔", eichah: "💔",
+  "no-tachanun": "🌤️", "no-tachanun-mincha": "🌤️", "tachanun-modern": "🌤️",
+  "omer-today": "🌾", "omer-tonight": "🌾", "atah-chonantanu": "🕯️", selichot: "🙏", "selichot-first": "🙏",
+  "avinu-malkeinu": "🙏", "avinu-malkeinu-erev-yk": "🙏", "aseret-changes": "📖",
+  "tal-umatar-start": "🌧️", "tal-umatar-end": "☀️", geshem: "🌧️", tal: "💧",
+  candles: "🕯️", "chanukah-lights": "🕎", "chanukah-day": "🕎", "eruv-tavshilin": "🍲", havdalah: "🍷",
+  "kabbalat-shabbat": "🌅", shofar: "📯", lulav: "🌿", "no-lulav": "🌿", tashlich: "🌊", yizkor: "🕯️"
+};
+
+/** "What's different today": the special things to know at a glance — prayer
+ *  changes, no tefillin, candles, Eruv Tavshilin, a fast, a Yom Tov — or that it's a
+ *  regular day. Each one jumps to its place in the timeline. */
+function renderDayNotes(date, info, changes, guide, events) {
+  const box = document.getElementById("day-notes");
+  if (!box) return;
+  box.innerHTML = "";
+  const notes = [];
+  const add = (icon, text, target) => notes.push({ icon, text, target });
+  const dow = date.getDay();
+  if (info.yomTov || dow === 6) add("🚫", "No tefillin today", "no-tefillin");
+  const guideAll = guide ? [...guide.today, ...guide.tonight] : [];
+  if (info.fast && !guideAll.some(g => /fast/i.test(g.title))) {
+    const begins = (events || []).find(e => e.at && /^Fast begins/.test(e.title) && daysBetween(e.date, date) === 0);
+    const ends = (events || []).find(e => e.at && /^Fast ends/.test(e.title) && daysBetween(e.date, date) === 0);
+    add("⏳", `Fast day${begins ? ` from ${fmtClock(begins.time)}` : ""}${ends ? ` · ends ${fmtClock(ends.time)}` : ""}`, ends ? "fast-ends" : null);
+  }
+  (changes ? changes.today : []).forEach(c => add(DAY_NOTE_ICONS[c.id] || "📖", c.title, "shacharit"));
+  (changes ? changes.tonight : []).forEach(c => add(DAY_NOTE_ICONS[c.id] || "🌙", /tonight/i.test(c.title) ? c.title : `Tonight: ${c.title}`, "maariv"));
+  // (The weekday Torah reading on Mondays and Thursdays is routine, not "different".)
+  let routine = "";
+  guideAll.forEach(g => {
+    if (g.id === "weekday-torah") { routine = "The Torah is read at Shacharit today"; return; }
+    if (notes.some(n => n.target === "guide-" + g.id)) return;
+    const title = g.title.split(" — ")[0];
+    const icon = DAY_NOTE_ICONS[g.id] || (/fast/i.test(title) ? "⏳" : /Chanukah|menorah/i.test(title) ? "🕎" : /dinner|Kiddush|meal/i.test(title) ? "🍷" : /Shabbat|Yom Tov|candle/i.test(title) ? "🕯️" : "⭐");
+    add(icon, `${title}${g.when ? ` · ${g.when}` : ""}`, "guide-" + g.id);
+  });
+
+  const card = el("div", "day-notes" + (notes.length ? "" : " day-notes--plain"));
+  if (!notes.length) {
+    card.appendChild(el("span", "day-notes-icon", "✅"));
+    card.appendChild(el("span", "day-notes-plain", (daysBetween(realToday, date) === 0
+      ? "A regular weekday — no changes to the prayers today."
+      : "A regular weekday — no changes to the prayers.") + (routine ? ` ${routine}, as every Monday and Thursday.` : "")));
+    box.appendChild(card);
+    return;
+  }
+  card.appendChild(el("p", "day-notes-title", daysBetween(realToday, date) === 0 ? "What's different today" : "What's different this day"));
+  const list = el("div", "day-notes-list");
+  notes.forEach(n => {
+    const chip = el(n.target ? "button" : "span", "day-note");
+    if (n.target) chip.type = "button";
+    chip.appendChild(el("span", "day-note-icon", n.icon));
+    chip.appendChild(el("span", null, n.text));
+    if (n.target) chip.addEventListener("click", () => jumpToTimelineItem(n.target));
+    list.appendChild(chip);
+  });
+  card.appendChild(list);
+  box.appendChild(card);
+}
+
+/** Scroll to an item in the timeline, opening its part of the day if it's folded. */
+function jumpToTimelineItem(id) {
+  const li = document.getElementById("tl-" + id);
+  if (!li) return;
+  const sec = li.closest(".tl-part");
+  if (sec && sec.classList.contains("is-folded")) sec.querySelector(".tl-part-toggle").click();
+  const target = document.getElementById("tl-" + id);
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    target.classList.add("is-flash");
+    setTimeout(() => target.classList.remove("is-flash"), 1600);
+  }
+}
+
 /** Under the timeline: what's coming up next, and the printable Shabbat sheet. */
 function renderDayFooter(container, date, events) {
-  // What's coming up lives in its own section right below; here, only the print sheet.
-  const block = findRestBlock(events, date);
-  if (block) {
-    const holidays = blockHolidayNames(events, block);
-    const name = holidays.length ? holidays.join(" & ") : "Shabbat";
-    const btn = el("button", "ts-print");
-    btn.type = "button";
-    btn.innerHTML = PRINTER_SVG;
-    btn.appendChild(el("span", null, `Print for ${name} · ${shortDate(block.days[0])}`));
-    btn.addEventListener("click", () => openPrintPreview(date));
-    const wrap = el("div", "tl-print");
-    wrap.appendChild(btn);
-    container.appendChild(wrap);
-  }
+  // The printable Shabbat / Yom Tov sheet is now next to the day strip's arrows (daystrip.js).
 }
 
 // --- Browsing state -------------------------------------------------
@@ -957,12 +1022,14 @@ async function setViewingDate(date) {
     community: pcCommunityKey(profileCommunity()), info: pcDayInfo(events, date)
   });
   renderDayFooter(timelineContainer, date, events);
+  renderDayNotes(date, pcDayInfo(events, date), changes, guide, events);
 
   // The week's portion (the reading itself is on torah.html).
   const portion = findParasha(events, date);
   updateTorahSummary(portion);
 
-  renderQuizCard(document.getElementById("quiz-container"), occasions, portion, todaysMitzvah);
+  // The quiz lives in the timeline's Midday part ("Test yourself").
+  renderQuizCard(document.getElementById("tl-quiz-box"), occasions, portion, todaysMitzvah, true);
 }
 
 /** Mitzvah texts can depend on the visitor's community (e.g. the tefillin blessings). */

@@ -215,6 +215,9 @@ function buildDayTimeline(opts) {
     timeLabel: "anytime", title: "Mitzvah of the day", why: "" });
   add({ id: "torah", part: "midday", kind: "torah", anytime: true, skippable: true, start: z.alot, end: z.midnight, sortAt: new Date(z.chatzot.getTime() + 1),
     timeLabel: "anytime", title: "Learn this week's Torah portion", why: "A few minutes with today's part of the parasha." });
+  // The quiz, after the two it asks about (app.js fills it in).
+  add({ id: "quiz", part: "midday", kind: "quiz", anytime: true, skippable: true, start: z.alot, end: z.midnight, sortAt: new Date(z.chatzot.getTime() + 2),
+    timeLabel: "anytime", title: "🏆 Test yourself", why: "A few quick questions on today's mitzvah and Torah portion — just for fun." });
 
   // 4. Afternoon
   add({ id: "mincha", part: "afternoon", kind: "prayer", prayer: "mincha", start: z.minchaG, end: z.sunset,
@@ -528,6 +531,11 @@ function tlBody(item, ctx, used) {
     box.appendChild(tlGuideBody(item.guide, used, false));
     return box;
   }
+  if (item.kind === "quiz") {
+    const box = el("div", "tl-body");
+    box.id = "tl-quiz-box"; // app.js renders the questions here
+    return box;
+  }
   if (item.kind === "readings") {
     const box = el("div", "tl-body");
     item.read.forEach(r => box.appendChild(tlGuideBody(r, used, item.read.length > 1)));
@@ -537,6 +545,7 @@ function tlBody(item, ctx, used) {
 }
 
 function tlHowLabel(item) {
+  if (item.kind === "quiz") return "Start the quiz";
   if (item.kind === "prayer") return item.changes && item.changes.length ? "What changes today · how to pray" : "How to pray";
   if (item.kind === "torah") return "Read it";
   if (item.kind === "texts") return "The words";
