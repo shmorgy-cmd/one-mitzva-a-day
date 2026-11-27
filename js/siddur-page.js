@@ -194,9 +194,22 @@ function sdIso(d) {
 
 /** Today's prayer changes (Hallel, Ya'aleh v'Yavo, no Tachanun…) from the same engine as the home page. */
 async function sdTodayChanges() {
-  if (typeof getPrayerChanges !== "function") return [];
+  const day = await sdDay();
+  return day ? day.changes.today.map(c => c.title) : [];
+}
+
+/** Everything the day notes need, loaded once: the changes for today and tonight,
+ *  the day's info, and why Tachanun is left out (if it is). */
+let sdDayPromise = null;
+function sdDay() {
+  if (!sdDayPromise) sdDayPromise = sdLoadDay().catch(() => null);
+  return sdDayPromise;
+}
+
+async function sdLoadDay(on) {
+  if (typeof getPrayerChanges !== "function") return null;
   const settings = getSettings();
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const today = on ? new Date(on) : new Date(); today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
   const israel = isInIsrael(settings);
   const [cal, heb, hebT] = await Promise.all([
@@ -210,8 +223,173 @@ async function sdTodayChanges() {
   });
   const p = getProfile();
   const community = p && p.community ? pcCommunityKey(p.community) : null;
-  const ch = getPrayerChanges({ date: today, heb, hebTomorrow: hebT, israel, events, community, nusach: p && p.nusach });
-  return ch.today.map(c => c.title);
+  const nusach = p && p.nusach;
+  const changes = getPrayerChanges({ date: today, heb, hebTomorrow: hebT, israel, events, community, nusach });
+  const info = pcDayInfo(events, today);
+  const dow = today.getDay();
+  const restDay = dow === 6 || info.yomTov || info.roshHashana || info.yomKippur;
+  const reason = restDay ? "it's Shabbat or a festival" : noTachanunReason(heb, info, community, nusach);
+  const next = pcDayInfo(events, tomorrow);
+  const reasonNext = noTachanunReason(hebT, next, community, nusach);
+  return {
+    date: today, dow, heb, hebT, info, changes, restDay,
+    noTach: reason,                                   // Shacharit and Mincha
+    noTachMincha: reason || (dow === 5 ? "it's Friday afternoon, before Shabbat" : (reasonNext || next.yomTov) ? "tomorrow is a day without Tachanun" : null),
+    has: (id) => [...changes.today, ...changes.season, ...(changes.weekly || [])].some(c => c.id === id),
+    hasTonight: (id) => [...changes.tonight, ...changes.season].some(c => c.id === id)
+  };
+}
+
+// ---------------------------------------------------------------------
+// The siddur, for today: what to skip, add or say in each section
+// ---------------------------------------------------------------------
+
+const SD_DOW = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Shabbat"];
+const SD_SONG_OF_DAY = [24, 48, 82, 94, 81, 93, 92];
+
+/** Which service a section belongs to, from its place in the siddur. */
+function sdService(ref) {
+  if (/Shabbat|Festival|Holiday|Kabbalat/i.test(ref)) return null; // the weekday notes don't apply
+  if (/Maariv|Arvit/i.test(ref)) return "maariv";
+  if (/Minch/i.test(ref)) return "mincha";
+  if (/Mazon/i.test(ref)) return "meal";
+  if (/Shacharit|Upon Arising|Preparatory|Morning/i.test(ref)) return "shacharit";
+  return "other";
+}
+
+/** Amidah blessings, by section name → the changes that go in them. */
+const SD_AMIDAH_SPOTS = [
+  { re: /Patriarchs|Avot/i, ids: ["aseret-changes"] },
+  { re: /Divine Might|Gevurot/i, ids: ["mashiv-haruach", "morid-hatal", "geshem", "tal"] },
+  { re: /Holiness/i, ids: ["aseret-changes"] },
+  { re: /Knowledge|Atah Chonen/i, ids: ["atah-chonantanu"] },
+  { re: /Prosperity|Barech/i, ids: ["tal-umatar", "tal-umatar-start", "tal-umatar-end", "vten-beracha"] },
+  { re: /Rebuilding Jerusalem/i, ids: ["tisha-bav"] },
+  { re: /Response to Prayer|Shema Kolenu|Shema Koleinu/i, ids: ["aneinu"] },
+  { re: /Temple Service|Retzei|R'tzei/i, ids: ["yaaleh-vyavo", "yaaleh-tonight"] },
+  { re: /Thanksgiving|Modim/i, ids: ["al-hanissim", "al-hanissim-tonight", "aseret-changes"] },
+  { re: /Peace|Concluding/i, ids: ["aseret-changes"] }
+];
+const SD_AMIDAH_IDS = [...new Set(SD_AMIDAH_SPOTS.flatMap(s => s.ids))];
+
+/**
+ * The notes for one section today: [{ kind: "skip" | "add" | "say" | "info", text }].
+ * Built from the same prayer-changes engine as the home page, so the siddur and
+ * the timeline always agree.
+ */
+function sdDayNotes(leaf, day) {
+  if (!day) return [];
+  const ref = leaf.ref;
+  const title = leaf.title || "";
+  const svc = sdService(ref);
+  const notes = [];
+  const add = (kind, text) => notes.push({ kind, text });
+  const night = svc === "maariv";
+  const list = night ? [...day.changes.tonight, ...day.changes.season] : [...day.changes.today, ...day.changes.season];
+  const find = (id) => list.find(c => c.id === id);
+  const monThu = day.dow === 1 || day.dow === 4;
+  const tach = svc === "mincha" ? day.noTachMincha : day.noTach;
+
+  // The Amidah: what to add today, in the right blessing.
+  // (Only the Amidah itself — not "Post Amidah".)
+  if (/(^|, )(The |Weekday )?Amid(ah|a)?(, |$)/i.test(ref) && svc && svc !== "other" && svc !== "meal") {
+    const spot = SD_AMIDAH_SPOTS.find(s => s.re.test(title));
+    const ids = spot ? spot.ids : SD_AMIDAH_IDS; // a whole-Amidah section gets them all
+    ids.map(find).filter(Boolean).forEach(c => {
+      if (c.id === "aneinu" && svc !== "mincha" && svc !== "shacharit") return;
+      add("add", `${c.title}${spot ? "" : ` — ${c.where}`}`);
+    });
+  }
+
+  // Tachanun and what goes with it (Vidui, Nefilat Apayim, Shomer Yisrael…).
+  // (The Kaddish after Tachanun is still said; Maariv's opening "V'hu Rachum" isn't Tachanun.)
+  const isTach = /Tachanun|Tachnun|Tahanun|Nefilat|Vidui|Shomer Yisrael|God of Israel/i.test(title + " " + ref) && !/Vehu Rachum|Kaddish/i.test(title);
+  const isMonThu = /Monday/i.test(title + " " + ref);
+  if ((isTach || isMonThu) && (svc === "shacharit" || svc === "mincha")) {
+    if (tach) add("skip", `Not said today — ${tach}.`);
+    else if (isMonThu && !monThu) add("skip", "Only on Mondays and Thursdays.");
+    else if (isMonThu) add("say", `Said today — it's ${SD_DOW[day.dow]}: the longer Tachanun (V'hu Rachum).`);
+    else if (svc === "shacharit" && monThu && /Nefilat|^Tachanun$|^Tachnun$|^Vidui/i.test(title)) add("info", `Today is ${SD_DOW[day.dow]}: start with the longer V'hu Rachum ("For Monday and Thursday").`);
+  }
+  if (/Erech Ap/i.test(title) && svc === "shacharit") {
+    if (!monThu) add("skip", "Only on Mondays and Thursdays, before the Torah is taken out.");
+    else if (day.noTach) add("skip", `Not said today — ${day.noTach}.`);
+    else add("say", `Said today — it's ${SD_DOW[day.dow]}.`);
+  }
+  if (/Lamenatze|Lamnatze|LaMenatze/i.test(title) && day.noTach) add("skip", `Not said today — ${day.noTach}.`);
+
+  // Avinu Malkeinu, Selichot.
+  if (/Avinu Malk/i.test(title)) {
+    if (find("avinu-malkeinu") || find("avinu-malkeinu-erev-yk") || find("fast-selichot")) add("say", "Said today.");
+    else add("skip", "Not said today — only on fast days and the Ten Days of Repentance.");
+  }
+  if (/Selichot|Slichot/i.test(title)) {
+    if (find("selichot") || find("selichot-first") || find("fast-selichot")) add("say", "Said today.");
+    else add("skip", "Not said today.");
+  }
+
+  // The Torah reading (weekday Shacharit) and fast-day readings.
+  const readsToday = monThu || day.info.roshChodesh || day.info.chanukahDay || day.info.purim || day.info.fast || day.info.cholHamoed || find("fast-torah");
+  if (/Torah Reading|Reading from Sefer|Removing the Torah|Returning Sefer/i.test(ref) && svc === "shacharit" && !/Fast/i.test(ref) && !/Erech Ap/i.test(title)) {
+    if (readsToday) add("say", "The Torah is read today.");
+    else add("skip", "No Torah reading today — it's read on Mondays, Thursdays, Rosh Chodesh, fasts and festivals.");
+  }
+  if (/Fast Day/i.test(title + " " + ref)) {
+    if (day.info.fast || find("fast-torah")) add("say", "Said today — it's a fast day.");
+    else add("skip", "Only on fast days.");
+  }
+
+  // Hallel, Musaf, Rosh Chodesh, Barchi Nafshi, L'David.
+  if (/Hallel/i.test(title + " " + ref) && !/Haggadah|Pesach/i.test(ref)) {
+    if (find("hallel-full")) add("say", "Full Hallel today.");
+    else if (find("hallel-half")) add("say", "Half Hallel today — the two paragraphs \"Lo lanu\" and \"Ahavti\" are left out.");
+    else add("skip", "Not said today.");
+  }
+  if (/Musaf|Mussaf/i.test(title) && !/Shabbat|Festival/i.test(ref)) {
+    if (find("musaf")) add("say", "Said today.");
+    else add("skip", "Not said today — Musaf is for Shabbat, Rosh Chodesh and festivals.");
+  }
+  if (/Rosh Chodesh|Rosh Hodesh/i.test(ref)) {
+    if (day.info.roshChodesh) add("say", "Today is Rosh Chodesh.");
+    else add("info", "For Rosh Chodesh.");
+  }
+  if (/Barchi Nafshi/i.test(title)) {
+    if (day.info.roshChodesh) add("say", "Said today — it's Rosh Chodesh.");
+    else add("skip", "Only on Rosh Chodesh.");
+  }
+  if (/L'?David|LeDavid/i.test(title) && !/Mizmor/i.test(title)) {
+    if (find("ldavid")) add("say", "Said today — from Rosh Chodesh Elul until after Sukkot.");
+    else add("skip", "Only from Rosh Chodesh Elul until after Sukkot.");
+  }
+
+  // Chanukah, Purim, the Omer.
+  if (/Chanukah|Hanukkah/i.test(ref)) add(day.info.chanukahDay ? "say" : "info", day.info.chanukahDay ? "Today is Chanukah." : "For Chanukah.");
+  if (/Purim/i.test(ref)) add(day.info.purim || day.info.shushanPurim ? "say" : "info", day.info.purim ? "Today is Purim." : "For Purim.");
+  if (/\bOmer\b|Sefirat/i.test(title + " " + ref)) { // (not "Shomer Yisrael")
+    const o = day.changes.tonight.find(c => c.id === "omer-tonight");
+    if (o) add("say", `Tonight: ${o.title}.`);
+    else add("skip", "Only between Pesach and Shavuot.");
+  }
+
+  // The psalm of the day.
+  if (/Song of the Day|Shir Shel Yom/i.test(title)) {
+    add("info", `Today is ${SD_DOW[day.dow]}: say the psalm for ${SD_DOW[day.dow]} — Psalm ${SD_SONG_OF_DAY[day.dow]}.`);
+  }
+
+  // Birkat HaMazon: Ya'aleh v'Yavo, Al HaNissim, R'tzei on Shabbat.
+  if (svc === "meal" && /Mazon/i.test(title + " " + ref)) {
+    day.changes.today.filter(c => /Grace After Meals/i.test(c.where || "")).forEach(c => add("add", c.title));
+    if (day.dow === 6) add("add", "R'tzei — the Shabbat paragraph");
+  }
+  return notes;
+}
+
+/** The short label shown beside a section in the contents. */
+function sdTocBadge(notes) {
+  if (notes.some(n => n.kind === "skip") && !notes.some(n => n.kind !== "skip")) return { cls: "skip", text: "skip today" };
+  if (notes.some(n => n.kind === "add")) return { cls: "add", text: "+ today" };
+  if (notes.some(n => n.kind === "say")) return { cls: "say", text: "today" };
+  return null;
 }
 
 // ---------------------------------------------------------------------
@@ -311,13 +489,25 @@ function sdRenderToc(toc, groups, reader) {
     g.sections.forEach(sec => d.appendChild(sdTocNode(sec, reader, 0)));
     toc.appendChild(d);
   });
+  // Once today's changes are in: mark what to skip today, and what has additions.
+  sdDay().then(day => {
+    if (!day) return;
+    toc.querySelectorAll(".sd-leaf").forEach(b => {
+      const badge = sdTocBadge(sdDayNotes({ ref: b.dataset.ref, title: b.dataset.title }, day));
+      if (!badge) return;
+      b.classList.add("sd-leaf--" + badge.cls);
+      b.appendChild(el("span", "sd-badge sd-badge--" + badge.cls, badge.text));
+    });
+  });
 }
 
 function sdTocNode(node, reader, depth) {
   if (node.ref) {
-    const a = el("button", "sd-leaf", node.title || "…");
+    const a = el("button", "sd-leaf");
+    a.appendChild(el("span", null, node.title || "…"));
     a.type = "button";
     a.dataset.ref = node.ref;
+    a.dataset.title = node.title || "";
     a.addEventListener("click", () => {
       const leaf = sdState.flat.find(l => l.ref === node.ref) || { ref: node.ref, title: node.title, trail: [] };
       sdOpen(reader, leaf);
@@ -380,6 +570,25 @@ async function sdOpen(reader, leaf) {
   if (leaf.trail && leaf.trail.length) reader.appendChild(el("p", "sd-trail", leaf.trail.filter(Boolean).join(" › ")));
   reader.appendChild(el("h2", "sd-title", leaf.title));
   if (leaf.from) reader.appendChild(el("p", "dg-convert", `From ${leaf.from} — the closest siddur on Sefaria for Shabbat and festivals; Siddur Tehillat Hashem differs in places.`));
+
+  // For today: what to skip, add or say in this section.
+  const todayBox = el("div", "sd-today");
+  reader.appendChild(todayBox);
+  sdDay().then(day => {
+    const notes = sdDayNotes(leaf, day);
+    if (!notes.length) { todayBox.remove(); return; }
+    const night = sdService(leaf.ref) === "maariv";
+    const heb = night ? day.hebT : day.heb;
+    todayBox.appendChild(el("p", "sd-today-title", `${night ? "For tonight" : "For today"} · ${SD_DOW[night ? (day.dow + 1) % 7 : day.dow]}, ${heb ? `${heb.hd} ${heb.hm}` : ""}`));
+    const icons = { skip: "⛔", add: "➕", say: "✅", info: "ℹ️" };
+    notes.forEach(n => {
+      const p = el("p", "sd-note sd-note--" + n.kind);
+      p.appendChild(el("b", null, icons[n.kind] + " "));
+      p.appendChild(document.createTextNode(n.text));
+      todayBox.appendChild(p);
+    });
+    if (notes.some(n => n.kind === "skip") && !notes.some(n => n.kind !== "skip")) textBox.classList.add("sd-text--skip");
+  });
 
   const langRow = el("div", "lang-toggle");
   const textBox = el("div", "sd-text");

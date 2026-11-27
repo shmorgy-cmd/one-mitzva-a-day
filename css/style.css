@@ -3458,3 +3458,19 @@ a.next-step .fc-kicker { color: #1f6a43; }
   body:not(.sd-reading) .sd-reader { padding: 0; border: 0; background: none; min-height: 0; }
   .sd-he { font-size: 1.25rem; }
 }
+
+/* The siddur, for today: skip / add / say notes */
+.sd-today { margin: 10px 0 4px; padding: 10px 12px; border-radius: 12px; background: #fbf6ea; border: 1px solid #ecd9ae; }
+.sd-today-title { margin: 0 0 6px; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8a5a00; }
+.sd-note { margin: 4px 0 0; font-size: 0.92rem; line-height: 1.45; }
+.sd-note--skip { color: #9b2c40; }
+.sd-note--add { color: #1f5d3a; }
+.sd-note--say { color: var(--flag-blue-deep); }
+.sd-note--info { color: var(--ink); }
+.sd-text--skip { opacity: 0.55; }
+.sd-badge { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; font-size: 0.66rem; font-weight: 700; vertical-align: 1px; white-space: nowrap; }
+.sd-badge--skip { background: #fdecef; color: #9b2c40; }
+.sd-badge--add { background: #e6f4ec; color: #1f6a43; }
+.sd-badge--say { background: #e6ebf8; color: var(--flag-blue-deep); }
+.sd-leaf--skip > span:first-child { opacity: 0.55; text-decoration: line-through; }
+.sd-leaf.is-on .sd-badge { background: #fff; }
