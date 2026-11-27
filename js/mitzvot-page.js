@@ -125,7 +125,9 @@ function mzRenderResults() {
     today.appendChild(tx);
     box.appendChild(today);
 
-    const reason = currentProfile && MITZVA_START_HERE[currentProfile.reason] ? currentProfile.reason : "curious";
+    const reason = !currentProfile || !currentProfile.reason ? "curious"
+      : isJewishProfile(currentProfile) ? "jewish"
+      : currentProfile.reason === "converting" ? "converting" : "curious";
     const sh = el("h2", "mz-h2", "Start here");
     sh.appendChild(el("small", null, "gentle first steps"));
     box.appendChild(sh);
@@ -225,7 +227,7 @@ function mzRenderDetail(m) {
 
   if (m.blessings || m.texts) {
     const words = mzSection("The words");
-    const community = pcCommunityKey(profile && profile.reason === "jewish" ? profile.community : null);
+    const community = pcCommunityKey((profile && profile.community) || null);
     const texts = (m.texts || []).map(r => ({ key: r.key, opts: Object.assign({ community }, r.opts || {}) }));
     renderWords(words, m.blessings, texts, null);
     d.appendChild(words);

@@ -94,10 +94,22 @@ Each one stays off while its value in `js/config.js` is empty:
 
 ## Personalization
 
-The welcome box (`js/profile.js`) changes the page through [`js/personalize.js`](js/personalize.js):
+On a first visit a 4-step welcome ([`js/profile.js`](js/profile.js)) asks: what brings you here, about you (gender, married, children), prayer tradition (nusach), and where you are (city plus Israel or outside-Israel customs). Every answer can be skipped and changed later in Settings, which has the same numbered sections plus a "Show me everything" switch and reminders. The profile is saved only in this browser (`omad_profile_v1`); older profiles (`reason: "jewish"` + `community`) are migrated when read.
 
-- **I'm Jewish + a community**: a "Your custom" box on each card with only that community's minhagim ("Other / not sure" shows all communities side by side).
-- **Just curious**: Hebrew terms become tap-to-explain (from `GLOSSARY`), plus a "Why today?" note on each day.
-- **Exploring conversion**: everything above, plus a "Taking this on" note with a practical first step.
+| Field | Values |
+| --- | --- |
+| `reason` | `jewish-reminders`, `jewish-growing`, `jewish-reconnecting`, `converting`, `converted`, `curious` |
+| `gender` | `male`, `female`, `unspecified` |
+| `married` | `true` / `false` |
+| `children` | `none`, `young`, `teens`, `grown` |
+| `nusach` | `ashkenaz`, `sefard`, `sephardi`, `chabad`, `other`, `unsure` |
+| `community` | derived from nusach: `ashkenazi`, `sephardi`, `chabad`, or `other` (shows each side by side) |
+| `showAll` | show practices for everyone, labeled |
+
+Today these change the page through [`js/personalize.js`](js/personalize.js) (gender, family and "Show me everything" are saved now and used by the coming phases):
+
+- **A nusach**: a "Your custom" box on each card with only that community's minhagim ("Other" / "Not sure" shows all communities side by side), and the matching blessing texts and times.
+- **Any reason except "daily reminders"**: Hebrew terms become tap-to-explain (from `GLOSSARY`), plus a "Why today?" note on each day.
+- **Converting**: everything above, plus a "Taking this on" note with a practical first step.
 
 The extra content is keyed by id in `OCCASION_EXTRAS`, `MITZVA_EXTRAS`, `PRAYER_EXTRAS` and `PREP_EXTRAS` — when adding a new occasion, add a matching entry there too. Minhagim vary widely, so new entries should be checked by someone knowledgeable.

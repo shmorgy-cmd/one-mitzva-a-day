@@ -101,7 +101,7 @@ async function renderZmanimPage() {
     return;
   }
 
-  const community = pcCommunityKey(currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null);
+  const community = pcCommunityKey((currentProfile && currentProfile.community) || null);
   const groups = buildZmanimGroups(times, community);
   const nextBox = el("p", "zm-next");
   body.appendChild(nextBox);

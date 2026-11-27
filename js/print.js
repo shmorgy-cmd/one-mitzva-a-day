@@ -255,7 +255,7 @@ async function buildPrintSheet(from) {
   // Prayers and the Torah reading
   const prayers = ppBox("🙏", "In the prayers", "mint");
   const plist = pEl("ul");
-  const community = currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null;
+  const community = (currentProfile && currentProfile.community) || null;
   const allDays = [block.erev, ...block.days];
   for (let i = 0; i < allDays.length; i++) {
     if (!heb[i]) continue;

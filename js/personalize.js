@@ -32,7 +32,7 @@ const COMMUNITY_NAMES = {
 // ---------------------------------------------------------------------
 
 function wantsExplanations(profile) {
-  return !!profile && (profile.reason === "curious" || profile.reason === "converting");
+  return !!profile && !!profile.reason && profile.reason !== "jewish-reminders";
 }
 
 function isConverting(profile) {
@@ -40,7 +40,7 @@ function isConverting(profile) {
 }
 
 function isJewishProfile(profile) {
-  return !!profile && profile.reason === "jewish";
+  return !!profile && (String(profile.reason).startsWith("jewish-") || profile.reason === "converted");
 }
 
 // ---------------------------------------------------------------------
@@ -376,7 +376,7 @@ function pzEl(tag, cls, html) {
 /** "Your custom" box for "I'm Jewish" visitors. With a specific community,
  *  shows only that community; with "Other / not sure", shows each one. */
 function renderMinhagBox(minhagim, profile) {
-  if (!minhagim || !isJewishProfile(profile)) return null;
+  if (!minhagim || !profile || !profile.community) return null;
   const c = profile.community;
   const box = pzEl("div", "minhag-box");
 

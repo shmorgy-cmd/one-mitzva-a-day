@@ -719,7 +719,7 @@ function renderGuideItem(item, used) {
     const t = renderPrayerText(ref, false);
     if (t) wrap.appendChild(t);
   });
-  prayerCustomsFor(item,currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null).forEach(c => {
+  prayerCustomsFor(item, currentProfile && currentProfile.community).forEach(c => {
     const p = el("p", "pc-custom");
     p.appendChild(el("strong", null, `${c.label}: `));
     p.appendChild(document.createTextNode(c.text));
@@ -811,7 +811,7 @@ const PRINTER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="non
 
 /** The visitor's community, when they've told us they're Jewish (else null). */
 function profileCommunity() {
-  return currentProfile && currentProfile.reason === "jewish" ? currentProfile.community : null;
+  return (currentProfile && currentProfile.community) || null;
 }
 
 const zmanimCache = new Map();

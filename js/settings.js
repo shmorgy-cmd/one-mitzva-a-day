@@ -113,8 +113,19 @@ function locationLabel(loc) {
 function settingsSummary(settings, profile) {
   const parts = [];
   if (settings.location) parts.push(locationLabel(settings.location));
-  if (profile && profile.reason) parts.push(reasonLabel(profile.reason) + (profile.community ? " · " + communityLabel(profile.community) : ""));
+  if (profile && profile.reason) parts.push(reasonShort(profile.reason));
+  if (profile && profile.nusach && profile.nusach !== "unsure" && profile.nusach !== "other") parts.push(nusachLabel(profile.nusach).split(" (")[0].split(" /")[0]);
   return parts.length ? parts.join(" · ") : "Settings";
+}
+
+/** The three customs choices, with "Automatic" saying what it resolves to. */
+function israelModeOptions(settings) {
+  const autoIL = isInIsrael({ ...settings, israelMode: "auto" });
+  return [
+    { id: "auto", label: `Automatic (${autoIL ? "Israel" : "outside Israel"})` },
+    { id: "il", label: "Israel customs" },
+    { id: "diaspora", label: "Outside Israel customs" }
+  ];
 }
 
 // ---------------------------------------------------------------------
@@ -135,7 +146,7 @@ function openSettingsPanel(onDone) {
   if (existing) existing.remove();
 
   const settings = getSettings();
-  let profile = getProfile() || { reason: null, community: null };
+  const profile = { ...emptyProfile(), ...(getProfile() || {}) };
   let changed = false;
   const opener = document.activeElement;
 
@@ -156,12 +167,36 @@ function openSettingsPanel(onDone) {
   closeX.setAttribute("aria-label", "Close settings");
   head.appendChild(closeX);
   modal.appendChild(head);
-  modal.appendChild(sEl("p", "settings-privacy", "Saved only on this device. Your city is sent to Hebcal to calculate times."));
+  modal.appendChild(sEl("p", "settings-privacy", "🔒 Saved only on this device. Only your city is sent (to Hebcal), to calculate times."));
 
-  // --- Location ---------------------------------------------------------
-  const locSection = sEl("section", "settings-section");
-  locSection.appendChild(sEl("h4", "settings-label", "Your city"));
-  locSection.appendChild(sEl("p", "settings-help", "Used for candle-lighting, Havdalah, fast and prayer times."));
+  function numbered(n, title, hint) {
+    const sec = sEl("section", "settings-section settings-section--num");
+    const h = sEl("h4", "settings-label");
+    h.appendChild(sEl("span", "settings-num", String(n)));
+    h.appendChild(document.createTextNode(title));
+    sec.appendChild(h);
+    if (hint) sec.appendChild(sEl("p", "settings-help", hint));
+    return sec;
+  }
+  function saveP() { Object.assign(profile, saveProfile(profile)); changed = true; }
+
+  // --- 1. What brings you here ------------------------------------------
+  const reasonSec = numbered(1, "What brings you here?", "Sets how much we explain and the kind of encouragement you'll see.");
+  reasonSec.appendChild(choicePills("What brings you here", REASONS, profile.reason, id => { profile.reason = id; saveP(); }, true));
+  modal.appendChild(reasonSec);
+
+  // --- 2. About you -----------------------------------------------------
+  const aboutSec = numbered(2, "About you", "Some mitzvot are different for men and women. We'll show the ones that are yours.");
+  aboutSec.appendChild(aboutYouFields(profile, saveP));
+  modal.appendChild(aboutSec);
+
+  // --- 3. Nusach --------------------------------------------------------
+  const nusachSec = numbered(3, "Your prayer tradition (nusach)", "Blessings and customs follow your tradition. Not sure? We'll show the common practice and the alternatives.");
+  nusachSec.appendChild(choicePills("Prayer tradition", NUSACHS, profile.nusach, id => { profile.nusach = id; saveP(); }));
+  modal.appendChild(nusachSec);
+
+  // --- 4. Where you are -------------------------------------------------
+  const locSection = numbered(4, "Where you are", "Your city sets candle-lighting, Havdalah, fast and prayer times.");
 
   const current = sEl("div", "settings-current");
   locSection.appendChild(current);
@@ -264,93 +299,38 @@ function openSettingsPanel(onDone) {
   });
 
   // --- Israel / outside Israel -----------------------------------------
-  const ilSection = sEl("section", "settings-section");
-  ilSection.appendChild(sEl("h4", "settings-label", "Calendar"));
-  ilSection.appendChild(sEl("p", "settings-help", "Outside Israel, most festivals have an extra day, and some weeks' Torah readings differ."));
-  const ilGroup = sEl("div", "settings-radios");
-  ilGroup.setAttribute("role", "radiogroup");
-  ilGroup.setAttribute("aria-label", "Israel or outside Israel");
-  ilSection.appendChild(ilGroup);
-  modal.appendChild(ilSection);
+  // Israel / outside Israel customs, inside "Where you are".
+  locSection.appendChild(sEl("div", "pill-sub", "Customs"));
+  const ilWrap = sEl("div");
+  locSection.appendChild(ilWrap);
+  locSection.appendChild(sEl("p", "pill-note", "Outside Israel, most festivals have an extra day and some weeks' Torah readings differ. Visiting Israel? Keep the customs of where you live."));
 
   function renderIsrael() {
-    ilGroup.innerHTML = "";
-    const autoText = settings.location
-      ? `Automatic — ${isInIsrael({ ...settings, israelMode: "auto" }) ? "Israel" : "outside Israel"} (from your city)`
-      : `Automatic — ${isInIsrael({ ...settings, israelMode: "auto" }) ? "Israel" : "outside Israel"} (from your device)`;
-    [["auto", autoText], ["il", "Israel"], ["diaspora", "Outside Israel"]].forEach(([val, text]) => {
-      const label = sEl("label", "settings-radio");
-      const r = sEl("input");
-      r.type = "radio";
-      r.name = "israel-mode";
-      r.value = val;
-      r.checked = settings.israelMode === val;
-      r.addEventListener("change", () => {
-        settings.israelMode = val;
-        saveSettings(settings);
-        changed = true;
-      });
-      label.appendChild(r);
-      label.appendChild(sEl("span", null, text));
-      ilGroup.appendChild(label);
-    });
+    ilWrap.innerHTML = "";
+    ilWrap.appendChild(choicePills("Israel or outside Israel customs", israelModeOptions(settings), settings.israelMode || "auto", id => {
+      settings.israelMode = id;
+      saveSettings(settings);
+      changed = true;
+    }));
   }
 
-  // --- Profile ----------------------------------------------------------
-  const pSection = sEl("section", "settings-section");
-  pSection.appendChild(sEl("h4", "settings-label", "About you"));
-  pSection.appendChild(sEl("p", "settings-help", "Tailors explanations and customs on each card."));
-  const reasonGroup = sEl("div", "settings-radios");
-  reasonGroup.setAttribute("role", "radiogroup");
-  reasonGroup.setAttribute("aria-label", "What brings you here");
-  pSection.appendChild(reasonGroup);
-  const commWrap = sEl("div", "settings-community");
-  const commLabel = sEl("label", "settings-help", "Community");
-  commLabel.htmlFor = "settings-community-select";
-  const commSelect = sEl("select", "settings-input");
-  commSelect.id = "settings-community-select";
-  COMMUNITIES.forEach(c => {
-    const o = sEl("option", null, c.label);
-    o.value = c.id;
-    commSelect.appendChild(o);
-  });
-  commWrap.appendChild(commLabel);
-  commWrap.appendChild(commSelect);
-  pSection.appendChild(commWrap);
-  modal.appendChild(pSection);
+  // --- Show me everything -----------------------------------------------
+  const allSec = sEl("section", "settings-section");
+  const allLabel = sEl("label", "settings-toggle");
+  const allBox = sEl("input");
+  allBox.type = "checkbox";
+  allBox.className = "settings-switch";
+  allBox.checked = !!profile.showAll;
+  allBox.addEventListener("change", () => { profile.showAll = allBox.checked; saveP(); });
+  allLabel.appendChild(allBox);
+  const allText = sEl("span", "settings-toggle-text", "Show me everything");
+  allText.appendChild(sEl("small", null, "See practices for everyone, each one labeled (for men, for women, with children…)."));
+  allLabel.appendChild(allText);
+  allSec.appendChild(allLabel);
+  modal.appendChild(allSec);
 
-  function renderProfile() {
-    reasonGroup.innerHTML = "";
-    [...REASONS.map(r => [r.id, r.label]), [null, "Prefer not to say"]].forEach(([val, text]) => {
-      const label = sEl("label", "settings-radio");
-      const r = sEl("input");
-      r.type = "radio";
-      r.name = "reason";
-      r.value = val || "";
-      r.checked = (profile.reason || null) === val;
-      r.addEventListener("change", () => {
-        profile = { reason: val, community: val === "jewish" ? (profile.community || "other") : null };
-        saveProfile(profile);
-        changed = true;
-        renderProfile();
-      });
-      label.appendChild(r);
-      label.appendChild(sEl("span", null, text));
-      reasonGroup.appendChild(label);
-    });
-    commWrap.hidden = profile.reason !== "jewish";
-    commSelect.value = profile.community || "other";
-  }
-  commSelect.addEventListener("change", () => {
-    profile = { ...profile, community: commSelect.value };
-    saveProfile(profile);
-    changed = true;
-  });
-
-  // --- Reminders ----------------------------------------------------------
-  const rSection = sEl("section", "settings-section");
-  rSection.appendChild(sEl("h4", "settings-label", "Reminders"));
-  rSection.appendChild(sEl("p", "settings-help", "These only work while this page (or the installed app) is open."));
+  // --- 5. Reminders -------------------------------------------------------
+  const rSection = numbered(5, "Reminders", "These only work while this page (or the installed app) is open.");
   const rStatus = sEl("p", "settings-status");
   rStatus.setAttribute("role", "status");
   settings.reminders = settings.reminders || { candles: false, prep: false };
@@ -438,8 +418,7 @@ function openSettingsPanel(onDone) {
 
   renderCurrent();
   renderIsrael();
-  renderProfile();
   document.body.appendChild(overlay);
   document.body.classList.add("no-scroll");
-  input.focus();
+  closeX.focus();
 }
