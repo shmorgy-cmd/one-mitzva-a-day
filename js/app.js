@@ -1141,7 +1141,7 @@ function renderHebrewDateChange(hebTomorrow, times) {
   if (!next) { box.textContent = ""; return; }
   const sunset = times && times.sunset;
   const at = sunset ? ` (${tlCityFormatter(times)(new Date(sunset))})` : "";
-  box.textContent = `🌇 Until sunset${at} — then it's ${next}`;
+  box.textContent = `🌇 Until sunset${at} · then ${next}`;
 }
 
 async function setViewingDate(date) {
