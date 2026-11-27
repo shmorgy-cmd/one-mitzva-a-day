@@ -1263,10 +1263,8 @@ async function init() {
 
   renderDateNav(document.getElementById("date-nav-container"));
 
-  // The ways into the Everyday Mitzvot and About pages.
+  // The way into the About page.
   document.querySelectorAll(".mz-teaser-icon").forEach(s => { s.innerHTML = getIcon(s.dataset.icon); });
-  const mitzvotCount = document.getElementById("mitzvot-count");
-  if (mitzvotCount) mitzvotCount.textContent = `all ${MITZVOT.length}`;
 
   try {
     const [events, hebrewDateInfo] = await Promise.all([

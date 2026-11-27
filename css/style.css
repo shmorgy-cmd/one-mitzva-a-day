@@ -261,8 +261,6 @@ button.ts-row:focus-visible {
 #timeline-container,
 #zmanim-container,
 #prep-section,
-#torah-container,
-#mitzvot-section,
 #quiz-container { scroll-margin-top: 12px; }
 
 .ts-print-wrap {
