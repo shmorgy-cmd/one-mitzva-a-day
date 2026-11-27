@@ -61,12 +61,17 @@ async function loadCalendarWindow(today) {
   // Timed events (candle lighting, Havdalah, fast begins/ends) come as
   // "2026-12-18T16:12:00-05:00" — keep the wall-clock time for display, in the
   // saved city's own time zone, and use the date part for matching days.
-  return (data.items || []).map(e => ({
+  const list = (data.items || []).map(e => ({
     ...e,
     time: e.date.length > 10 ? e.date.slice(11, 16) : null,
     at: e.date.length > 10 ? new Date(e.date) : null, // exact moment, for reminders
     date: startOfDay(parseLocalDate(e.date.slice(0, 10)))
   }));
+  // Days kept by particular communities (shown by nusach — see community-days.js).
+  if (typeof communityDaysBetween === "function") {
+    list.push(...communityDaysBetween(addDays(today, -25), addDays(today, 40), isInIsrael(currentSettings)));
+  }
+  return list;
 }
 
 async function loadHebrewDate(today) {
@@ -371,7 +376,8 @@ const MULTI_DAY_GROUPS = [
  *  Two-day Rosh Chodesh (same title on consecutive days) collapses the same way. */
 function groupCountdownEvents(events) {
   const relevant = events
-    .filter(e => e.category === "holiday" || e.category === "roshchodesh" || e.category === "omer")
+    .filter(e => e.category === "holiday" || e.category === "roshchodesh" || e.category === "omer"
+      || (e.category === "community" && !e.quiet && typeof communityDayShown === "function" && communityDayShown(e, currentProfile)))
     .filter(e => !/^Erev /.test(e.title) && !/^Mevarchim/.test(e.title))
     .sort((a, b) => a.date - b.date);
 
@@ -930,10 +936,30 @@ function renderDayNotes(date, info, changes, guide, events) {
   const notes = [];
   const add = (icon, text, target) => notes.push({ icon, text, target });
   const dow = date.getDay();
-  if ((info.yomTov || dow === 6) && genderShow("male", currentProfile)) add("🚫", "No tefillin today", "no-tefillin");
+  const noTefillin = info.yomTov || dow === 6 || (info.cholHamoed && tlNoTefillinOnCholHamoed(currentProfile, isInIsrael(currentSettings)));
+  if (noTefillin && genderShow("male", currentProfile)) add("🚫", "No tefillin today", "no-tefillin");
   // Rosh Chodesh is a special day for women: many have the custom of lighter work.
   if (info.roshChodesh && genderShow("female", currentProfile)) {
     notes.push({ icon: "🌙", text: "A special day for women", why: "Many women have the custom of doing less work today (like sewing or laundry) — a gift given to the women of the desert, who wouldn't give their jewelry for the golden calf.", gender: genderView(currentProfile) === "female" ? null : "For women" });
+  }
+  // Days your community keeps (community-days.js), each with its story.
+  const todaysEvents = (events || []).filter(e => daysBetween(e.date, date) === 0);
+  const nusach = currentProfile && currentProfile.nusach;
+  if (typeof communityDayShown === "function") {
+    todaysEvents.filter(e => communityDayShown(e, currentProfile)).forEach(e => {
+      notes.push({ icon: /Yahrzeit|Hillula|Gimmel Tammuz|Yud Shevat|Chof Av/.test(e.title) ? "🕯️" : /seder|Mimouna/i.test(e.title) ? "🍯" : /Kippur Katan|BeHaB/.test(e.title) ? "🙏" : "✨",
+        text: e.title, why: e.blurb, community: { text: communityDayLabel(e), for: e.for } });
+      const tachanunKnown = notes.some(n => /Tachanun/.test(n.text)) || (changes ? changes.today : []).some(c => /tachanun/.test(c.id));
+      if (e.noTachanun.includes(nusach) && !tachanunKnown) {
+        notes.push({ icon: "🌤️", text: "No Tachanun today", why: `Your community skips Tachanun on ${e.title}, a day of celebration.`, community: { text: COMMUNITY_LABELS[nusach] + " custom", for: e.noTachanun } });
+      }
+    });
+    // Shabbat Mevarchim: Chabad and many Chassidim say all of Tehillim before Shacharit.
+    const mev = todaysEvents.find(e => e.category === "mevarchim");
+    const tehillim = ["chabad", "sefard"];
+    if (mev && (tehillim.includes(nusach) || (currentProfile && currentProfile.showAll))) {
+      notes.push({ icon: "📜", text: "Tehillim before Shacharit", why: `Today is Shabbat Mevarchim — the new month is blessed after the Torah reading (${mev.title.replace(/^Mevarchim Chodesh /, "Rosh Chodesh ")}). Chabad and many Chassidic communities say the whole book of Tehillim before Shacharit, often together in shul.`, community: { text: "Chabad & Chassidic", for: tehillim } });
+    }
   }
   const guideAll = guide ? [...guide.today, ...guide.tonight] : [];
   if (info.fast && !guideAll.some(g => /fast/i.test(g.title))) {
@@ -977,6 +1003,7 @@ function renderDayNotes(date, info, changes, guide, events) {
     const wrap = el("span", "day-note-wrap");
     wrap.appendChild(chip);
     if (n.gender) wrap.appendChild(genderTag(n.gender, currentProfile));
+    if (n.community) wrap.appendChild(communityTag(n.community.text, n.community.for, currentProfile));
     const why = el("span", "day-note-why", n.why);
     why.hidden = true;
     chip.setAttribute("aria-expanded", "false");

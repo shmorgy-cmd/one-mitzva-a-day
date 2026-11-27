@@ -225,7 +225,9 @@ const PRAYER_TEXTS = {
     const n = opts.day;
     if (!n) return null;
     const w = omerCountWords(n);
-    const ba = opts.community === "ashkenazi";
+    // Nusach Sefard (Chassidic) counts "la'omer", like Sephardim and Chabad.
+    const sefard = typeof currentProfile !== "undefined" && currentProfile && currentProfile.nusach === "sefard";
+    const ba = opts.community === "ashkenazi" && !sefard;
     return {
       name: `Counting the Omer — day ${n}`,
       note: ba ? "Shown with \"ba'omer\" (בעמר), as in most Ashkenazi siddurim; others say \"la'omer\" (לעמר)." : "Shown with \"la'omer\" (לעמר); many Ashkenazim say \"ba'omer\" (בעמר). Follow your siddur.",
@@ -592,7 +594,25 @@ const PRAYER_TEXTS = {
 function getPrayerText(key, opts) {
   const t = PRAYER_TEXTS[key];
   if (!t) return null;
-  return typeof t === "function" ? t(opts || {}) : t;
+  const out = typeof t === "function" ? t(opts || {}) : t;
+  return key === "birkatHamazon" ? ptBirkatHamazonFor(out) : out;
+}
+
+/** Birkat HaMazon in the visitor's nusach, from Sefaria's siddur for it. */
+const PT_BIRKAT_BY_NUSACH = {
+  sefard: { ref: "Siddur_Sefard,_Birchat_HaMazon,_Birchat_HaMazon", name: "Siddur Sefard" },
+  chabad: { ref: "Siddur_Sefard,_Birchat_HaMazon,_Birchat_HaMazon", name: "Siddur Sefard", note: "Chabad's own bencher (from Siddur Tehillat Hashem) differs from it in a few words." },
+  sephardi: { ref: "Siddur_Edot_HaMizrach,_Post_Meal_Blessing", name: "Siddur Edot HaMizrach" }
+};
+function ptBirkatHamazonFor(t) {
+  const n = typeof currentProfile !== "undefined" && currentProfile ? currentProfile.nusach : null;
+  const v = PT_BIRKAT_BY_NUSACH[n];
+  if (!v) return t;
+  return Object.assign({}, t, {
+    note: `Said after a meal with bread. With three or more adults, it opens with an invitation (zimun). The full text loads from Sefaria (${v.name}), with the extra lines for Shabbat and holidays marked.${v.note ? " " + v.note : ""}`,
+    sefaria: [v.ref],
+    sefariaLink: "https://www.sefaria.org/" + v.ref
+  });
 }
 
 /**

@@ -175,6 +175,24 @@ function aboutYouFields(profile, onChange) {
   return wrap;
 }
 
+/** "How do I know my nusach?" — a short, folded guide under the nusach choices. */
+function nusachHelp() {
+  const d = pel("details", "nusach-help");
+  const s = pel("summary");
+  s.textContent = "How do I know my nusach?";
+  d.appendChild(s);
+  const ul = pel("ul");
+  [
+    "Ask where your family comes from: Central or Eastern Europe usually means Ashkenaz; North Africa, the Middle East, Spain, Iraq, Yemen or Persia usually means Sephardi / Edot HaMizrach.",
+    "A Chassidic family or shul usually prays Nusach Sefard; a Chabad family or Chabad House prays Nusach Ari.",
+    "Look at the siddur at your synagogue — the cover or first pages usually name the nusach.",
+    "Converting or recently converted? Follow the community and rabbi who guide your conversion.",
+    "Still not sure? Choose \"Not sure\" — we'll show the customs side by side. Any nusach prayed sincerely is right; what matters is keeping to one."
+  ].forEach(t => { const li = pel("li"); li.textContent = t; ul.appendChild(li); });
+  d.appendChild(ul);
+  return d;
+}
+
 // ---------------------------------------------------------------------
 // Welcome wizard (first visit)
 // ---------------------------------------------------------------------
@@ -227,7 +245,12 @@ function openOnboarding(onDone) {
     {
       title: "Your prayer tradition",
       lead: "Blessings and customs follow your nusach. Not sure? We'll show the common practice and the alternatives.",
-      body: () => choicePills("Prayer tradition", NUSACHS, profile.nusach, id => { profile.nusach = id; })
+      body: () => {
+        const w = pel("div");
+        w.appendChild(choicePills("Prayer tradition", NUSACHS, profile.nusach, id => { profile.nusach = id; }));
+        w.appendChild(nusachHelp());
+        return w;
+      }
     },
     {
       title: "Where you are",

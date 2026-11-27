@@ -18,13 +18,14 @@
  * someone knowledgeable before being relied on.
  */
 
-const COMMUNITY_KEYS = ["ashkenazi", "sephardi", "chabad", "litvish"];
+const COMMUNITY_KEYS = ["ashkenazi", "sefard", "sephardi", "chabad", "litvish"];
 
 const COMMUNITY_NAMES = {
   ashkenazi: "Ashkenazi",
   sephardi: "Sephardi / Mizrahi",
   chabad: "Chabad",
-  litvish: "Litvish / Yeshivish"
+  litvish: "Litvish / Yeshivish",
+  sefard: "Chassidic (Nusach Sefard)"
 };
 
 // ---------------------------------------------------------------------
@@ -473,10 +474,12 @@ function pzEl(tag, cls, html) {
  *  shows only that community; with "Other / not sure", shows each one. */
 function renderMinhagBox(minhagim, profile) {
   if (!minhagim || !profile || !profile.community) return null;
-  const c = profile.community;
+  // Nusach Sefard (Chassidic) has its own entries where it differs; otherwise it
+  // follows the Ashkenazi ones.
+  const c = profile.nusach === "sefard" && minhagim.sefard ? "sefard" : profile.community;
   const box = pzEl("div", "minhag-box");
 
-  if (c && COMMUNITY_KEYS.includes(c)) {
+  if (c && (COMMUNITY_KEYS.includes(c) || c === "sefard")) {
     const items = minhagim[c];
     if (!items || !items.length) return null;
     box.appendChild(pzEl("p", "minhag-box-label", `Your custom · ${escapeHtml(COMMUNITY_NAMES[c])}`));
@@ -532,7 +535,7 @@ function fastMinhagim(extra) {
     litvish: ["Selichot and Avinu Malkeinu are added; Vayechal is read at Shacharit and Mincha, with a Haftarah at Mincha, per the Mishnah Berurah."]
   };
   const out = {};
-  COMMUNITY_KEYS.forEach(k => { out[k] = [...base[k], ...((extra && extra[k]) || [])]; });
+  COMMUNITY_KEYS.forEach(k => { if (base[k]) out[k] = [...base[k], ...((extra && extra[k]) || [])]; });
   return out;
 }
 
@@ -721,6 +724,10 @@ const OCCASION_EXTRAS = {
       litvish: [
         "The lulav is waved east, south, west, north, up and down, per the Mishnah Berurah.",
         "No tefillin on Chol HaMoed in Israel; outside Israel it varies by family and yeshiva."
+      ],
+      sefard: [
+        "The lulav is waved in the Arizal's order (south, north, east, up, down, west).",
+        "No tefillin on Chol HaMoed — Chassidim follow the Zohar and the Arizal."
       ]
     }
   },
@@ -881,7 +888,8 @@ const OCCASION_EXTRAS = {
       ashkenazi: ["Tefillin practice varies: many Ashkenazim outside Israel wear them on Chol HaMoed (following the Rema), many don't — follow your family or synagogue."],
       sephardi: ["No tefillin on Chol HaMoed; kitniyot continue, per family custom."],
       chabad: ["No tefillin on Chol HaMoed, and still no gebrochts."],
-      litvish: ["No tefillin in Israel; outside Israel it varies by yeshiva and family."]
+      litvish: ["No tefillin in Israel; outside Israel it varies by yeshiva and family."],
+      sefard: ["No tefillin on Chol HaMoed; many Chassidim also avoid gebrochts (matzah touching liquid)."]
     }
   },
   "pesach-last-days": {
@@ -910,7 +918,11 @@ const OCCASION_EXTRAS = {
         "The count is said 'la'Omer', following the Arizal.",
         "Haircuts are avoided all the way until Erev Shavuot, with Lag BaOmer itself a day of celebration."
       ],
-      litvish: ["The count is said 'ba'Omer', with mourning customs from Pesach until Lag BaOmer."]
+      litvish: ["The count is said 'ba'Omer', with mourning customs from Pesach until Lag BaOmer."],
+      sefard: [
+        "The count is said 'la'Omer', following the Arizal, as printed in Nusach Sefard siddurim.",
+        "Mourning customs from Pesach until Lag BaOmer, which Chassidim celebrate with bonfires and joy."
+      ]
     }
   },
   "lag-baomer": {
@@ -1220,6 +1232,10 @@ const PRAYER_EXTRAS = {
       litvish: [
         "Nusach Ashkenaz as practiced by the Vilna Gaon's followers.",
         "The tefillin strap is wound outward, away from the body."
+      ],
+      sefard: [
+        "Nusach Sefard: Hodu comes before Baruch She'amar, as in the Sephardi order.",
+        "The tefillin strap is wound inward, toward the body; many Chassidim also put on Rabbeinu Tam tefillin."
       ]
     }
   },
@@ -1229,7 +1245,8 @@ const PRAYER_EXTRAS = {
       ashkenazi: ["Mincha begins with Ashrei."],
       sephardi: ["Mincha begins with Korbanot — the passage about the daily offering — before Ashrei."],
       chabad: ["Mincha begins with the Korbanot passage, then Ashrei."],
-      litvish: ["Mincha begins with Ashrei."]
+      litvish: ["Mincha begins with Ashrei."],
+      sefard: ["Mincha begins with the Korbanot passage (the daily offering and the incense), then Ashrei."]
     }
   },
   maariv: {
@@ -1238,7 +1255,8 @@ const PRAYER_EXTRAS = {
       ashkenazi: ["Outside Israel, 'Baruch Hashem L'olam' is said before the weekday Amidah; in Israel it's left out."],
       sephardi: ["Arvit doesn't include 'Baruch Hashem L'olam'."],
       chabad: ["Nusach Ari doesn't include 'Baruch Hashem L'olam'."],
-      litvish: ["Outside Israel many say 'Baruch Hashem L'olam'; in Israel it's left out."]
+      litvish: ["Outside Israel many say 'Baruch Hashem L'olam'; in Israel it's left out."],
+      sefard: ["Many Nusach Sefard siddurim leave out 'Baruch Hashem L'olam', following the Arizal — follow the siddur of your shul."]
     }
   }
 };

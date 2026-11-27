@@ -56,6 +56,11 @@ function dsDayInfo(events, date) {
   else if (roshChodesh) name = "Rosh Chodesh";
   else if (date.getDay() === 6) name = specialShabbat ? specialShabbat.title : "Shabbat";
   else if (date.getDay() === 5) name = "Erev Shabbat";
+  // Otherwise, a day your community keeps (Yud-Tes Kislev, a hillula…).
+  if (!name && typeof communityDayShown === "function") {
+    const c = todays.find(e => e.category === "community" && !e.quiet && communityDayShown(e, typeof currentProfile !== "undefined" ? currentProfile : null));
+    if (c) name = c.title.replace(/^Tonight: /, "").replace(/^Yahrzeit of (the )?/, "");
+  }
   const guide = typeof PREP_GUIDES !== "undefined"
     ? PREP_GUIDES.find(g => todays.some(e => g.matchTitle(e.title))) || null
     : null;

@@ -120,6 +120,13 @@ On a first visit a 4-step welcome ([`js/profile.js`](js/profile.js)) asks: what 
 - The mitzvah of the day gets "Share with your kids" (young) or "Talk with your teens".
 - Under the week's parsha on the Today page (`renderFamilyCorner` in `app.js`): a folded "For the kids this week" corner (story, word of the week, questions, drawing) for young children, or "Talk about it with your teens" (summary and questions), from `parsha-content.js`.
 
+**Prayer tradition (nusach).**
+
+- Community days ([`js/community-days.js`](js/community-days.js)): days a community keeps — Chabad (Yud Kislev, Yud-Tes Kislev, the Alter Rebbe's yahrzeit, Yud Shevat, Yud-Alef Nissan, Gimmel Tammuz, Yud-Beis Tammuz, Chof Av, Chai Elul), Chassidic (Yud-Tes Kislev, Chai Elul, Yom Kippur Katan), Sephardi (Rav Ovadia Yosef, the Rambam, the Baba Sali, the Ben Ish Chai, Mimouna, the Rosh Hashanah and Tu BiShvat seders) and Ashkenazi (Yom Kippur Katan, BeHaB, the Vilna Gaon, the Chafetz Chaim). All are computed from the Hebrew date with the browser's Intl Hebrew calendar (Yom Kippur Katan moves to Thursday and is skipped before Tishrei, Cheshvan, Tevet and Iyar; BeHaB follows the first Shabbat of Cheshvan and Iyar; Mimouna follows the Israel setting). They're added to the Hebcal events as category `community` and appear in the day strip, the "Later" chips and "What's different today" (with their story and a gold label) for that nusach only, or for everyone, labeled, with "Show me everything". Chabad and Chassidim also get "Tehillim before Shacharit" on Shabbat Mevarchim.
+- Timeline (`tlApplyNusach`, `TL_NUSACH_NOTES` in `timeline.js`): your custom for Shabbat candles (blessing before or after lighting), Chanukah lights, counting the Omer, women and the lulav / sukkah, and kitniyot / gebrochts on Pesach. "Not sure" and "Other" see them side by side; no answer sees none. No tefillin on Chol HaMoed for everyone in Israel and for Chassidim, Sephardim and Chabad everywhere (`tlNoTefillinOnCholHamoed`).
+- Prayer cards: "Your siddur" and your community's order differences, shown open. Birkat HaMazon loads in Nusach Sefard (Chassidic and Chabad) or Edot HaMizrach (Sephardi) from Sefaria (`PT_BIRKAT_BY_NUSACH` in `prayer-texts.js`); Nusach Sefard counts the Omer "la'omer".
+- Nusach Sefard has its own `sefard` entries in the custom boxes where it differs, and otherwise follows the Ashkenazi ones. Settings and the welcome have a folded "How do I know my nusach?" guide.
+
 Other answers change the page through [`js/personalize.js`](js/personalize.js):
 
 - **A nusach**: a "Your custom" box on each card with only that community's minhagim ("Other" / "Not sure" shows all communities side by side), and the matching blessing texts and times.

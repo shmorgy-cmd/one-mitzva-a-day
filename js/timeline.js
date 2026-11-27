@@ -306,6 +306,7 @@ function buildDayTimeline(opts) {
       timeLabel: fmt(fastEnds.at), title: "The fast ends", tag: "Fast", why: "Pray Maariv, then break the fast gently — a drink of water first." });
   }
 
+  tlApplyNusach(items, allDay, opts.profile || null, info);
   tlApplyGender(items, allDay, opts.profile || null);
   tlApplyFamily(items, allDay, opts.profile || null);
 
@@ -356,6 +357,98 @@ const TL_CANDLE_NOTES = {
   male: "Usually lit by the woman of the home. If you live alone (or she's away), you light yourself — and anyone can help by setting up the candles.",
   both: "Traditionally lit by the woman of the home — a special mitzvah given to women. Anyone living alone lights for themselves."
 };
+
+// ---------------------------------------------------------------------
+// Prayer tradition (nusach): your custom, on the timeline
+// ---------------------------------------------------------------------
+
+/** Where communities differ, by timeline id. Each entry: the nusachs it's for,
+ *  the text, and `women` for notes only shown with women's practices. */
+const TL_NUSACH_NOTES = {
+  "guide-candles": [
+    { for: ["ashkenaz", "sefard", "chabad"], text: "Light first, then cover your eyes and say the blessing — then uncover them and look at the lights." },
+    { for: ["sephardi"], text: "Many Sephardim say the blessing first and then light (some families light first, as Ashkenazim do) — follow your family's way." }
+  ],
+  "guide-chanukah-lights": [
+    { for: ["ashkenaz", "sefard"], text: "Each person in the home — often each child — lights their own menorah; a wife is usually included in her husband's lighting." },
+    { for: ["sephardi"], text: "One menorah for the whole household, lit by the head of the home, adding a light each night." },
+    { for: ["chabad"], text: "Every male, even young boys, lights his own menorah; women and girls are included in the household's lighting. The menorah stands indoors, by a doorway, opposite the mezuzah." }
+  ],
+  "guide-count-omer": [
+    { for: ["ashkenaz"], text: "Said \"…ba'Omer\" (בעמר), as in most Ashkenazi siddurim." },
+    { for: ["sefard", "sephardi", "chabad"], text: "Said \"…la'Omer\" (לעמר), following the Arizal." }
+  ],
+  "guide-lulav": [
+    { women: true, for: ["ashkenaz", "sefard", "chabad"], text: "Women who take the lulav usually say the blessing too." },
+    { women: true, for: ["sephardi"], text: "Women who take the lulav usually do so without the blessing." }
+  ],
+  "guide-sukkah-night": [
+    { women: true, for: ["ashkenaz", "sefard", "chabad"], text: "Women who eat in the sukkah usually say \"leishev basukkah\" too." },
+    { women: true, for: ["sephardi"], text: "Women who eat in the sukkah usually do so without the blessing." }
+  ]
+};
+const TL_PESACH_NOTES = [
+  { for: ["ashkenaz"], text: "No kitniyot (rice, corn, beans, lentils and similar) all Pesach." },
+  { for: ["sefard"], text: "No kitniyot all Pesach; many Chassidim also avoid gebrochts — matzah that has touched liquid (so no matzah balls)." },
+  { for: ["chabad"], text: "No kitniyot, and no gebrochts — matzah is kept away from liquid — until the last day outside Israel, when it's eaten on purpose." },
+  { for: ["sephardi"], text: "Many Sephardim eat kitniyot (rice, legumes) on Pesach — customs differ by family (many Moroccans avoid rice, for example). Check them carefully for chametz first." }
+];
+TL_NUSACH_NOTES["guide-erev-pesach-day"] = TL_PESACH_NOTES;
+TL_NUSACH_NOTES["guide-pesach-chm"] = TL_PESACH_NOTES;
+TL_NUSACH_NOTES["guide-sukkah-day"] = TL_NUSACH_NOTES["guide-sukkah-night"];
+
+const TL_NUSACHS = ["ashkenaz", "sefard", "sephardi", "chabad"];
+
+/** Which custom notes to show: the visitor's own, or all side by side
+ *  ("Not sure" / "Other" / "Show me everything"), or none (no answer). */
+function tlNusachPick(entries, profile) {
+  const n = profile && profile.nusach;
+  if (TL_NUSACHS.includes(n) && !(profile && profile.showAll)) return entries.filter(e => e.for.includes(n));
+  if (n || (profile && profile.showAll)) return entries;
+  return [];
+}
+
+/** No tefillin on Chol HaMoed: everyone in Israel, and Chassidim, Sephardim
+ *  and Chabad everywhere. (Many Ashkenazim outside Israel do wear them.) */
+function tlNoTefillinOnCholHamoed(profile, israel) {
+  const n = profile && profile.nusach;
+  return !!israel || ["sefard", "sephardi", "chabad"].includes(n);
+}
+
+function tlApplyNusach(items, allDay, profile, info) {
+  if (typeof COMMUNITY_LABELS === "undefined") return; // community-days.js not loaded (tests)
+  const israel = typeof isInIsrael === "function" && typeof currentSettings !== "undefined" ? isInIsrael(currentSettings) : false;
+  const n = profile && profile.nusach;
+  const label = (e) => e.for.map(k => COMMUNITY_LABELS[k]).join(", ").replace(/, ([^,]*)$/, " & $1") + " custom";
+  const women = typeof genderShow === "function" ? genderShow("female", profile) : "label";
+
+  // Tefillin on Chol HaMoed.
+  const ti = items.findIndex(it => it.id === "tefillin");
+  if (ti >= 0 && info && info.cholHamoed) {
+    const it = items[ti];
+    if (tlNoTefillinOnCholHamoed(profile, israel)) {
+      items[ti] = { id: "no-tefillin", part: "morning", kind: "simple", soft: true, start: it.start, end: it.idealEnd || it.end,
+        sortAt: new Date(it.start.getTime() - 60000), order: it.order, title: "No tefillin today", tag: "Chol HaMoed",
+        why: israel ? "In Israel, tefillin aren't worn on Chol HaMoed — the festival itself is the sign." : "Your community doesn't wear tefillin on Chol HaMoed — the festival itself is the sign.",
+        notes: israel || !TL_NUSACHS.includes(n) ? [] : [{ nusach: [n], label: COMMUNITY_LABELS[n] + " custom", text: "Many Ashkenazim outside Israel do wear them — a difference of custom, not of right and wrong." }] };
+    } else {
+      it.why = it.why.replace("Customs differ about tefillin on Chol HaMoed — follow your community. ", "");
+      const picks = tlNusachPick([
+        { for: ["ashkenaz"], text: "Many Ashkenazim outside Israel wear tefillin on Chol HaMoed — some without the blessing, some saying it quietly — and many don't. Follow your family or shul." },
+        { for: ["sefard", "sephardi", "chabad"], text: "Not worn on Chol HaMoed (nor by anyone in Israel)." }
+      ], profile);
+      it.notes = [...(it.notes || []), ...picks.map(e => ({ nusach: e.for, label: label(e), text: e.text }))];
+    }
+  }
+
+  [...items, ...allDay].forEach(it => {
+    const entries = TL_NUSACH_NOTES[it.id];
+    if (!entries) return;
+    const picks = tlNusachPick(entries.filter(e => !e.women || women), profile);
+    if (!picks.length) return;
+    it.notes = [...(it.notes || []), ...picks.map(e => ({ nusach: e.for, label: label(e), text: e.text }))];
+  });
+}
 
 /** The candle-lighting note, by gender and (when given) marriage. */
 function tlCandleNote(profile) {
@@ -412,7 +505,7 @@ function tlApplyFamily(items, allDay, profile) {
 function tlNoteEl(n) {
   if (typeof n === "string") return el("p", null, n);
   const p = el("p", "tl-note-family");
-  p.appendChild(familyTag(n.family, currentProfile));
+  p.appendChild(n.nusach ? communityTag(n.label, n.nusach, currentProfile) : familyTag(n.family, currentProfile));
   p.appendChild(document.createTextNode(n.text));
   return p;
 }
@@ -573,8 +666,29 @@ function tlLeft(ms) {
 }
 
 /** The "How to pray" content for Shacharit, Mincha and Maariv. */
+/** Which siddur fits each nusach — shown on the prayer cards. */
+const TL_SIDDURS = {
+  ashkenaz: "Nusach Ashkenaz — for example the Koren or ArtScroll Ashkenaz siddur.",
+  sefard: "Nusach Sefard — for example the ArtScroll or Metsudah Siddur Sefard.",
+  sephardi: "Edot HaMizrach — for example Siddur Kol Sasson, Kol Yaakov or Avot Ubanim.",
+  chabad: "Nusach Ari — Siddur Tehillat Hashem.",
+  other: "Pray from the siddur of your community or synagogue.",
+  unsure: "Any siddur is a fine start — ideally the one your synagogue uses. Any nusach prayed sincerely is right; what matters is keeping to one."
+};
+
 function tlPrayerBody(item, ctx, used) {
   const box = el("div", "tl-body");
+  const n = currentProfile && currentProfile.nusach;
+  if (TL_SIDDURS[n]) {
+    const p = el("p", "tl-siddur");
+    p.appendChild(el("b", null, "Your siddur: "));
+    p.appendChild(document.createTextNode(TL_SIDDURS[n]));
+    box.appendChild(p);
+  }
+  // How your community's order differs (shown open, not inside "About").
+  const ex = PRAYER_EXTRAS[item.prayer];
+  const order = ex ? renderMinhagBox(ex.minhagim, currentProfile) : null;
+  if (order) box.appendChild(order);
   if (item.changes && item.changes.length) {
     box.appendChild(el("h4", "section-label", item.changesLabel || "Changes today"));
     const ul = el("ul", "pc-list");
@@ -600,8 +714,6 @@ function tlPrayerBody(item, ctx, used) {
     prayer.content.halacha.forEach(h => ul.appendChild(richEl("li", null, h, currentProfile, used)));
     about.appendChild(ul);
     const extras = PRAYER_EXTRAS[item.prayer] || {};
-    const minhagBox = renderMinhagBox(extras.minhagim, currentProfile);
-    if (minhagBox) about.appendChild(minhagBox);
     const takingOnBox = renderTakingOnBox(extras.takingOn, currentProfile, used);
     if (takingOnBox) about.appendChild(takingOnBox);
     about.appendChild(el("h4", "section-label", "For Reflection"));

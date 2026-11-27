@@ -193,6 +193,8 @@ function openSettingsPanel(onDone) {
   // --- 3. Nusach --------------------------------------------------------
   const nusachSec = numbered(3, "Your prayer tradition (nusach)", "Blessings and customs follow your tradition. Not sure? We'll show the common practice and the alternatives.");
   nusachSec.appendChild(choicePills("Prayer tradition", NUSACHS, profile.nusach, id => { profile.nusach = id; saveP(); }));
+  nusachSec.appendChild(sEl("p", "pill-note", "Your tradition also adds the days your community keeps to the calendar."));
+  nusachSec.appendChild(nusachHelp());
   modal.appendChild(nusachSec);
 
   // --- 4. Where you are -------------------------------------------------
