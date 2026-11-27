@@ -169,7 +169,7 @@ function buildDayTimeline(opts) {
       title: "No tefillin today", tag: shabbat ? "Shabbat" : "Yom Tov",
       why: shabbat ? "Shabbat is itself the sign between God and the Jewish people, so tefillin aren't worn." : "Like Shabbat, the festival is its own sign, so tefillin aren't worn." });
   } else if (info.tishaBav) {
-    add({ id: "tefillin", part: "afternoon", kind: "mitzvah", mitzvah: "tefillin", soft: true, skippable: true, start: z.minchaG, end: z.sunset, sortAt: minus(z.minchaG, 1),
+    add({ id: "tefillin", part: "afternoon", kind: "mitzvah", mitzvah: "tefillin", soft: true, skippable: true, missedNote: "The time for tallit and tefillin passed today — they're worn by day.", start: z.minchaG, end: z.sunset, sortAt: minus(z.minchaG, 1),
       timeLabel: fmt(z.minchaG), timeSmall: approx ? "" : "from", ...win(z.minchaG, z.sunset, "latest"), title: "Tallit and tefillin — at Mincha today", tag: "Tisha B'Av",
       why: "On Tisha B'Av they're worn at Mincha instead of the morning. Traditionally a men's mitzvah; customs vary." });
   } else {
@@ -179,6 +179,7 @@ function buildDayTimeline(opts) {
     // above Shacharit with the same bright "Now" box.
     add({ id: "tefillin", part: "morning", kind: "mitzvah", mitzvah: "tefillin", soft: true, carry: true, skippable: true, start: z.misheyakir, end: z.sunset,
       idealEnd: z.tfilla, idealNote: "ideally before Shacharit",
+      missedNote: "The time for tallit and tefillin passed today — they're worn by day.",
       timeLabel: fmt(z.misheyakir), timeSmall: approx ? "" : "from", ...win(z.misheyakir, z.sunset, "latest"), title: "Tallit and tefillin", tag: info.cholHamoed ? "Chol HaMoed" : null,
       why: (info.cholHamoed ? "Customs differ about tefillin on Chol HaMoed — follow your community. " : "") +
         (approx ? "Ideally put on before Shacharit and worn during it; the latest is sunset." : "Ideally put on before Shacharit and worn during it.") + " Traditionally a men's mitzvah; customs vary — learn with your rabbi." });
@@ -194,7 +195,12 @@ function buildDayTimeline(opts) {
       : `The best time (${fmt(z.shma)}) has passed — say it now. With its blessings, until ${fmt(z.tfilla)}.`,
     lateShort: "time passed, say it now",
     missedNote: "The time for the Shema passed today. It's still good to say it (without its blessings) — ask your rabbi." });
-  add({ id: "shacharit", part: "morning", kind: "prayer", prayer: "shacharit", start: z.alot, end: z.tfilla, sortAt: new Date(z.misheyakir.getTime() + 2),
+  // Shacharit: best by the latest time for the Amidah (due); many hold it can still be
+  // prayed until midday (end). Missed, it's made up at Mincha (see the note there).
+  add({ id: "shacharit", part: "morning", kind: "prayer", prayer: "shacharit", start: z.alot, due: z.tfilla, end: z.chatzot,
+    lateNote: approx ? "The best time has passed — you can still pray Shacharit until midday." : `The best time (${fmt(z.tfilla)}) has passed — you can still pray Shacharit until midday (${fmt(z.chatzot)}).`,
+    lateShort: "best time passed, pray now",
+    missedNote: "The time for Shacharit passed today. Many make it up at Mincha — see the note there.", sortAt: new Date(z.misheyakir.getTime() + 2),
     timeLabel: fmt(z.tfilla), timeSmall: approx ? "" : "by", ...win(z.alot, z.tfilla, "by"),
     title: shabbat && !festival ? "Shabbat morning prayers" : festival ? "Festival morning prayers" : "Shacharit (morning prayer)",
     why: approx ? "In the morning, ideally soon after sunrise." : `Ideally from sunrise (${fmt(z.sunrise)}); finish the Amidah by the latest time shown.`,
@@ -209,12 +215,17 @@ function buildDayTimeline(opts) {
 
   // 4. Afternoon
   add({ id: "mincha", part: "afternoon", kind: "prayer", prayer: "mincha", start: z.minchaG, end: z.sunset,
+    makeupFor: "shacharit", makeupNote: "Missed Shacharit today? Many make it up now: say the Amidah of Mincha twice — ask your rabbi.",
+    missedNote: "The time for Mincha passed today. Many make it up at Maariv — see the note there.",
     timeLabel: fmt(z.minchaG), timeSmall: approx ? "" : "from", ...win(z.minchaG, z.sunset, "until"), title: "Mincha (afternoon prayer)",
     why: approx ? "In the afternoon, before sunset." : `Any time until sunset — many wait until ${fmt(z.minchaK)}.`,
     changes: [], sameAs: changes.today.map(i => i.title) });
 
   // 5. Evening
-  add({ id: "maariv", part: "evening", kind: "prayer", prayer: "maariv", start: z.tzeit, end: z.midnight,
+  add({ id: "maariv", part: "evening", kind: "prayer", prayer: "maariv", start: z.tzeit, due: z.midnight, end: new Date(z.alot.getTime() + 24 * TL_HOUR),
+    lateNote: approx ? "Ideally before midnight — you can still say Maariv until dawn." : `Ideally before midnight (${fmt(z.midnight)}) — you can still say Maariv until dawn.`,
+    lateShort: "still until dawn",
+    makeupFor: "mincha", makeupNote: "Missed Mincha today? Many make it up now: say the Amidah of Maariv twice — ask your rabbi.",
     timeLabel: fmt(z.tzeit), timeSmall: approx ? "" : "from", ...win(z.tzeit, z.midnight, "ideally by"),
     title: dow === 5 ? "Maariv for Shabbat" : "Maariv (evening prayer)",
     why: approx ? "After nightfall, with the evening Shema — ideally before midnight." : "After nightfall, with the evening Shema — ideally before halachic midnight; at the latest, dawn.",
@@ -559,6 +570,8 @@ function tlRenderItem(item, ctx, used) {
   main.appendChild(el("p", "tl-carried", ""));
   // Shown when its best time has passed (or it was missed): what to do now.
   main.appendChild(el("p", "tl-late", ""));
+  // On Mincha / Maariv: how to make up the prayer before, if it was missed.
+  main.appendChild(el("p", "tl-makeup", ""));
 
   let why = item.why;
   if (item.kind === "daily-mitzvah" && ctx.mitzvah) why = `${ctx.mitzvah.title} — ${ctx.mitzvah.subtitle}`;
@@ -918,6 +931,12 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
         if (missed) missedHere = true;
         const lateEl = li.querySelector(".tl-late");
         if (lateEl) lateEl.textContent = late ? (item.lateNote || "") : missed ? item.missedNote : "";
+        const makeupEl = li.querySelector(".tl-makeup");
+        if (makeupEl) {
+          const prev = item.makeupFor && all.find(i => i.id === item.makeupFor);
+          const needed = isToday && prev && !settled[prev.id] && tlStatus(prev, now) === "past" && !settled[item.id] && st !== "past";
+          makeupEl.textContent = needed ? item.makeupNote : "";
+        }
         if (isToday && !placed && (st === "current" || st === "upcoming")) {
           nowLine.querySelector(".tl-now-time").textContent = day.approx ? "" : fmt(now);
           ul.insertBefore(nowLine, li);

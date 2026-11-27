@@ -3030,3 +3030,5 @@ body.has-sheet { overflow: hidden; }
 .now-late { margin-top: 6px; display: inline-block; padding: 3px 10px; border-radius: 999px; background: #fff4e5; color: #8a4b00; font-size: 0.84rem; font-weight: 700; }
 /* Not yet: an item can't be ticked before its time */
 .tl-check:disabled { opacity: 0.35; cursor: not-allowed; }
+.tl-makeup:empty { display: none; }
+.tl-makeup { margin: 6px 0 0; padding: 6px 10px; border-radius: 8px; background: #eef2fc; color: var(--flag-blue-deep); font-size: 0.84rem; font-weight: 600; line-height: 1.4; }
