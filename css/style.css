@@ -3094,7 +3094,8 @@ details.today-thought[open] .today-thought-peek { display: none; }
 button.day-note { cursor: pointer; }
 button.day-note:hover, button.day-note:focus-visible { border-color: var(--gold); box-shadow: 0 2px 8px rgba(185, 138, 47, 0.2); outline: none; }
 .day-note-icon { font-size: 1rem; line-height: 1; }
-.day-notes--plain { display: flex; align-items: center; gap: 8px; background: #eef8f1; border-color: #cde8d6; }
+.day-notes--plain { background: #eef8f1; border-color: #cde8d6; }
+.day-notes-line { display: flex; align-items: center; gap: 8px; }
 .day-notes-icon { font-size: 1rem; }
 .day-notes-plain { font-size: 0.9rem; font-weight: 600; color: #1f5d3a; }
 /* A short glow on the timeline item you jumped to */
@@ -3108,3 +3109,8 @@ button.day-note:hover, button.day-note:focus-visible { border-color: var(--gold)
 }
 /* The quiz inside the timeline's "Test yourself" item */
 .quiz-card--inline { box-shadow: none; border: 0; padding: 0; margin: 0; background: none; animation: none; }
+/* Weekly practices: routine, but worth knowing */
+.day-notes-title--weekly { margin-top: 8px; color: var(--ink-soft); }
+.day-note--weekly { background: rgba(255, 255, 255, 0.7); border-style: dashed; font-weight: 600; }
+.day-note-tag { font-size: 0.74rem; font-weight: 500; color: var(--ink-soft); }
+.day-note-tag::before { content: "· "; }

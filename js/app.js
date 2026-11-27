@@ -884,36 +884,57 @@ function renderDayNotes(date, info, changes, guide, events) {
   }
   (changes ? changes.today : []).forEach(c => add(DAY_NOTE_ICONS[c.id] || "📖", c.title, "shacharit"));
   (changes ? changes.tonight : []).forEach(c => add(DAY_NOTE_ICONS[c.id] || "🌙", /tonight/i.test(c.title) ? c.title : `Tonight: ${c.title}`, "maariv"));
-  // (The weekday Torah reading on Mondays and Thursdays is routine, not "different".)
-  let routine = "";
+  // Weekly practices — routine, but not obvious to someone still learning, so they're
+  // shown too, marked with how often they happen.
+  const weekly = [];
   guideAll.forEach(g => {
-    if (g.id === "weekday-torah") { routine = "The Torah is read at Shacharit today"; return; }
+    if (g.id === "weekday-torah") {
+      weekly.push({ icon: "📖", text: "Torah reading at Shacharit", tag: "every Monday & Thursday", target: "guide-weekday-torah" });
+      return;
+    }
     if (notes.some(n => n.target === "guide-" + g.id)) return;
     const title = g.title.split(" — ")[0];
     const icon = DAY_NOTE_ICONS[g.id] || (/fast/i.test(title) ? "⏳" : /Chanukah|menorah/i.test(title) ? "🕎" : /dinner|Kiddush|meal/i.test(title) ? "🍷" : /Shabbat|Yom Tov|candle/i.test(title) ? "🕯️" : "⭐");
     add(icon, `${title}${g.when ? ` · ${g.when}` : ""}`, "guide-" + g.id);
   });
-
-  const card = el("div", "day-notes" + (notes.length ? "" : " day-notes--plain"));
-  if (!notes.length) {
-    card.appendChild(el("span", "day-notes-icon", "✅"));
-    card.appendChild(el("span", "day-notes-plain", (daysBetween(realToday, date) === 0
-      ? "A regular weekday — no changes to the prayers today."
-      : "A regular weekday — no changes to the prayers.") + (routine ? ` ${routine}, as every Monday and Thursday.` : "")));
-    box.appendChild(card);
-    return;
+  const tachanunListed = (changes ? changes.today : []).some(c => /tachanun/.test(c.id));
+  if (!tachanunListed) {
+    if (dow === 5) weekly.push({ icon: "🌤️", text: "No Tachanun at Mincha", tag: "every Friday, before Shabbat", target: "mincha" });
+    else if (dow === 6) weekly.push({ icon: "🌤️", text: "No Tachanun", tag: "never said on Shabbat", target: "shacharit" });
+    else if (info.yomTov) weekly.push({ icon: "🌤️", text: "No Tachanun", tag: "never said on Yom Tov", target: "shacharit" });
   }
-  card.appendChild(el("p", "day-notes-title", daysBetween(realToday, date) === 0 ? "What's different today" : "What's different this day"));
-  const list = el("div", "day-notes-list");
-  notes.forEach(n => {
-    const chip = el(n.target ? "button" : "span", "day-note");
+
+  const isToday = daysBetween(realToday, date) === 0;
+  const chipFor = (n, cls) => {
+    const chip = el(n.target ? "button" : "span", "day-note" + (cls ? " " + cls : ""));
     if (n.target) chip.type = "button";
     chip.appendChild(el("span", "day-note-icon", n.icon));
-    chip.appendChild(el("span", null, n.text));
+    const text = el("span", null, n.text);
+    if (n.tag) { text.appendChild(document.createTextNode(" ")); text.appendChild(el("span", "day-note-tag", n.tag)); }
+    chip.appendChild(text);
     if (n.target) chip.addEventListener("click", () => jumpToTimelineItem(n.target));
-    list.appendChild(chip);
-  });
-  card.appendChild(list);
+    return chip;
+  };
+  const card = el("div", "day-notes" + (notes.length ? "" : " day-notes--plain"));
+  if (!notes.length) {
+    const line = el("div", "day-notes-line");
+    line.appendChild(el("span", "day-notes-icon", "✅"));
+    line.appendChild(el("span", "day-notes-plain", isToday
+      ? "A regular weekday — no changes to the prayers today."
+      : "A regular weekday — no changes to the prayers."));
+    card.appendChild(line);
+  } else {
+    card.appendChild(el("p", "day-notes-title", isToday ? "What's different today" : "What's different this day"));
+    const list = el("div", "day-notes-list");
+    notes.forEach(n => list.appendChild(chipFor(n)));
+    card.appendChild(list);
+  }
+  if (weekly.length) {
+    card.appendChild(el("p", "day-notes-title day-notes-title--weekly", notes.length ? "Also, as every week" : "As every week"));
+    const list = el("div", "day-notes-list");
+    weekly.forEach(n => list.appendChild(chipFor(n, "day-note--weekly")));
+    card.appendChild(list);
+  }
   box.appendChild(card);
 }
 
