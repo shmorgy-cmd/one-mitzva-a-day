@@ -406,10 +406,15 @@ function openSettingsPanel(onDone) {
   modal.appendChild(rSection);
   renderReminderStatus();
 
-  // --- Done -------------------------------------------------------------
+  // --- Done (and About, which isn't in the phone's bottom bar) -----------
+  const foot = sEl("div", "settings-foot");
+  const about = sEl("a", "settings-link-btn", "About One Mitzva a Day");
+  about.href = "about.html";
+  foot.appendChild(about);
   const done = sEl("button", "settings-done", "Done");
   done.type = "button";
-  modal.appendChild(done);
+  foot.appendChild(done);
+  modal.appendChild(foot);
 
   function close() {
     overlay.remove();

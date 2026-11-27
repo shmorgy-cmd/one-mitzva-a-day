@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Siddur — One Mitzva a Day</title>
+  <meta name="description" content="An online siddur in your nusach — Ashkenaz, Sefard, Sephardi or Chabad — in Hebrew and English." />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1747a6" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="One Mitzva" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Frank+Ruhl+Libre:wght@400;500;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="siddur-page" data-page="siddur">
+  <header class="site-bar">
+    <span class="sb-stars" aria-hidden="true"></span>
+    <span class="sb-glow" aria-hidden="true"></span>
+    <div class="wrap site-bar-inner">
+      <a class="sb-brand" href="./" aria-label="One Mitzva a Day — Today">
+        <span class="sb-mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="32,10 51.05,43 12.95,43" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+            <polygon points="32,54 12.95,21 51.05,21" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="sb-name">One Mitzva a Day</span>
+      </a>
+      <nav class="sb-links" aria-label="Pages">
+        <a href="./" data-page="today">Today</a>
+        <a href="torah.html" data-page="torah">Torah</a>
+        <a href="siddur.html" data-page="siddur">Siddur</a>
+        <a href="mitzvot.html" data-page="mitzvot">Everyday Mitzvot</a>
+        <a href="zmanim.html" data-page="zmanim">Times</a>
+        <a href="about.html" data-page="about">About</a>
+      </nav>
+      <button class="sb-settings" id="nav-settings" type="button" aria-label="Settings">
+        <span class="sb-gear" aria-hidden="true"></span>
+        <span class="sb-set-text"><b>Settings</b><small id="nav-settings-city"></small></span>
+      </button>
+      <p class="sb-tag">A daily companion for learning, living, and loving Jewish tradition — one day at a time.</p>
+    </div>
+  </header>
+
+  <main class="wrap" id="sd-app">
+    <noscript><p>This page needs JavaScript to show the siddur.</p></noscript>
+  </main>
+
+  <nav class="tab-bar" id="tab-bar" aria-label="Pages">
+    <a href="./" data-page="today" data-icon="star">Today</a>
+    <a href="torah.html" data-page="torah" data-icon="tablets">Torah</a>
+    <a href="siddur.html" data-page="siddur" data-icon="siddur">Siddur</a>
+    <a href="mitzvot.html" data-page="mitzvot" data-icon="hand">Mitzvot</a>
+    <a href="zmanim.html" data-page="zmanim" data-icon="sunrise">Times</a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Siddur texts and translations from <a href="https://www.sefaria.org" target="_blank" rel="noopener">Sefaria</a>, each with its own license; times and today's changes from <a href="https://www.hebcal.com" target="_blank" rel="noopener">Hebcal</a>.</p>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/integrations.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/offline.js"></script>
+  <script src="js/prayers.js"></script>
+  <script src="js/prayer-changes.js"></script>
+  <script src="js/siddur-page.js"></script>
+</body>
+</html>

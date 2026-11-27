@@ -146,3 +146,16 @@ Other answers change the page through [`js/personalize.js`](js/personalize.js):
 The extra content is keyed by id in `OCCASION_EXTRAS`, `MITZVA_EXTRAS`, `PRAYER_EXTRAS` and `PREP_EXTRAS` — when adding a new occasion, add a matching entry there too. Minhagim vary widely, so new entries should be checked by someone knowledgeable.
 
 **No Tachanun at a glance.** Days without Tachanun (by your community's custom, from `noTachanunReason` in `prayer-changes.js`) are marked "no Tachanun" on the day strip (`dsNoTachanun` in `daystrip.js`, from the browser's Hebrew calendar) and with a "No Tachanun" tag on the Shacharit and Mincha cards (Mincha also on Fridays and before such days). Chassidic festive days (Yud-Tes Kislev for Chabad and Chassidim; 20 Kislev and 12–13 Tammuz for Chabad) leave out Tachanun for those communities, and show "Tachanun: depends on your community" (side by side) to those whose nusach is "Not sure" or "Other". Festive days that every community keeps (Rosh Chodesh, Chanukah, Nisan, Lag BaOmer…) are marked for every nusach.
+
+## Siddur
+
+[`siddur.html`](siddur.html) ([`js/siddur-page.js`](js/siddur-page.js)) is an online siddur in each nusach, from Sefaria, linked from the top menu and the phone's bottom bar (where it took About's place; About is in the top menu and at the bottom of Settings):
+
+| Nusach | Sefaria siddur |
+| --- | --- |
+| Ashkenaz | Siddur Ashkenaz (Hebrew and English) |
+| Sefard (Chassidic) | Siddur Sefard (Hebrew and English) |
+| Sephardi / Edot HaMizrach | Siddur Edot HaMizrach (Hebrew; English for part) |
+| Chabad | Weekday Siddur Chabad (Hebrew), with Shabbat and festivals from Siddur Sefard, marked as such |
+
+It opens in your nusach (switchable at the top; "Other", "Not sure" and no answer start on Ashkenaz). The contents come live from each book's Sefaria index, grouped into Weekday prayers, Shabbat, Rosh Chodesh & festivals, Blessings & meals, Bedtime & night. A section opens in Hebrew, English or both, with previous / next and the edition and license Sefaria gives for it; sections without English say so. "Right now" suggests the prayer for this time of day (Shabbat-aware, from the city's zmanim) with today's prayer changes from `getPrayerChanges`. Every prayer card on the timeline links to it ("Open in your siddur →", `siddur.html#p=shacharit|mincha|maariv|kabbalat|…`). Opened sections are saved in the `omad-siddur-v1` cache, so they open offline later.

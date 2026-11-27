@@ -163,6 +163,15 @@ const ICONS = {
       fill="currentColor"/>
   `),
 
+  // A closed siddur with a Magen David on the cover.
+  siddur: svg(`
+    <rect x="16" y="10" width="32" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="2.6"/>
+    <path d="M22 10 V54" stroke="currentColor" stroke-width="2"/>
+    <polygon class="accent-gold" points="35,22 39.3,29.5 30.7,29.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <polygon class="accent-gold" points="35,32 30.7,24.5 39.3,24.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M28 42 H42 M28 47 H38" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+  `),
+
   sunrise: svg(`
     <circle cx="32" cy="38" r="10" fill="none" stroke="currentColor" stroke-width="2.6"/>
     <path d="M8 38 H56" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>

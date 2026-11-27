@@ -772,6 +772,11 @@ function tlPrayerBody(item, ctx, used) {
     p.appendChild(document.createTextNode(TL_SIDDURS[n]));
     box.appendChild(p);
   }
+  // The whole prayer, in your nusach, on the siddur page.
+  const sdKey = /^Shabbat/.test(item.title) ? `shabbat-${item.prayer}` : /Shabbat/.test(item.title) && item.prayer === "maariv" ? "kabbalat" : item.prayer;
+  const sd = el("a", "tl-siddur-link", "📖 Open in your siddur →");
+  sd.href = `siddur.html#p=${sdKey}`;
+  box.appendChild(sd);
   // How your community's order differs (shown open, not inside "About").
   const ex = PRAYER_EXTRAS[item.prayer];
   const order = ex ? renderMinhagBox(ex.minhagim, currentProfile) : null;
