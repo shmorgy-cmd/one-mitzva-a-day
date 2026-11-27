@@ -328,6 +328,20 @@ async function run() {
       return missing.length ? "unknown: " + missing.join(", ") : "";
     }]);
   });
+  // "Now" is the most urgent open prayer; "Also now" lists the other prayers and
+  // things that follow you (tefillin), not small steps like Modeh Ani.
+  wordChecks.push(["Timeline: Now and Also now", () => {
+    const t = (h) => new Date(2026, 10, 27, h);
+    const items = [
+      { id: "shacharit", start: t(6), end: t(10) },
+      { id: "modeh-ani", soft: true, start: t(6), end: t(10) },
+      { id: "tefillin", soft: true, carry: true, start: t(6), end: t(16) },
+      { id: "shema", start: t(6), end: t(9) }
+    ];
+    const r = tlFocus(items, new Date(2026, 10, 27, 9, 30), { shema: true });
+    const also = r.also.map(i => i.id).join(",");
+    return r.focus && r.focus.id === "shacharit" && also === "tefillin" ? "" : `focus ${r.focus && r.focus.id}, also ${also}`;
+  }]);
   // The Shema before sleep: no countdown, and the Hamapil note follows the community.
   wordChecks.push(["Bedtime Shema: Hamapil note by community", () => {
     const bad = [];

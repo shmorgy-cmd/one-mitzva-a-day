@@ -52,6 +52,30 @@ function initNav() {
     btn.addEventListener("click", openNavSettings);
   }
   updateNavSettings();
+  initCompactBar();
+}
+
+/** The banner shows the tagline at the top of the page and shrinks to a slim bar
+ *  once you scroll. Two thresholds (shrink past 80px, grow back only near the top)
+ *  so the change in height can't make it flicker. */
+function initCompactBar() {
+  let compact = false;
+  let pending = false;
+  const update = () => {
+    pending = false;
+    const y = window.scrollY;
+    const next = compact ? y > 4 : y > 80;
+    if (next !== compact) {
+      compact = next;
+      document.body.classList.toggle("bar-compact", compact);
+    }
+  };
+  window.addEventListener("scroll", () => {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(update);
+  }, { passive: true });
+  update();
 }
 
 document.addEventListener("DOMContentLoaded", initNav);

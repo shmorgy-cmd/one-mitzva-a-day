@@ -163,11 +163,13 @@ function buildDayTimeline(opts) {
       title: "No tefillin today", tag: shabbat ? "Shabbat" : "Yom Tov",
       why: shabbat ? "Shabbat is itself the sign between God and the Jewish people, so tefillin aren't worn." : "Like Shabbat, the festival is its own sign, so tefillin aren't worn." });
   } else if (info.tishaBav) {
-    add({ id: "tefillin", part: "afternoon", kind: "mitzvah", mitzvah: "tefillin", soft: true, start: z.minchaG, end: z.sunset, sortAt: minus(z.minchaG, 1),
+    add({ id: "tefillin", part: "afternoon", kind: "mitzvah", mitzvah: "tefillin", soft: true, skippable: true, start: z.minchaG, end: z.sunset, sortAt: minus(z.minchaG, 1),
       timeLabel: fmt(z.minchaG), timeSmall: approx ? "" : "from", title: "Tallit and tefillin — at Mincha today", tag: "Tisha B'Av",
       why: `On Tisha B'Av they're worn at Mincha instead of the morning${approx ? "" : ` — latest: sunset (${fmt(z.sunset)})`}. Traditionally a men's mitzvah; customs vary.` });
   } else {
-    add({ id: "tefillin", part: "morning", kind: "mitzvah", mitzvah: "tefillin", soft: true, start: z.misheyakir, end: z.chatzot,
+    // Open until sunset (the latest time); if not done by the end of the morning it
+    // follows you through the day (carry), and "Not for me" puts it aside (skippable).
+    add({ id: "tefillin", part: "morning", kind: "mitzvah", mitzvah: "tefillin", soft: true, carry: true, skippable: true, start: z.misheyakir, end: z.sunset,
       timeLabel: fmt(z.misheyakir), timeSmall: approx ? "" : "from", title: "Tallit and tefillin", tag: info.cholHamoed ? "Chol HaMoed" : null,
       why: (info.cholHamoed ? "Customs differ about tefillin on Chol HaMoed — follow your community. " : "") +
         (approx ? "Worn during Shacharit; the latest is sunset." : `From ${fmt(z.misheyakir)}, ideally during Shacharit — latest: sunset (${fmt(z.sunset)}).`) + " Traditionally a men's mitzvah; customs vary — learn with your rabbi." });
@@ -184,9 +186,9 @@ function buildDayTimeline(opts) {
     changesLabel: "Changes today" });
 
   // 3. Midday — anytime practices
-  add({ id: "daily-mitzvah", part: "midday", kind: "daily-mitzvah", anytime: true, start: z.alot, end: z.midnight, sortAt: z.chatzot,
+  add({ id: "daily-mitzvah", part: "midday", kind: "daily-mitzvah", anytime: true, skippable: true, start: z.alot, end: z.midnight, sortAt: z.chatzot,
     timeLabel: "anytime", title: "Mitzvah of the day", why: "" });
-  add({ id: "torah", part: "midday", kind: "torah", anytime: true, start: z.alot, end: z.midnight, sortAt: new Date(z.chatzot.getTime() + 1),
+  add({ id: "torah", part: "midday", kind: "torah", anytime: true, skippable: true, start: z.alot, end: z.midnight, sortAt: new Date(z.chatzot.getTime() + 1),
     timeLabel: "anytime", title: "Learn this week's Torah portion", why: "A few minutes with today's part of the parasha." });
 
   // 4. Afternoon
@@ -305,7 +307,12 @@ function tlFocus(items, now, done) {
   const target = focus || upcoming[0] || null;
   // Next: another open prayer still due today (e.g. Shacharit after the Shema), else the next to start.
   const next = current.find(i => i !== focus && !i.soft) || upcoming.find(i => i !== target && (!target || i.start > target.start)) || null;
-  return { focus, target, next };
+  // Everything else that's open right now (shown as "Also now"), most urgent first.
+  // (Small steps like Modeh Ani stay plain: only prayers and things that follow you.)
+  const also = current.filter(i => i !== focus && !i.noDeadline && (!i.soft || i.carry));
+  // The next thing to start, for "Then:" when the open ones are listed as "Also now".
+  const nextUp = upcoming.find(i => !target || i !== target) || null;
+  return { focus, target, next, also, nextUp };
 }
 
 // ---------------------------------------------------------------------------
@@ -336,6 +343,27 @@ function tlSetDone(dateISO, id, value) {
   if (value) all[dateISO][id] = true; else delete all[dateISO][id];
   try { localStorage.setItem(TL_DONE_KEY, JSON.stringify(all)); } catch (e) { /* ignore */ }
 }
+
+/** A small per-day store in localStorage (done ticks, "Not for me", folded parts),
+ *  keeping only the last week. */
+function tlDayStore(key) {
+  const all = () => { try { return JSON.parse(localStorage.getItem(key) || "{}") || {}; } catch (e) { return {}; } };
+  return {
+    get: (dateISO) => all()[dateISO] || {},
+    set: (dateISO, id, value) => {
+      const data = all();
+      Object.keys(data).forEach(k => { if (k < toISO(addDays(new Date(), -7))) delete data[k]; });
+      data[dateISO] = data[dateISO] || {};
+      if (value === undefined || value === false && key === TL_SKIP_KEY) delete data[dateISO][id];
+      else data[dateISO][id] = value;
+      try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { /* ignore */ }
+    }
+  };
+}
+const TL_SKIP_KEY = "omad_timeline_skip_v1"; // "Not for me" today
+const TL_FOLD_KEY = "omad_timeline_fold_v1"; // parts the visitor opened (true) or folded (false)
+const tlSkips = tlDayStore(TL_SKIP_KEY);
+const tlFolds = tlDayStore(TL_FOLD_KEY);
 
 function tlLeft(ms) {
   const m = Math.max(1, Math.round(ms / TL_MIN));
@@ -459,7 +487,10 @@ function tlRenderItem(item, ctx, used) {
   const h = el("h3", "tl-title", item.title);
   if (item.tag) h.appendChild(el("span", "tl-tag", item.tag));
   h.appendChild(el("span", "tl-tag tl-tag--now", "Now"));
+  h.appendChild(el("span", "tl-tag tl-tag--also", "Also now"));
   main.appendChild(h);
+  // Shown when the item has followed you past its own part of the day.
+  main.appendChild(el("p", "tl-carried", ""));
 
   let why = item.why;
   if (item.kind === "daily-mitzvah" && ctx.mitzvah) why = `${ctx.mitzvah.title} — ${ctx.mitzvah.subtitle}`;
@@ -493,6 +524,22 @@ function tlRenderItem(item, ctx, used) {
     row.appendChild(chk);
   }
   card.appendChild(row);
+
+  // "Not for me": put it aside for today without saying it was done.
+  if (ctx.isToday && item.skippable) {
+    const skip = el("div", "tl-skip");
+    const btn = el("button", "tl-skip-btn", "Not for me today");
+    btn.type = "button";
+    btn.addEventListener("click", () => { tlSkips.set(ctx.dateISO, item.id, true); ctx.paint(); });
+    const note = el("span", "tl-skip-note", "Set aside for today · ");
+    const undo = el("button", "tl-skip-undo", "Undo");
+    undo.type = "button";
+    undo.addEventListener("click", () => { tlSkips.set(ctx.dateISO, item.id, false); ctx.paint(); });
+    note.appendChild(undo);
+    skip.appendChild(btn);
+    skip.appendChild(note);
+    card.appendChild(skip);
+  }
 
   // The drop-down spans the card's full width (under the tick button too),
   // so the Hebrew has room on a phone.
@@ -574,23 +621,37 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
   const nowFill = el("div", "tl-now-fill");
   nowFill.setAttribute("aria-hidden", "true");
 
+  // One link to open or fold every part at once.
+  const tools = el("div", "tl-tools");
+  const allBtn = el("button", "tl-all-btn", "Collapse all");
+  allBtn.type = "button";
+  allBtn.addEventListener("click", () => {
+    const open = allBtn.textContent === "Expand all";
+    partEls.forEach(({ part }) => tlFolds.set(ctx.dateISO, part.key, open));
+    paint();
+  });
+  tools.appendChild(allBtn);
+  container.appendChild(tools);
+
   const partEls = [];
   day.parts.forEach(p => {
     const sec = el("section", "tl-part");
     sec.dataset.part = p.key;
     const head = el("div", "tl-part-head");
-    head.appendChild(el("h2", "tl-part-title", `${p.icon} ${p.title}`));
-    if (p.range) head.appendChild(el("span", "tl-part-range", p.range));
-    // Once a part of the day is over it folds away, so "now" is near the top.
-    const toggle = el("button", "tl-part-toggle", "Show");
+    // The whole heading opens or folds the part (what's in it is saved for today).
+    const h = el("h2", "tl-part-title");
+    const toggle = el("button", "tl-part-toggle");
     toggle.type = "button";
-    toggle.setAttribute("aria-expanded", "false");
+    toggle.appendChild(el("span", "tl-part-name", `${p.icon} ${p.title}`));
+    const meta = el("span", "tl-part-meta", p.range || "");
+    toggle.appendChild(meta);
+    toggle.appendChild(el("span", "tl-part-caret", "▾"));
     toggle.addEventListener("click", () => {
-      const open = sec.classList.toggle("is-expanded");
-      toggle.textContent = open ? "Hide" : "Show";
-      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      tlFolds.set(ctx.dateISO, p.key, sec.classList.contains("is-folded"));
+      paint();
     });
-    head.appendChild(toggle);
+    h.appendChild(toggle);
+    head.appendChild(h);
     sec.appendChild(head);
     const ul = el("ul", "tl-list");
     p.items.forEach(item => {
@@ -599,7 +660,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       ul.appendChild(li);
     });
     sec.appendChild(ul);
-    partEls.push({ part: p, sec, ul });
+    partEls.push({ part: p, sec, ul, meta, toggle });
     container.appendChild(sec);
   });
 
@@ -611,6 +672,9 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
   function showMe(item) {
     const li = itemEls.get(item);
     if (!li) return;
+    // Open its part first if it was folded.
+    const sec = li.closest(".tl-part");
+    if (sec && sec.classList.contains("is-folded")) { tlFolds.set(ctx.dateISO, sec.dataset.part, true); paint(); }
     const d = li.querySelector("details.tl-how");
     if (d) d.open = true;
     li.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -629,7 +693,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       nowContainer.appendChild(card);
       return;
     }
-    const { focus, target, next } = tlFocus(all, now, done);
+    const { focus, target, next, also, nextUp } = tlFocus(all, now, done);
     if (focus) {
       card.appendChild(el("div", "now-label", focus.noDeadline ? "Before you sleep" : "Right now"));
       card.appendChild(el("div", "now-title", focus.title));
@@ -662,14 +726,20 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       actions.appendChild(city);
     }
     if (actions.children.length) card.appendChild(actions);
-    if (next) card.appendChild(el("div", "now-next", `Then: ${next.title}${day.approx ? "" : next.noDeadline ? "" : next.start <= now ? ` · by ${fmt(next.end)}` : ` · ${fmt(next.start)}`}`));
+    if (focus && also.length) {
+      // Everything else open right now, then what starts next.
+      also.forEach(i => card.appendChild(el("div", "now-next now-also", `Also now: ${i.title}${day.approx ? "" : ` · until ${fmt(i.end)}`}`)));
+      if (nextUp) card.appendChild(el("div", "now-next", `Then: ${nextUp.title}${day.approx || nextUp.noDeadline ? "" : ` · ${fmt(nextUp.start)}`}`));
+    } else if (next) card.appendChild(el("div", "now-next", `Then: ${next.title}${day.approx ? "" : next.noDeadline ? "" : next.start <= now ? ` · by ${fmt(next.end)}` : ` · ${fmt(next.start)}`}`));
     nowContainer.appendChild(card);
   }
 
   function paint() {
     const now = tlNow();
     const done = isToday ? tlDoneFor(ctx.dateISO) : {};
-    const { focus } = isToday ? tlFocus(all, now, done) : { focus: null };
+    const skipped = isToday ? tlSkips.get(ctx.dateISO) : {};
+    const settled = Object.assign({}, done, skipped); // done, or set aside for today
+    const { focus } = isToday ? tlFocus(all, now, settled) : { focus: null };
     nowLine.remove();
     nowMark.remove();
     nowFill.remove();
@@ -706,45 +776,92 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       homeIdx.set(item, idx);
       ul.appendChild(itemEls.get(item));
     }));
-    // …then "anytime" practices not yet done follow the day: once their part is
-    // over they move to the top of the part of the day you're in now. Done, they
-    // stay home, folded away with the rest of "Earlier today".
+    const z = day.z;
+    const partEnd = { waking: z.tfilla, morning: z.chatzot, midday: z.minchaG, afternoon: z.sunset, evening: z.midnight };
+    const isOpenNow = (i) => !settled[i.id] && tlStatus(i, now) === "current";
+
+    // The part of the day you're in: where the most urgent open prayer or practice
+    // is (or the next one to start). Things that follow you don't count.
     let nowIdx = -1;
+    const moved = new Set();
     if (isToday) {
-      nowIdx = partEls.findIndex(({ part }) => part.items.some(i => !i.anytime && tlStatus(i, now) !== "past"));
-      if (nowIdx === -1) nowIdx = partEls.length - 1;
-      const movers = all.filter(i => i.anytime && !done[i.id] && tlStatus(i, now) !== "past" && homeIdx.get(i) < nowIdx);
+      const core = all.filter(i => !i.anytime && !i.carry && !i.noDeadline && !settled[i.id]);
+      const cur = core.filter(i => tlStatus(i, now) === "current")
+        .sort((a, b) => ((a.soft ? 1 : 0) - (b.soft ? 1 : 0)) || (a.end - b.end));
+      const up = core.filter(i => tlStatus(i, now) === "upcoming").sort((a, b) => a.start - b.start);
+      const anchor = cur[0] || up[0];
+      nowIdx = anchor ? homeIdx.get(anchor) : partEls.length - 1;
+      // …then what isn't done yet follows the day: "anytime" practices once their
+      // part is over, and things like tefillin once the morning is over (until
+      // their latest time). Done or set aside, they stay home.
+      const movers = all.filter(i => !settled[i.id] && homeIdx.get(i) < nowIdx && tlStatus(i, now) !== "past" &&
+        (i.anytime || (i.carry && partEnd[partEls[homeIdx.get(i)].part.key] && now >= partEnd[partEls[homeIdx.get(i)].part.key])));
       const target = partEls[nowIdx].ul;
-      movers.slice().reverse().forEach(i => target.insertBefore(itemEls.get(i), target.firstChild));
+      movers.slice().reverse().forEach(i => { target.insertBefore(itemEls.get(i), target.firstChild); moved.add(i); });
     }
     const itemOf = new Map([...itemEls].map(([item, li]) => [li, item]));
+    const folds = tlFolds.get(ctx.dateISO);
+    let anyFolded = false;
 
-    partEls.forEach(({ sec, ul }, idx) => {
-      let allPast = isToday;
-      const here = [...ul.children].map(li => itemOf.get(li)).filter(Boolean);
+    partEls.forEach(({ part, sec, ul, meta, toggle }, idx) => {
+      let here = [...ul.children].map(li => itemOf.get(li)).filter(Boolean);
       sec.style.display = here.length ? "" : "none";
+      if (!here.length) return;
+
+      // In today's parts: what's done (or over) first, then what's open — the most
+      // urgent first — then what's still to come. So an unticked item sits by "now".
+      if (isToday) {
+        const group = (i) => (settled[i.id] || tlStatus(i, now) === "past") ? 0 : tlStatus(i, now) === "upcoming" ? 2 : 1;
+        here = here.map((i, n) => ({ i, n })).sort((a, b) => {
+          const ga = group(a.i), gb = group(b.i);
+          if (ga !== gb) return ga - gb;
+          if (ga === 1 && !!a.i.anytime !== !!b.i.anytime) return a.i.anytime ? 1 : -1; // "anytime" after the timed ones
+          if (ga === 1 && a.i.end - b.i.end) return a.i.end - b.i.end;
+          return a.n - b.n;
+        }).map(x => x.i);
+        here.forEach(i => ul.appendChild(itemEls.get(i)));
+      }
+
+      let finishedCount = 0;
       here.forEach(item => {
         const li = itemEls.get(item);
         let st = isToday ? tlStatus(item, now) : "plain";
-        if (st === "current" && item !== focus) st = "open";
-        // A done anytime practice whose part of the day is over counts as finished.
-        const finished = st === "past" || (item.anytime && done[item.id] && idx < nowIdx);
-        if (!finished) allPast = false;
-        li.className = `tl-item tl-item--${st}${done[item.id] ? " is-done" : ""}${item.anytime ? " tl-item--any" : ""}`;
+        if (st === "current" && item !== focus) st = settled[item.id] || item.anytime || item.noDeadline || (item.soft && !item.carry) ? "open" : "also";
+        if (settled[item.id] || st === "past") finishedCount++;
+        li.className = `tl-item tl-item--${st}${done[item.id] ? " is-done" : ""}${skipped[item.id] ? " is-skipped" : ""}${item.anytime ? " tl-item--any" : ""}`;
         const chk = li.querySelector(".tl-check");
         if (chk) {
           chk.setAttribute("aria-pressed", done[item.id] ? "true" : "false");
           chk.setAttribute("aria-label", `${done[item.id] ? "Mark not done" : "Mark done"}: ${item.title}`);
         }
+        const carried = li.querySelector(".tl-carried");
+        if (carried) carried.textContent = moved.has(item) && item.carry && !day.approx ? `Still open — latest ${fmt(item.end)}` : "";
         if (isToday && !placed && (st === "current" || st === "upcoming")) {
           nowLine.querySelector(".tl-now-time").textContent = day.approx ? "" : fmt(now);
           ul.insertBefore(nowLine, li);
           placed = true;
         }
       });
-      sec.classList.toggle("tl-part--past", allPast);
+
+      // Open or folded: what the visitor chose today, otherwise only the part of the
+      // day you're in (and an earlier one with something still open before its end).
+      const byDefault = !isToday || idx === nowIdx ||
+        (idx < nowIdx && here.some(i => isOpenNow(i) && !i.anytime && !i.carry) && partEnd[part.key] && now < partEnd[part.key]);
+      const open = folds[part.key] !== undefined ? folds[part.key] : byDefault;
+      sec.classList.toggle("is-folded", !open);
+      if (!open) anyFolded = true;
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      const earlier = isToday && idx < nowIdx;
+      sec.classList.toggle("tl-part--past", earlier && finishedCount === here.length);
+      if (open) meta.textContent = part.range || "";
+      else if (earlier) meta.textContent = `${finishedCount === here.length ? "Earlier today" : "Still open"} · ${here.filter(i => settled[i.id]).length} of ${here.length} done`;
+      else {
+        const titles = here.map(i => i.title.replace(/\s*\(.*?\)\s*/g, " ").trim());
+        meta.textContent = titles.slice(0, 3).join(" · ") + (titles.length > 3 ? ` · +${titles.length - 3}` : "");
+      }
     });
-    renderNow(now, done);
+    allBtn.textContent = anyFolded ? "Expand all" : "Collapse all";
+    renderNow(now, settled);
   }
 
   paint();
