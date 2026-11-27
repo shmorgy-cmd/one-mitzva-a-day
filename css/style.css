@@ -2986,3 +2986,45 @@ body.has-sheet { overflow: hidden; }
 }
 .tl-item:has(> .tl-end) .tl-card { align-self: stretch; }
 .tl-item--past:has(> .tl-end) .tl-card, .tl-item.is-done:has(> .tl-end) .tl-card { align-self: start; }
+
+/* The Shema after its best time: still open, with what to do */
+.tl-late:empty { display: none; }
+.tl-late { margin: 6px 0 0; padding: 6px 10px; border-radius: 8px; background: #fff4e5; color: #8a4b00; font-size: 0.84rem; font-weight: 600; line-height: 1.4; }
+.tl-item.is-late .tl-end { text-decoration: line-through; color: #b45309; }
+.tl-item.is-missed .tl-card { border: 1px dashed #e0a458; background: #fffaf2; }
+.tl-item.is-missed .tl-title { color: var(--ink); }
+
+/* The celebration bubble */
+.tl-cheer {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 1100;
+  width: min(440px, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, var(--flag-blue-bright), var(--flag-blue-deep));
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(13, 46, 110, 0.35);
+  transform: translate(-50%, 140%);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(.2, .9, .3, 1.2), opacity 0.25s ease;
+}
+.tl-cheer.is-in { transform: translate(-50%, 0); opacity: 1; }
+.tl-cheer-icon { font-size: 1.6rem; flex: none; animation: cheerPop 0.6s ease 0.2s both; }
+@keyframes cheerPop { 0% { transform: scale(0.4) rotate(-20deg); } 70% { transform: scale(1.2) rotate(8deg); } 100% { transform: none; } }
+.tl-cheer-text { flex: 1; display: flex; flex-direction: column; gap: 2px; line-height: 1.35; }
+.tl-cheer-text strong { font-family: "Fraunces", serif; font-size: 1rem; }
+.tl-cheer-text span { font-size: 0.86rem; color: #dbe5fb; }
+.tl-cheer-close { flex: none; border: 0; background: rgba(255, 255, 255, 0.15); color: #fff; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; }
+@media (max-width: 700px) {
+  .tl-cheer { bottom: calc(76px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tl-cheer { transition: opacity 0.2s ease; }
+  .tl-cheer-icon { animation: none; }
+}
+.now-late { margin-top: 6px; display: inline-block; padding: 3px 10px; border-radius: 999px; background: #fff4e5; color: #8a4b00; font-size: 0.84rem; font-weight: 700; }

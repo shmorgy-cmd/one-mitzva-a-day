@@ -183,10 +183,17 @@ function buildDayTimeline(opts) {
       why: (info.cholHamoed ? "Customs differ about tefillin on Chol HaMoed — follow your community. " : "") +
         (approx ? "Ideally put on before Shacharit and worn during it; the latest is sunset." : "Ideally put on before Shacharit and worn during it.") + " Traditionally a men's mitzvah; customs vary — learn with your rabbi." });
   }
-  add({ id: "shema", part: "morning", kind: "mitzvah", mitzvah: "shema", start: z.alot, end: z.shma, sortAt: new Date(z.misheyakir.getTime() + 1),
+  // The Shema has a best time (due: the "By" time) and, after it, many hold it can still
+  // be said with its blessings until Shacharit's latest time (end). Past "due" it stays
+  // open with a note; if missed altogether, it stays visible with what to do.
+  add({ id: "shema", part: "morning", kind: "mitzvah", mitzvah: "shema", start: z.alot, due: z.shma, end: z.tfilla, sortAt: new Date(z.misheyakir.getTime() + 1),
     timeLabel: fmt(z.shma), timeSmall: approx ? "" : "by", ...win(z.alot, z.shma, "by"), title: "Say the morning Shema",
     why: approx ? "In the first part of the morning — it's inside Shacharit. Set your city for the exact deadline."
-      : `Stricter opinion: by ${fmt(z.shmaMGA)}. It's inside Shacharit — if you'll pray later, say it on its own first.` });
+      : `Stricter opinion: by ${fmt(z.shmaMGA)}. It's inside Shacharit — if you'll pray later, say it on its own first.`,
+    lateNote: approx ? "The best time has passed — say it now. With its blessings, until the latest time for Shacharit."
+      : `The best time (${fmt(z.shma)}) has passed — say it now. With its blessings, until ${fmt(z.tfilla)}.`,
+    lateShort: "time passed, say it now",
+    missedNote: "The time for the Shema passed today. It's still good to say it (without its blessings) — ask your rabbi." });
   add({ id: "shacharit", part: "morning", kind: "prayer", prayer: "shacharit", start: z.alot, end: z.tfilla, sortAt: new Date(z.misheyakir.getTime() + 2),
     timeLabel: fmt(z.tfilla), timeSmall: approx ? "" : "by", ...win(z.alot, z.tfilla, "by"),
     title: shabbat && !festival ? "Shabbat morning prayers" : festival ? "Festival morning prayers" : "Shacharit (morning prayer)",
@@ -305,6 +312,11 @@ function tlStatus(item, now) {
   return "upcoming";
 }
 
+/** The time that counts now: the best time ("due") until it passes, then the end. */
+function tlDue(item, now) { return item.due && now < item.due ? item.due : item.end; }
+/** Past its best time but still open (e.g. the Shema after its "By" time). */
+function tlLate(item, now) { return !!item.due && now >= item.due && now < item.end; }
+
 /** The one thing to do now (the most urgent open item), and what comes next. */
 function tlFocus(items, now, done) {
   // (The waking steps are never "Now": they belong to the moment you wake up.)
@@ -312,7 +324,8 @@ function tlFocus(items, now, done) {
   // Things with no clock (the waking steps, the bedtime Shema) come last, so they
   // are "Now" only when nothing with a deadline is open.
   const current = timed.filter(i => tlStatus(i, now) === "current" && !done[i.id])
-    .sort((a, b) => ((a.noDeadline ? 1 : 0) - (b.noDeadline ? 1 : 0)) || ((a.soft ? 1 : 0) - (b.soft ? 1 : 0)) || (a.end - b.end));
+    .sort((a, b) => ((a.noDeadline ? 1 : 0) - (b.noDeadline ? 1 : 0)) || ((tlLate(a, now) ? 1 : 0) - (tlLate(b, now) ? 1 : 0)) ||
+      ((a.soft ? 1 : 0) - (b.soft ? 1 : 0)) || (tlDue(a, now) - tlDue(b, now)));
   const upcoming = timed.filter(i => tlStatus(i, now) === "upcoming")
     .sort((a, b) => (a.start - b.start) || ((a.soft ? 1 : 0) - (b.soft ? 1 : 0)));
   const focus = current[0] || null;
@@ -376,6 +389,40 @@ const TL_SKIP_KEY = "omad_timeline_skip_v1"; // "Not for me" today
 const TL_FOLD_KEY = "omad_timeline_fold_v1"; // parts the visitor opened (true) or folded (false)
 const tlSkips = tlDayStore(TL_SKIP_KEY);
 const tlFolds = tlDayStore(TL_FOLD_KEY);
+const tlCheers = tlDayStore("omad_timeline_cheer_v1"); // parts already celebrated today
+
+/** A few warm words for finishing a part of the day (one is picked at random). */
+const TL_CHEERS = {
+  waking: ["Good morning! What a beautiful way to start the day ✨", "You opened the day with gratitude — Modeh Ani! 🌅"],
+  morning: ["Morning done — the day is off to a strong start ✨", "Your morning prayers are done — beautifully done 🙌"],
+  midday: ["A mitzvah and some Torah — the day just got brighter 📖", "Midday done — a little more light in the world ✨"],
+  afternoon: ["Afternoon done — a pause with God in the middle of a busy day 🌤️"],
+  evening: ["Evening done — a lovely way to close the day 🌙"],
+  bedtime: ["All done for today. Layla tov — good night 🌙"],
+  default: ["All done here — well done ✨"]
+};
+
+/** The little bubble that pops up from the bottom (one at a time; it goes away by itself). */
+function tlShowCheer(title, sub) {
+  const old = document.getElementById("tl-cheer");
+  if (old) old.remove();
+  const box = el("div", "tl-cheer");
+  box.id = "tl-cheer";
+  box.setAttribute("role", "status");
+  box.appendChild(el("span", "tl-cheer-icon", "🎉"));
+  const text = el("div", "tl-cheer-text");
+  text.appendChild(el("strong", null, title));
+  if (sub) text.appendChild(el("span", null, sub));
+  box.appendChild(text);
+  const close = el("button", "tl-cheer-close", "✕");
+  close.type = "button";
+  close.setAttribute("aria-label", "Close");
+  close.addEventListener("click", () => box.remove());
+  box.appendChild(close);
+  document.body.appendChild(box);
+  requestAnimationFrame(() => box.classList.add("is-in"));
+  setTimeout(() => { box.classList.remove("is-in"); setTimeout(() => box.remove(), 400); }, 7000);
+}
 
 function tlLeft(ms) {
   const m = Math.max(1, Math.round(ms / TL_MIN));
@@ -510,6 +557,8 @@ function tlRenderItem(item, ctx, used) {
   main.appendChild(h);
   // Shown when the item has followed you past its own part of the day.
   main.appendChild(el("p", "tl-carried", ""));
+  // Shown when its best time has passed (or it was missed): what to do now.
+  main.appendChild(el("p", "tl-late", ""));
 
   let why = item.why;
   if (item.kind === "daily-mitzvah" && ctx.mitzvah) why = `${ctx.mitzvah.title} — ${ctx.mitzvah.subtitle}`;
@@ -539,6 +588,7 @@ function tlRenderItem(item, ctx, used) {
       const isDone = li.classList.contains("is-done");
       tlSetDone(ctx.dateISO, item.id, !isDone);
       ctx.paint();
+      if (!isDone && ctx.onSettle) ctx.onSettle(item);
     });
     row.appendChild(chk);
   }
@@ -549,7 +599,7 @@ function tlRenderItem(item, ctx, used) {
     const skip = el("div", "tl-skip");
     const btn = el("button", "tl-skip-btn", "Not for me today");
     btn.type = "button";
-    btn.addEventListener("click", () => { tlSkips.set(ctx.dateISO, item.id, true); ctx.paint(); });
+    btn.addEventListener("click", () => { tlSkips.set(ctx.dateISO, item.id, true); ctx.paint(); if (ctx.onSettle) ctx.onSettle(item); });
     const note = el("span", "tl-skip-note", "Set aside for today · ");
     const undo = el("button", "tl-skip-undo", "Undo");
     undo.type = "button";
@@ -716,7 +766,8 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     if (focus) {
       card.appendChild(el("div", "now-label", focus.noDeadline ? (focus.nowLabel || "Before you sleep") : "Right now"));
       card.appendChild(el("div", "now-title", focus.title));
-      if (!day.approx && !focus.noDeadline) card.appendChild(el("div", "now-time", `Until ${fmt(focus.end)} · ${tlLeft(focus.end - now)} left`));
+      if (!day.approx && !focus.noDeadline) card.appendChild(el("div", "now-time", `Until ${fmt(tlDue(focus, now))} · ${tlLeft(tlDue(focus, now) - now)} left`));
+      if (tlLate(focus, now)) card.appendChild(el("div", "now-late", day.approx ? "The best time has passed — say it now." : `The best time (${fmt(focus.due)}) has passed — say it now.`));
     } else if (target) {
       card.appendChild(el("div", "now-label", "Nothing due right now"));
       card.appendChild(el("div", "now-title", `Next: ${target.title}`));
@@ -735,7 +786,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     if (focus) {
       const b = el("button", "now-btn", "✓ Done");
       b.type = "button";
-      b.addEventListener("click", () => { tlSetDone(ctx.dateISO, focus.id, true); paint(); });
+      b.addEventListener("click", () => { tlSetDone(ctx.dateISO, focus.id, true); paint(); onSettle(focus); });
       actions.appendChild(b);
     }
     if (day.approx) {
@@ -747,7 +798,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     if (actions.children.length) card.appendChild(actions);
     if (focus && also.length) {
       // Everything else open right now, then what starts next.
-      also.forEach(i => card.appendChild(el("div", "now-next now-also", `Also now: ${i.title}${i.idealNote && i.idealEnd && now < i.idealEnd ? ` · ${i.idealNote}` : day.approx ? "" : ` · until ${fmt(i.end)}`}`)));
+      also.forEach(i => card.appendChild(el("div", "now-next now-also", `Also now: ${i.title}${tlLate(i, now) && i.lateShort ? ` · ${i.lateShort}` : i.idealNote && i.idealEnd && now < i.idealEnd ? ` · ${i.idealNote}` : day.approx ? "" : ` · until ${fmt(tlDue(i, now))}`}`)));
       if (nextUp) card.appendChild(el("div", "now-next", `Then: ${nextUp.title}${day.approx || nextUp.noDeadline ? "" : ` · ${fmt(nextUp.start)}`}`));
     } else if (next) card.appendChild(el("div", "now-next", `Then: ${next.title}${day.approx ? "" : next.noDeadline ? "" : next.start <= now ? ` · by ${fmt(next.end)}` : ` · ${fmt(next.start)}`}`));
     nowContainer.appendChild(card);
@@ -765,9 +816,10 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     let placed = false;
     if (focus && !day.approx && !focus.noDeadline) {
       const li = itemEls.get(focus);
-      const span = focus.end - focus.start;
+      const due = tlDue(focus, now);
+      const span = due - focus.start;
       const share = span > 0 ? Math.min(1, Math.max(0, (now - focus.start) / span)) : 0;
-      const left = focus.end - now;
+      const left = due - now;
       nowMark.querySelector(".tl-now-mark-time").textContent = fmt(now);
       nowMark.querySelector(".tl-now-mark-left").textContent = `${tlLeft(left)} left`;
       nowMark.classList.toggle("is-urgent", left <= 30 * TL_MIN);
@@ -823,8 +875,8 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
           const ga = group(a.i), gb = group(b.i);
           if (ga !== gb) return ga - gb;
           if (ga === 1 && !!a.i.anytime !== !!b.i.anytime) return a.i.anytime ? 1 : -1; // "anytime" after the timed ones
-          const dueA = a.i.idealEnd && now < a.i.idealEnd ? a.i.idealEnd : a.i.end;
-          const dueB = b.i.idealEnd && now < b.i.idealEnd ? b.i.idealEnd : b.i.end;
+          const dueA = a.i.idealEnd && now < a.i.idealEnd ? a.i.idealEnd : tlDue(a.i, now);
+          const dueB = b.i.idealEnd && now < b.i.idealEnd ? b.i.idealEnd : tlDue(b.i, now);
           if (ga === 1 && dueA - dueB) return dueA - dueB;
           return a.n - b.n;
         }).map(x => x.i);
@@ -832,6 +884,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       }
 
       let finishedCount = 0;
+      let missedHere = false;
       here.forEach(item => {
         const li = itemEls.get(item);
         let st = isToday ? tlStatus(item, now) : "plain";
@@ -848,6 +901,14 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
         }
         const carried = li.querySelector(".tl-carried");
         if (carried) carried.textContent = moved.has(item) && item.carry && !day.approx ? `Still open — latest ${fmt(item.end)}` : "";
+        // Past its best time, or missed altogether: say so, and what to do.
+        const late = isToday && !settled[item.id] && tlLate(item, now);
+        const missed = isToday && !settled[item.id] && st === "past" && !!item.missedNote;
+        li.classList.toggle("is-late", late);
+        li.classList.toggle("is-missed", missed);
+        if (missed) missedHere = true;
+        const lateEl = li.querySelector(".tl-late");
+        if (lateEl) lateEl.textContent = late ? (item.lateNote || "") : missed ? item.missedNote : "";
         if (isToday && !placed && (st === "current" || st === "upcoming")) {
           nowLine.querySelector(".tl-now-time").textContent = day.approx ? "" : fmt(now);
           ul.insertBefore(nowLine, li);
@@ -858,6 +919,7 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
       // Open or folded: what the visitor chose today, otherwise only the part of the
       // day you're in (and an earlier one with something still open before its end).
       const byDefault = !isToday || idx === nowIdx || (focus && here.includes(focus)) ||
+        (missedHere && partEnd[part.key] && now < partEnd[part.key]) ||
         (idx < nowIdx && here.some(i => isOpenNow(i) && !i.anytime && !i.carry) && partEnd[part.key] && now < partEnd[part.key]);
       const open = folds[part.key] !== undefined ? folds[part.key] : byDefault;
       sec.classList.toggle("is-folded", !open);
@@ -875,6 +937,41 @@ function renderTimeline({ container, nowContainer, date, isToday, times, events,
     allBtn.textContent = anyFolded ? "Expand all" : "Collapse all";
     renderNow(now, settled);
   }
+
+  // When the last thing in a part of the day is ticked (or set aside): a little
+  // celebration, then that part folds and the next one with something to do opens.
+  // Once per part per day, and only when the visitor ticks — never on load.
+  function onSettle(item) {
+    if (!isToday) return;
+    const li = itemEls.get(item);
+    const sec = li && li.closest(".tl-part");
+    if (!sec) return;
+    const key = sec.dataset.part;
+    const now = tlNow();
+    const settled = Object.assign({}, tlDoneFor(ctx.dateISO), tlSkips.get(ctx.dateISO));
+    const byLi = new Map([...itemEls].map(([it, l]) => [l, it]));
+    const here = [...sec.querySelectorAll(".tl-list > li.tl-item")].map(l => byLi.get(l)).filter(Boolean);
+    if (!here.length || !here.every(i => settled[i.id] || tlStatus(i, now) === "past")) return;
+    if (tlCheers.get(ctx.dateISO)[key]) return;
+    tlCheers.set(ctx.dateISO, key, true);
+
+    tlFolds.set(ctx.dateISO, key, false);
+    const idx = partEls.findIndex(p => p.sec === sec);
+    const next = partEls.slice(idx + 1).find(({ sec: s, ul }) => s.style.display !== "none" &&
+      [...ul.querySelectorAll(":scope > li.tl-item")].some(l => { const it = byLi.get(l); return it && !settled[it.id] && tlStatus(it, now) !== "past"; }));
+    if (next) tlFolds.set(ctx.dateISO, next.part.key, true);
+    paint();
+
+    const { focus: f, target } = tlFocus(all, now, settled);
+    const nextLine = f
+      ? `Next: ${f.title}${f.noDeadline || day.approx ? "" : ` · until ${fmt(tlDue(f, now))}`}`
+      : target ? `Next: ${target.title}${day.approx ? "" : ` · from ${fmt(target.start)}`}`
+      : "That's everything for today — layla tov.";
+    const lines = TL_CHEERS[key] || TL_CHEERS.default;
+    tlShowCheer(lines[Math.floor(Math.random() * lines.length)], nextLine);
+    if (next) setTimeout(() => next.sec.scrollIntoView({ behavior: "smooth", block: "nearest" }), 150);
+  }
+  ctx.onSettle = onSettle;
 
   paint();
   if (isToday) tlTimer = setInterval(paint, 60000);

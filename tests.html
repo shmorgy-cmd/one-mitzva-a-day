@@ -138,10 +138,10 @@ const OMER_WORDS = {
 // The day timeline (js/timeline.js) for New York: each item lands in the right
 // part of the day. `in`: [item id, part]; `out`: ids that must not appear.
 const TIMELINE_CASES = [
-  { date: "2026-11-26", name: "Thursday: Torah reading after Shacharit, Shema before Shacharit's deadline",
+  { date: "2026-11-26", name: "Thursday: Torah reading after Shacharit, Shema's best time before Shacharit's deadline, with its blessings until then",
     in: [["guide-weekday-torah", "morning"], ["tefillin", "morning"], ["shacharit", "morning"], ["mincha", "afternoon"], ["maariv", "evening"]],
     out: ["no-tefillin", "fast-begins"],
-    check: d => tlItem(d, "shema").end < tlItem(d, "shacharit").end },
+    check: d => tlItem(d, "shema").due < tlItem(d, "shacharit").end && +tlItem(d, "shema").end === +tlItem(d, "shacharit").end },
   { date: "2026-11-27", name: "Friday: candles before sunset, then Kabbalat Shabbat and dinner",
     in: [["guide-candles", "afternoon"], ["guide-kabbalat-shabbat", "evening"], ["guide-kiddush", "evening"]],
     check: d => tlItem(d, "guide-candles").end <= d.z.sunset && tlItem(d, "maariv").title === "Maariv for Shabbat" },
